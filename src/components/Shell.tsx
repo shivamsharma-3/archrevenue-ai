@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LayoutDashboard, Target, Users, Settings, HelpCircle, Bell, LogOut, X } from 'lucide-react';
+import { LayoutDashboard, Target, Users, Settings, HelpCircle, Bell, LogOut, X, CreditCard } from 'lucide-react';
 import { cn } from '../lib/utils';
 import BrandLogo from './BrandLogo';
 import { auth } from '../lib/firebase';
@@ -10,8 +10,8 @@ import { useTokenUsage } from '../hooks/useTokenUsage';
 
 interface ShellProps {
   children: React.ReactNode;
-  activeMenu?: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'privacy' | 'terms' | 'security';
-  onMenuChange?: (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings') => void;
+  activeMenu?: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'privacy' | 'terms' | 'security';
+  onMenuChange?: (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing') => void;
   hideSidebar?: boolean;
 }
 
@@ -20,7 +20,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange }: S
   const notificationsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
-  const activeMenu = location.pathname === '/pipeline' ? 'pipeline' : location.pathname === '/leads' ? 'directory' : location.pathname === '/settings' ? 'settings' : 'dashboard';
+  const activeMenu = location.pathname === '/pipeline' ? 'pipeline' : location.pathname === '/leads' ? 'directory' : location.pathname === '/settings' ? 'settings' : location.pathname === '/billing' ? 'billing' : 'dashboard';
   const { tokensUsed, limit, isLoading } = useTokenUsage();
 
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
@@ -40,7 +40,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange }: S
     auth.signOut();
   };
 
-  const handleNavigation = (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings') => {
+  const handleNavigation = (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing') => {
     if (onMenuChange) {
       onMenuChange(menu);
     }
@@ -152,6 +152,13 @@ export default function Shell({ children, hideSidebar = false, onMenuChange }: S
               <span>Settings</span>
             </button>
             <button 
+              onClick={() => handleNavigation('billing')}
+              className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-300 group mb-1", activeMenu === 'billing' ? "text-white bg-white/[0.08] shadow-sm border border-white/[0.05]" : "text-zinc-400 hover:text-white hover:bg-white/[0.04] border border-transparent")}
+            >
+              <CreditCard className={cn("w-4 h-4 mr-3 transition-colors", activeMenu === 'billing' ? "text-white" : "group-hover:text-zinc-300")} />
+              <span>Billing</span>
+            </button>
+            <button 
               onClick={() => alert('Help Center & Product Tour coming soon')}
               className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-300 group mb-6 text-zinc-400 hover:text-white hover:bg-white/[0.04] border border-transparent")}
             >
@@ -252,6 +259,10 @@ export default function Shell({ children, hideSidebar = false, onMenuChange }: S
             <button onClick={() => handleNavigation('directory')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'directory' ? "text-white bg-white/5" : "text-zinc-500 hover:text-zinc-300")}>
               <Users className="w-5 h-5 mb-1" />
               <span className="text-[10px] font-medium">Directory</span>
+            </button>
+            <button onClick={() => handleNavigation('billing')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'billing' ? "text-white bg-white/5" : "text-zinc-500 hover:text-zinc-300")}>
+              <CreditCard className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Billing</span>
             </button>
             <button onClick={() => handleNavigation('settings')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'settings' ? "text-white bg-white/5" : "text-zinc-500 hover:text-zinc-300")}>
               <Settings className="w-5 h-5 mb-1" />

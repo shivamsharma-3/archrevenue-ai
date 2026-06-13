@@ -130,7 +130,7 @@ export default function AppLayout() {
 
     useEffect(() => {
       if (!auth.currentUser) return;
-      const q = query(collection(db, 'leads'), where('sellerId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
+      const q = query(collection(db, 'leads'), where('userId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const leadsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Lead[];
         setLeads(leadsData);
@@ -150,7 +150,7 @@ export default function AppLayout() {
         await updateDoc(leadRef, { ...leadData, updatedAt: serverTimestamp() });
         showToast('Lead updated successfully', 'success');
         } else {
-          await addDoc(collection(db, 'leads'), { ...leadData, sellerId: auth.currentUser!.uid, createdAt: serverTimestamp(), status: 'new', activities: [] });
+          await addDoc(collection(db, 'leads'), { ...leadData, userId: auth.currentUser!.uid, userEmail: auth.currentUser!.email!, createdAt: serverTimestamp(), status: 'new', activities: [] });
           showToast('Lead created successfully', 'success');
         }
       setIsModalOpen(false);

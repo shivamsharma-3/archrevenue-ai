@@ -16,7 +16,9 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import SecurityTrust from './components/SecurityTrust';
 import LeadIntelligencePage from './components/LeadIntelligencePage';
-import ProfileBilling from './components/ProfileBilling';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
+import BillingPage from './pages/BillingPage';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -60,8 +62,9 @@ export default function App() {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/security" element={<SecurityTrust />} />
-        <Route path="/profile" element={user ? <ProfileBilling /> : <Navigate to="/login" />} />
-        <Route path="/settings" element={user ? <Navigate to="/profile" /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/login" />} />
+        <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/login" />} />
+        <Route path="/billing" element={user ? <BillingPage /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
