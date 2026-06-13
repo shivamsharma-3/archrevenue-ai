@@ -112,32 +112,36 @@ export default function AppLayout() {
   const directoryMenuRef = useRef<HTMLDivElement>(null);
 
     // --- REAL HANDLERS ---
-  useEffect(() => {
-    if (!auth.currentUser) return;
-    const q = query(collection(db, 'seller_profiles'), where('userId', '==', auth.currentUser.uid));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      if (!snapshot.empty) {
-        setSellerProfile({ id: snapshot.docs[0].id, ...(snapshot.docs[0].data() as any) } as SellerProfile);
-      } else {
+    useEffect(() => {
+      if (!auth.currentUser) return;
+      const docRef = doc(db, 'users', auth.currentUser.uid, 'profile', 'main');
+      const unsubscribe = onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setSellerProfile({ id: docSnap.id, ...(docSnap.data() as any) } as SellerProfile);
+        } else {
+          setShowProfileWizard(true);
+        }
+      }, (error) => {
+        console.error("Error fetching seller profile:", error);
         setShowProfileWizard(true);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+      });
+      return () => unsubscribe();
+    }, []);
 
-  useEffect(() => {
-    const q = query(collection(db, 'leads'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const leadsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Lead[];
-      setLeads(leadsData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching leads:", error);
-      handleFirestoreError(error, 'read' as OperationType, 'leads');
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+    useEffect(() => {
+      if (!auth.currentUser) return;
+      const q = query(collection(db, 'leads'), where('sellerId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const leadsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Lead[];
+        setLeads(leadsData);
+        setLoading(false);
+      }, (error) => {
+        console.error("Error fetching leads:", error);
+        handleFirestoreError(error, 'read' as OperationType, 'leads');
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    }, [auth.currentUser]);
 
   const handleAddOrEditLead = async (leadData: Partial<Lead>) => {
     try {
@@ -145,10 +149,10 @@ export default function AppLayout() {
         const leadRef = doc(db, 'leads', editingLead.id);
         await updateDoc(leadRef, { ...leadData, updatedAt: serverTimestamp() });
         showToast('Lead updated successfully', 'success');
-      } else {
-        await addDoc(collection(db, 'leads'), { ...leadData, createdAt: serverTimestamp(), status: 'new', activities: [] });
-        showToast('Lead created successfully', 'success');
-      }
+        } else {
+          await addDoc(collection(db, 'leads'), { ...leadData, sellerId: auth.currentUser!.uid, createdAt: serverTimestamp(), status: 'new', activities: [] });
+          showToast('Lead created successfully', 'success');
+        }
       setIsModalOpen(false);
       setEditingLead(null);
     } catch (error: any) {
