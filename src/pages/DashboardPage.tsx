@@ -4,6 +4,8 @@ import { Lead, LeadStatus, SellerProfile } from '../lib/types';
 import { getFollowUpStatus } from '../lib/utils';
 import { Activity, BarChart, CalendarCheck, TrendingUp, Users, Brain, Target, Sparkles, ArrowRight, Clock } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import OpportunitySignals from '../components/OpportunitySignals';
 
 export default function DashboardPage() {
   const {
@@ -117,7 +119,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-8 pb-10">
+    <div className="max-w-[1600px] mx-auto space-y-6 pb-10">
       {/* Stats - 4 core cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => (
