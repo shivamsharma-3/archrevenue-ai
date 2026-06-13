@@ -56,15 +56,16 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/leads" element={<LeadsPage />} />
           <Route path="/pipeline" element={<PipelinePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/billing" element={<BillingPage />} />
         </Route>
 
         <Route path="/lead/:id" element={user ? <LeadIntelligencePage /> : <Navigate to="/login" />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/security" element={<SecurityTrust />} />
-        <Route path="/profile" element={user ? <ProfilePage /> : <Navigate to="/login" />} />
-        <Route path="/settings" element={user ? <SettingsPage /> : <Navigate to="/login" />} />
-        <Route path="/billing" element={user ? <BillingPage /> : <Navigate to="/login" />} />
+
       </Routes>
     </BrowserRouter>
   );
