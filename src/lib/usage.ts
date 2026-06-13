@@ -1,0 +1,67 @@
+import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
+import { db } from './firebase';
+
+export const DEFAULT_TOKEN_LIMIT = 50000;
+
+export interface TokenUsage {
+  tokensUsed: number;
+  limit: number;
+  lastUpdated: any;
+}
+
+/**
+ * Checks if the user has reached their token limit.
+ * Throws an error if the limit is exceeded.
+ */
+export async function checkTokenLimit(userId: string): Promise<void> {
+  if (!userId) {
+    throw new Error('User ID is required to check token limits.');
+  }
+
+  const usageRef = doc(db, 'users', userId, 'usage', 'tokens');
+  const snap = await getDoc(usageRef);
+
+  if (!snap.exists()) {
+    // Initialize usage tracking if it doesn't exist
+    await setDoc(usageRef, {
+      tokensUsed: 0,
+      limit: DEFAULT_TOKEN_LIMIT,
+      lastUpdated: serverTimestamp()
+    });
+    return;
+  }
+
+  const data = snap.data() as TokenUsage;
+  const currentLimit = data.limit ?? DEFAULT_TOKEN_LIMIT;
+  
+  if (data.tokensUsed >= currentLimit) {
+    throw new Error(`Token limit exceeded. You have used ${data.tokensUsed} / ${currentLimit} tokens. Please upgrade your plan to continue using AI features.`);
+  }
+}
+
+/**
+ * Increments the token usage for the user.
+ */
+export async function incrementTokenUsage(userId: string, newTokens: number): Promise<void> {
+  if (!userId || newTokens <= 0) return;
+
+  const usageRef = doc(db, 'users', userId, 'usage', 'tokens');
+  
+  try {
+    await updateDoc(usageRef, {
+      tokensUsed: increment(newTokens),
+      lastUpdated: serverTimestamp()
+    });
+  } catch (error: any) {
+    // If the document doesn't exist, set it.
+    if (error?.code === 'not-found') {
+      await setDoc(usageRef, {
+        tokensUsed: newTokens,
+        limit: DEFAULT_TOKEN_LIMIT,
+        lastUpdated: serverTimestamp()
+      });
+    } else {
+      console.error('Failed to increment token usage:', error);
+    }
+  }
+}

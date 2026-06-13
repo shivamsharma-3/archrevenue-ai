@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+    
+    function isValidId(id) {
+       return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    function isValidLead(data) {
+      return data.keys().hasAll(['name', 'status', 'createdAt'])
+        && data.keys().hasOnly(['name', 'phone', 'email', 'business', 'status', 'createdAt', 'updatedAt'])
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && (!('phone' in data) || (data.phone is string && data.phone.size() <= 20))
+        && (!('email' in data) || (data.email is string && data.email.size() <= 100))
+        && (!('business' in data) || (data.business is string && data.business.size() <= 100))
+        && data.status is string && data.status in ['new', 'contacted', 'qualified', 'lost', 'won']
+        && data.createdAt is timestamp
+        && (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    match /users/{userId}/leads/{leadId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      
+      allow create: if isSignedIn() 
+        && request.auth.uid == userId
+        && isValidId(leadId)
+        && isValidLead(incoming())
+        && incoming().createdAt == request.time;
+      
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && isValidId(leadId)
+        && isValidLead(incoming())
+        && incoming().diff(existing()).affectedKeys().hasAny(['name', 'phone', 'email', 'business', 'status', 'updatedAt'])
+        && (!('createdAt' in incoming().diff(existing()).affectedKeys()))
+        && incoming().updatedAt == request.time;
+        
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(leadId);
+    }
+  }
+}

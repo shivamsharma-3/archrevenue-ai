@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "lead": {
+      "title": "Lead",
+      "description": "A sales lead",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "business": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "contacted", "qualified", "lost", "won"] },
+        "createdAt": { "type": "number", "description": "Timestamp" }
+      },
+      "required": ["name", "status"]
+    }
+  },
+  "firestore": {
+    "users/{userId}/leads/{leadId}": {
+      "schema": { "$ref": "#/entities/lead" },
+      "description": "Leads belonging to a specific user."
+    }
+  }
+}

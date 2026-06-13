@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* ── Base ──────────────────────────────────────────────────────────── */
+body {
+  font-family: var(--font-sans);
+  background-color: #000000;
+  color: #fafafa;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  font-size: 14px;
+}
+
+/* ── Aurora Background ─────────────────────────────────────────────── */
+
+/* Root container — fixed, full-screen, behind everything */
+.aurora-root {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: #000000;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Blob base */
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  will-change: transform, opacity;
+}
+
+/* Indigo blob — top-left */
+.aurora-blob-1 {
+  width: 60vw;
+  height: 60vw;
+  max-width: 900px;
+  max-height: 900px;
+  top: -20%;
+  left: -15%;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.18) 0%, transparent 70%);
+  animation: aurora-drift-1 18s ease-in-out infinite alternate;
+}
+
+/* Violet blob — top-right */
+.aurora-blob-2 {
+  width: 50vw;
+  height: 50vw;
+  max-width: 750px;
+  max-height: 750px;
+  top: -10%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.14) 0%, transparent 70%);
+  animation: aurora-drift-2 22s ease-in-out infinite alternate;
+}
+
+/* Cyan blob — bottom-center */
+.aurora-blob-3 {
+  width: 55vw;
+  height: 55vw;
+  max-width: 800px;
+  max-height: 800px;
+  bottom: -25%;
+  left: 30%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+  animation: aurora-drift-3 26s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift-1 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.7; }
+  33%  { transform: translate(4vw, 3vh) scale(1.05); opacity: 0.9; }
+  66%  { transform: translate(-2vw, 6vh) scale(0.97); opacity: 0.75; }
+  100% { transform: translate(2vw, -2vh) scale(1.02); opacity: 0.85; }
+}
+
+@keyframes aurora-drift-2 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  40%  { transform: translate(-5vw, 4vh) scale(1.08); opacity: 0.8; }
+  70%  { transform: translate(2vw, -3vh) scale(0.95); opacity: 0.65; }
+  100% { transform: translate(-3vw, 5vh) scale(1.03); opacity: 0.72; }
+}
+
+@keyframes aurora-drift-3 {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  50%  { transform: translate(-4vw, -5vh) scale(1.1); opacity: 0.7; }
+  100% { transform: translate(3vw, 3vh) scale(0.95); opacity: 0.55; }
+}
+
+/* Data-grid SVG layer */
+.data-grid-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Ghost metric labels */
+.metric-ghost {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  animation: ghost-breathe 8s ease-in-out infinite;
+  user-select: none;
+}
+
+.metric-ghost-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.32);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.metric-ghost-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.22);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+@keyframes ghost-breathe {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Vignette — darkens edges so content reads clearly */
+.aurora-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* ── Revenue Intelligence Panels ───────────────────────────────────── */
+
+/* Mono font for all numeric metric displays */
+.metric-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Animated count-up shimmer */
+@keyframes count-up-flash {
+  0%   { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.metric-reveal {
+  animation: count-up-flash 0.6s ease-out forwards;
+}
+
+/* Panel hover glow */
+.intel-panel {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.intel-panel:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.08) inset;
+}
+
+/* Deal health bar animation */
+@keyframes health-bar-grow {
+  from { width: 0%; }
+  to   { width: var(--target-width); }
+}
+
+.health-bar-fill {
+  animation: health-bar-grow 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Activity feed fade-in stagger */
+@keyframes feed-item-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.feed-item {
+  opacity: 0;
+  animation: feed-item-in 0.4s ease forwards;
+}
+
+/* Sidebar system status pulse */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+.status-dot-live {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* ── Custom scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

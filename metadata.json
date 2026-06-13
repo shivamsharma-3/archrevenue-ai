@@ -1,0 +1,6 @@
+{
+  "name": "Lead Management Dashboard",
+  "description": "A premium CRM dashboard for managing sales leads with Firebase Auth and Firestore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
