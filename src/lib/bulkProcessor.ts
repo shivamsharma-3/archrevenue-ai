@@ -268,6 +268,13 @@ export const startBulkImport = async (
           ],
         };
 
+        // Firebase Firestore does not support undefined values
+        Object.keys(leadData).forEach(key => {
+          if (leadData[key as keyof typeof leadData] === undefined) {
+            delete leadData[key as keyof typeof leadData];
+          }
+        });
+
         const leadsRef = collection(db, 'leads');
         const docRef   = await addDoc(leadsRef, leadData);
         const newLead: Lead = { ...leadData, id: docRef.id } as Lead;

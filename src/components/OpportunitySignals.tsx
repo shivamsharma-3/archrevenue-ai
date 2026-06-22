@@ -27,9 +27,9 @@ function deriveSignals(lead: Lead): Signal[] {
       signals.push({
         icon: '👥',
         label: s.length > 40 ? s.substring(0, 40) + '…' : s,
-        color: 'text-blue-300',
-        bg: 'bg-blue-500/10',
-        border: 'border-blue-500/20',
+        color: 'text-teal-300',
+        bg: 'bg-teal-500/10',
+        border: 'border-teal-500/20',
       });
     }
   });
@@ -42,9 +42,9 @@ function deriveSignals(lead: Lead): Signal[] {
       signals.push({
         icon: isFunded ? '💰' : '📈',
         label: s.length > 40 ? s.substring(0, 40) + '…' : s,
-        color: isFunded ? 'text-emerald-300' : 'text-amber-300',
-        bg: isFunded ? 'bg-emerald-500/10' : 'bg-amber-500/10',
-        border: isFunded ? 'border-emerald-500/20' : 'border-amber-500/20',
+        color: isFunded ? 'text-teal-300' : 'text-amber-300',
+        bg: isFunded ? 'bg-teal-500/10' : 'bg-amber-500/10',
+        border: isFunded ? 'border-teal-500/20' : 'border-amber-500/20',
       });
     }
   });
@@ -64,7 +64,7 @@ function deriveSignals(lead: Lead): Signal[] {
   if (r.businessMaturity && r.businessMaturity !== 'Unknown') {
     const matColor =
       r.businessMaturity === 'Enterprise' ? { color: 'text-violet-300', bg: 'bg-violet-500/10', border: 'border-violet-500/20' } :
-      r.businessMaturity === 'Mature'     ? { color: 'text-indigo-300', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' } :
+      r.businessMaturity === 'Mature'     ? { color: 'text-teal-300', bg: 'bg-teal-500/10', border: 'border-teal-500/20' } :
       r.businessMaturity === 'Growth'     ? { color: 'text-cyan-300',   bg: 'bg-cyan-500/10',   border: 'border-cyan-500/20'   } :
       null;
     if (matColor) {
@@ -99,7 +99,7 @@ export default function OpportunitySignals({ lead, compact = false }: Props) {
 
   if (signals.length === 0) {
     return (
-      <div className="text-xs text-zinc-600 italic py-2">
+      <div className="text-xs text-text-secondary italic py-2">
         No signals detected — run AI analysis to surface opportunity signals.
       </div>
     );
@@ -107,13 +107,13 @@ export default function OpportunitySignals({ lead, compact = false }: Props) {
 
   const confidenceLabel = lead.research?.confidenceLevel ?? 'Low';
   const confidenceColor =
-    confidenceLabel === 'High'   ? 'text-emerald-400' :
-    confidenceLabel === 'Medium' ? 'text-amber-400'   : 'text-zinc-500';
+    confidenceLabel === 'High'   ? 'text-teal-400' :
+    confidenceLabel === 'Medium' ? 'text-amber-400'   : 'text-text-tertiary';
 
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-text-tertiary">
           Opportunity Signals
         </p>
         <span className={cn('text-[9px] font-bold uppercase tracking-wider', confidenceColor)}>

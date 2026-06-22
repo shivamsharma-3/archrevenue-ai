@@ -1,0 +1,62 @@
+[
+  {
+    "domain": "seedstartup.io",
+    "snapshotPath": "src/evals/snapshots/seedstartup.io.html",
+    "historicalFacts": [
+      { "category": "Employees", "value": "5" },
+      { "category": "FundingStage", "value": "Unknown" }
+    ],
+    "expectedFacts": [
+      { "category": "Employees", "value": "10" },
+      { "category": "FundingStage", "value": "Seed" },
+      { "category": "Headquarters", "value": "San Francisco, CA" },
+      { "category": "Technology", "value": "Next.js" },
+      { "category": "Technology", "value": "Vercel" },
+      { "category": "Technology", "value": "Python" }
+    ],
+    "expectedEvents": [
+      { "type": "HEADCOUNT_EXPANSION" },
+      { "type": "FUNDING_ROUND" }
+    ]
+  },
+  {
+    "domain": "growthsaas.com",
+    "snapshotPath": "src/evals/snapshots/growthsaas.com.html",
+    "historicalFacts": [
+      { "category": "Employees", "value": "150" },
+      { "category": "FundingStage", "value": "Series A" }
+    ],
+    "expectedFacts": [
+      { "category": "Employees", "value": "150" },
+      { "category": "FundingStage", "value": "Series B" },
+      { "category": "Headquarters", "value": "Austin, TX" },
+      { "category": "Technology", "value": "AWS" },
+      { "category": "Technology", "value": "React" },
+      { "category": "Technology", "value": "Node.js" },
+      { "category": "Technology", "value": "PostgreSQL" }
+    ],
+    "expectedEvents": [
+      { "type": "FUNDING_ROUND" }
+    ]
+  },
+  {
+    "domain": "bigcorp.inc",
+    "snapshotPath": "src/evals/snapshots/bigcorp.inc.html",
+    "historicalFacts": [
+      { "category": "Employees", "value": "12000" },
+      { "category": "FundingStage", "value": "Post-IPO" }
+    ],
+    "expectedFacts": [
+      { "category": "Employees", "value": "15000" },
+      { "category": "FundingStage", "value": "Post-IPO" },
+      { "category": "Headquarters", "value": "New York, NY" },
+      { "category": "Technology", "value": "Azure" },
+      { "category": "Technology", "value": ".NET" },
+      { "category": "Technology", "value": "Java" },
+      { "category": "Technology", "value": "Oracle" }
+    ],
+    "expectedEvents": [
+      { "type": "HEADCOUNT_EXPANSION" }
+    ]
+  }
+]

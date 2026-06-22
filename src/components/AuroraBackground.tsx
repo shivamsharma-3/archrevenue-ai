@@ -42,37 +42,6 @@ export default function AuroraBackground() {
         <rect width="100%" height="100%" fill="url(#dots)" />
       </svg>
 
-      {/* ── Ghost metric labels ───────────────────────────── */}
-      <div className="metric-ghost" style={{ top: '12%', left: '8%', animationDelay: '0s' }}>
-        <span className="metric-ghost-label">REVENUE TREND</span>
-        <span className="metric-ghost-value">↑ 18.4%</span>
-      </div>
-
-      <div className="metric-ghost" style={{ top: '28%', right: '10%', animationDelay: '1.8s' }}>
-        <span className="metric-ghost-label">PIPELINE HEALTH</span>
-        <span className="metric-ghost-value">92%</span>
-      </div>
-
-      <div className="metric-ghost" style={{ top: '55%', left: '5%', animationDelay: '3.2s' }}>
-        <span className="metric-ghost-label">AI CONFIDENCE</span>
-        <span className="metric-ghost-value">78%</span>
-      </div>
-
-      <div className="metric-ghost" style={{ top: '70%', right: '7%', animationDelay: '0.9s' }}>
-        <span className="metric-ghost-label">FOLLOW-UPS DUE</span>
-        <span className="metric-ghost-value">4</span>
-      </div>
-
-      <div className="metric-ghost" style={{ top: '82%', left: '18%', animationDelay: '2.5s' }}>
-        <span className="metric-ghost-label">FORECAST</span>
-        <span className="metric-ghost-value">$28,400</span>
-      </div>
-
-      <div className="metric-ghost" style={{ top: '40%', left: '50%', transform: 'translateX(-50%)', animationDelay: '4s' }}>
-        <span className="metric-ghost-label">WIN RATE</span>
-        <span className="metric-ghost-value">24%</span>
-      </div>
-
       {/* ── Vignette ─────────────────────────────────────── */}
       <div className="aurora-vignette" />
     </div>

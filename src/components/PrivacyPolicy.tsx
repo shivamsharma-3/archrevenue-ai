@@ -1,115 +1,99 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Shield, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Shield, Lock, Eye, Database, Globe, Calendar, Mail } from 'lucide-react';
 import Shell from './Shell';
+import '../styles/landing.css';
 
 export default function PrivacyPolicy() {
+  useEffect(() => {
+    document.title = "Privacy Policy | ArchRevenue";
+  }, []);
+
   return (
     <Shell hideSidebar={true}>
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto px-6 mt-16"
-      >
-        <div className="mb-12 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#6366f1]/10 border border-[#6366f1]/20 mb-6">
-            <Shield className="w-8 h-8 text-[#6366f1]" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight font-display mb-4">Privacy Policy</h1>
-          <p className="text-zinc-400 text-lg">How we handle and protect your revenue data.</p>
-        </div>
-
-        <div className="space-y-8">
-          {/* Section 1 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">1. Information We Collect</h2>
-            <p className="leading-relaxed mb-4">
-              When you use Arch Revenues, we collect information necessary to provide our core services. This includes your account details (email, name), the company profile you set up, and the lead data you input or connect to our system.
+      <div className="landing-page min-h-screen bg-surface-background">
+        <div className="max-w-[800px] mx-auto px-6 py-24 lg:py-40">
+          
+          <div className="mb-16 border-b border-border-default pb-12">
+            <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-8 font-medium">Legal Framework</div>
+            <h1 className="text-4xl md:text-5xl font-display text-text-primary font-medium tracking-[-0.02em] mb-6">
+              Privacy Policy
+            </h1>
+            <p className="text-[18px] font-body text-text-secondary leading-[1.8] font-light max-w-[600px]">
+              How we handle, protect, and process your revenue data securely.
             </p>
-            <p className="leading-relaxed text-[#6366f1] font-medium">
-              Important: Users retain complete ownership of all their data.
-            </p>
-          </section>
-
-          {/* Section 2 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">2. How We Use Information</h2>
-            <p className="leading-relaxed mb-4">
-              Your information is used strictly to deliver the Arch Revenues platform functionality. We use it to authenticate your access, store your leads, and power the AI insights tailored to your specific company profile.
-            </p>
-            <p className="leading-relaxed text-[#00d2ff] font-medium">
-              We never sell your data, and your data is never shared with other customers.
-            </p>
-          </section>
-
-          {/* Section 3 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">3. AI Processing Disclosure</h2>
-            <p className="leading-relaxed mb-4">
-              Arch Revenues uses advanced AI models to score leads, research companies, and generate personalized outreach. The data you provide (such as your seller profile and lead information) is temporarily processed by our AI partners solely to generate these insights.
-            </p>
-            <p className="leading-relaxed text-zinc-400">
-              AI processing is used exclusively to provide platform functionality. It is not used to train global public models.
-            </p>
-          </section>
-
-          {/* Section 4 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">4. Data Storage & Security</h2>
-            <p className="leading-relaxed mb-4">
-              Your data is stored securely in our cloud infrastructure. We implement strict, mathematically verified security rules to ensure that your customer records remain entirely isolated from all other users on the platform. No one else can access your pipeline.
-            </p>
-          </section>
-
-          {/* Section 5 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">5. Third-Party Services</h2>
-            <p className="leading-relaxed mb-4">To deliver a premium experience, we partner with industry-leading infrastructure providers:</p>
-            <ul className="list-disc pl-5 space-y-2 text-zinc-400">
-              <li><strong className="text-zinc-200">Firebase & Firestore:</strong> For secure database storage and real-time syncing.</li>
-              <li><strong className="text-zinc-200">Google Authentication:</strong> For secure, passwordless account access.</li>
-              <li><strong className="text-zinc-200">Groq AI:</strong> For ultra-fast, high-performance artificial intelligence processing.</li>
-            </ul>
-          </section>
-
-          {/* Section 6 & 7 */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">6. Data Retention</h2>
-              <p className="leading-relaxed">
-                We retain your data only for as long as your account is active. You can manage your pipeline directly from your dashboard.
-              </p>
-            </section>
-
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">7. User Rights</h2>
-              <p className="leading-relaxed">
-                You have the right to access, modify, export, or permanently delete any of the leads or company profiles you have created within the platform.
-              </p>
-            </section>
           </div>
 
-          {/* Section 8 & 9 */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">8. Account Deletion</h2>
-              <p className="leading-relaxed">
-                If you choose to delete your Arch Revenues account, all associated leads, settings, and profile data will be permanently wiped from our databases.
-              </p>
+          <div className="space-y-16">
+            
+            <section className="relative">
+              <div className="flex items-center space-x-4 mb-6">
+                <Lock className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">Data Ownership</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>When you use ArchRevenue, you retain complete ownership of all data you input into the platform. This includes your CRM records, lead data, seller profile, and generated outreach materials.</p>
+                <div className="border border-border-default bg-surface-card p-6">
+                  <p className="text-text-primary font-medium">We will never sell your data to third parties, and your proprietary lead data is strictly isolated and never shared across different customer workspaces.</p>
+                </div>
+              </div>
             </section>
 
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-sm">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">9. Contact Information</h2>
-              <p className="leading-relaxed">
-                For questions regarding your privacy or data security, please reach out to our dedicated support team via your account dashboard.
-              </p>
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <Database className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">Information We Collect</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-8">
+                <p>To provide our services, we collect and process the following information:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="border border-border-default p-6 bg-surface-card">
+                    <h3 className="text-[15px] font-medium text-text-primary mb-3 flex items-center gap-3"><Shield className="w-4 h-4 text-text-secondary" /> Account Data</h3>
+                    <p className="text-[14px]">Name, email address, and authentication tokens provided via Google Auth securely encrypted.</p>
+                  </div>
+                  <div className="border border-border-default p-6 bg-surface-card">
+                    <h3 className="text-[15px] font-medium text-text-primary mb-3 flex items-center gap-3"><Database className="w-4 h-4 text-text-secondary" /> CRM Data</h3>
+                    <p className="text-[14px]">Lead information, company names, contact details, and custom notes you enter or import.</p>
+                  </div>
+                  <div className="border border-border-default p-6 bg-surface-card">
+                    <h3 className="text-[15px] font-medium text-text-primary mb-3 flex items-center gap-3"><Mail className="w-4 h-4 text-text-secondary" /> Gmail Integration</h3>
+                    <p className="text-[14px]">We only request permission to send emails on your behalf. We do not read your inbox.</p>
+                  </div>
+                  <div className="border border-border-default p-6 bg-surface-card">
+                    <h3 className="text-[15px] font-medium text-text-primary mb-3 flex items-center gap-3"><Calendar className="w-4 h-4 text-text-secondary" /> Calendar Sync</h3>
+                    <p className="text-[14px]">We access your calendar solely to sync meeting events and schedule availability.</p>
+                  </div>
+                </div>
+              </div>
             </section>
+
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <Globe className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">AI Processing Boundaries</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>ArchRevenue utilizes advanced Large Language Models via our partnership with OpenAI to provide real-time lead intelligence, scoring, and Revenue Strategy insights.</p>
+                <div className="border-l-2 border-text-primary pl-6 py-2">
+                  <h4 className="text-[15px] font-medium text-text-primary mb-2 flex items-center gap-2"><Lock className="w-4 h-4" strokeWidth={1.5} /> Zero-Training Policy</h4>
+                  <p className="text-[14px]">The data sent to our AI providers via Enterprise APIs is used strictly for immediate inference. Your proprietary data is explicitly opted out and is never used to train any global or public AI models.</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <Eye className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">Data Retention & Deletion</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-4">
+                <p>We retain your data only for as long as your account remains active. You have the right to access, export, or permanently delete your pipeline data at any time through the Settings page.</p>
+                <p>If you choose to delete your data, all associated records will be permanently purged from our primary databases immediately and cannot be recovered.</p>
+              </div>
+            </section>
+
           </div>
         </div>
-      </motion.div>
+      </div>
     </Shell>
   );
 }
-

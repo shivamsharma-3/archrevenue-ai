@@ -1,9 +1,12 @@
 import Groq from 'groq-sdk';
-import { CompanyResearch } from './types';
+import { CompanyKnowledge } from './types';
 import { auth } from './firebase';
 import { checkTokenLimit, incrementTokenUsage } from './usage';
+import { normalizeDomain } from './memory';
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
+const GROQ_API_KEY = typeof process !== 'undefined' && process.env.VITE_GROQ_API_KEY 
+  ? process.env.VITE_GROQ_API_KEY 
+  : import.meta.env?.VITE_GROQ_API_KEY;
 
 const groq = new Groq({
   apiKey: GROQ_API_KEY,
@@ -56,14 +59,14 @@ function scrapeHtml(html: string): { title: string; metaDesc: string; text: stri
 
   // Combine, dedupe by taking the richest slice
   const combined = `${headings}\n${paras}\n${rawText}`;
-  const words = combined.split(/\s+/).slice(0, 2500);
+  const words = combined.split(/\s+/).slice(0, 1200);
 
   return { title, metaDesc, text: words.join(' ') };
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
-export async function researchCompany(url: string): Promise<CompanyResearch> {
+export async function researchCompany(url: string): Promise<CompanyKnowledge> {
   if (!GROQ_API_KEY) {
     throw new Error('Missing VITE_GROQ_API_KEY in environment variables.');
   }
@@ -83,7 +86,7 @@ export async function researchCompany(url: string): Promise<CompanyResearch> {
       const html = await res.text();
       if (html && html.length > 200) {
         const { title, metaDesc, text } = scrapeHtml(html);
-        scrapedContext = `Page Title: ${title}\nMeta Description: ${metaDesc}\nPage Content:\n${text}`;
+        scrapedContext = `Title: ${title}\nDesc: ${metaDesc}\nContent:\n${text}`;
         fetchSucceeded = true;
       }
     }
@@ -93,38 +96,64 @@ export async function researchCompany(url: string): Promise<CompanyResearch> {
 
   // ── Step 2: Build analysis prompt ───────────────────────────────────────
   const confidenceNote = fetchSucceeded
-    ? 'You have live website content. Base your analysis primarily on this.'
-    : 'Website fetch failed. You only have the URL. Infer cautiously based on the domain name alone. Set confidenceLevel to "Low" and researchSource to "form-only".';
+    ? 'Use live website context. Base analysis primarily on this.'
+    : 'Website fetch failed. Infer cautiously based on domain name. Set confidenceLevel to "Low" and researchSource to "form-only".';
 
   const prompt = `
-You are a senior B2B revenue intelligence analyst. Your job is to extract STRUCTURED, EVIDENCE-BASED intelligence from real company data — not to generate optimistic guesses.
+Factual B2B intelligence extraction for ${targetUrl}:
+${fetchSucceeded ? scrapedContext : `Company URL: ${targetUrl}`}
 
 ${confidenceNote}
 
-${fetchSucceeded ? `Website content for ${targetUrl}:\n"""\n${scrapedContext}\n"""` : `Company URL: ${targetUrl}`}
-
 RULES:
-- opportunityScore must reflect ACTUAL evidence: real growth signals, buying intent indicators, company maturity. Do NOT score high on hope.
-- hiringSignals: look for career pages, "We're hiring", job titles mentioned, team growth language. Empty array [] if none found.
-- businessMaturity: judge from language, team size, product sophistication, funding language, customer references.
-- confidenceLevel: "High" only if you extracted rich content. "Medium" if partial. "Low" if barely anything.
-- Be specific. Do NOT use generic phrases like "they may need help with X" without evidence.
-- painPoints must be inferred from what their business actually does and common friction in that niche — not invented.
-
-Return ONLY this JSON, no markdown, no code blocks:
+- opportunityScore (0-100): Reflect verified indicators (growth, maturity). Cap if no data.
+- hiringSignals: Job postings or team growth text. Empty array [] if none.
+- businessMaturity: Early-stage | Growth | Mature | Enterprise | Unknown.
+- painPoints & services: Factual lists based on content. No generalizations.
+- facts: Extract structured details including estimated employee count (as an integer), fundingStage (exactly one of: Seed, Series A, Series B, Series C+, Post-IPO, Bootstrapped, or Unknown), technologies (detected B2B software, e.g. HubSpot, Stripe, Salesforce, Zendesk, etc., or empty array if none), hiringSignals, and headquarters (City, State/Country or Unknown).
+- signals: Separate lists of buying signals (intent indicators), risk signals (objections, gaps), growth signals (expansion indicators), and technology signals.
+- timeline: Create an array of historical company events (e.g. funding rounds, office launches, executive hires, product updates) with estimated dates. Keep it chronological if possible.
+- market: List competitors, product offerings, and target segments.
+- Return ONLY JSON, no markdown:
 {
-  "industry": "<specific industry vertical, e.g. 'B2B SaaS - Revenue Operations'>",
-  "services": ["<service 1>", "<service 2>", "<service 3>"],
-  "summary": "<2-3 sentence factual summary of what the company does, who their customers are, and how they make money>",
-  "opportunityScore": <integer 0-100, evidence-gated>,
-  "painPoints": ["<specific pain point 1 with evidence>", "<pain point 2>"],
-  "growthSignals": ["<specific growth signal with source>", "<signal 2>"],
-  "hiringSignals": ["<e.g. 'Hiring Senior AE – suggests sales expansion'>", "<or empty array>"],
-  "customerSegment": "<e.g. 'Mid-market SaaS companies, 50-500 employees, North America'>",
-  "businessMaturity": "<'Early-stage' | 'Growth' | 'Mature' | 'Enterprise' | 'Unknown'>",
-  "recommendedPitch": "<1-2 sentence pitch angle grounded in what you actually found on the site>",
-  "confidenceLevel": "<'High' | 'Medium' | 'Low'>",
-  "researchSource": "${fetchSucceeded ? 'website' : 'form-only'}"
+  "industry": "<specific industry vertical, e.g. 'B2B SaaS'>",
+  "services": ["<service 1>", "<service 2>"],
+  "summary": "<1-2 sentence description of what they do & how they monetize>",
+  "opportunityScore": <integer 0-100>,
+  "painPoints": ["<pain point 1>", "<pain point 2>"],
+  "growthSignals": ["<growth signal 1>", "<signal 2>"],
+  "hiringSignals": ["<hiring signal 1>"],
+  "customerSegment": "<customer segment>",
+  "businessMaturity": "<maturity stage>",
+  "recommendedPitch": "<1-2 sentence pitch angle grounded in website info>",
+  "confidenceLevel": "<High | Medium | Low>",
+  "researchSource": "${fetchSucceeded ? 'website' : 'form-only'}",
+  "facts": {
+    "industry": "<vertical vertical>",
+    "employees": <estimated employee count as integer, 0 if unknown>,
+    "fundingStage": "<Seed | Series A | Series B | Series C+ | Post-IPO | Bootstrapped | Unknown>",
+    "headquarters": "<City, State/Country or Unknown>",
+    "technologies": ["<detected technology 1>", "<detected technology 2>"],
+    "hiringSignals": ["<hiring signal 1>", "<hiring signal 2>"]
+  },
+  "signals": {
+    "buying": ["<buying signal 1>", "<buying signal 2>"],
+    "risk": ["<risk signal 1>", "<risk signal 2>"],
+    "growth": ["<growth signal 1>", "<growth signal 2>"],
+    "technology": ["<technology signal 1>", "<technology signal 2>"]
+  },
+  "timeline": [
+    {
+      "date": "<Month Year or Year of event, e.g., 'March 2026' or '2025'>",
+      "event": "<Objective description of event>",
+      "type": "<funding | hiring | technology | growth | general>"
+    }
+  ],
+  "market": {
+    "competitors": ["<competitor 1>", "<competitor 2>"],
+    "products": ["<product 1>", "<product 2>"],
+    "targetSegments": ["<segment 1>", "<segment 2>"]
+  }
 }
 `.trim();
 
@@ -158,7 +187,13 @@ Return ONLY this JSON, no markdown, no code blocks:
     throw new Error('AI returned malformed research JSON');
   }
 
-  const result: CompanyResearch = {
+  const result: CompanyKnowledge = {
+    domain: normalizeDomain(url),
+    reasoning: '',
+    predictions: [],
+    temperature: 'Cold',
+    momentum: { score: 0, timeframe: 'Last 30 days' },
+    lastSnapshottedAt: new Date().toISOString(),
     industry: parsed.industry || 'Unknown',
     services: Array.isArray(parsed.services) ? parsed.services : [],
     summary: parsed.summary || '',
@@ -171,6 +206,46 @@ Return ONLY this JSON, no markdown, no code blocks:
     recommendedPitch: parsed.recommendedPitch || '',
     confidenceLevel: parsed.confidenceLevel || 'Low',
     researchSource: fetchSucceeded ? 'website' : 'form-only',
+    tokensUsed: tokensUsed,
+    facts: parsed.facts ? {
+      industry: parsed.facts.industry || parsed.industry || 'Unknown',
+      employees: typeof parsed.facts.employees === 'number' ? parsed.facts.employees : 0,
+      fundingStage: parsed.facts.fundingStage || 'Unknown',
+      technologies: Array.isArray(parsed.facts.technologies) ? parsed.facts.technologies : [],
+      hiringSignals: Array.isArray(parsed.facts.hiringSignals) ? parsed.facts.hiringSignals : [],
+      headquarters: parsed.facts.headquarters || 'Unknown',
+      products: Array.isArray(parsed.facts.products) ? parsed.facts.products : [],
+    } : {
+      industry: parsed.industry || 'Unknown',
+      employees: 0,
+      fundingStage: 'Unknown',
+      technologies: [],
+      hiringSignals: [],
+      headquarters: 'Unknown',
+      products: [],
+    },
+    signals: parsed.signals ? {
+      buying: Array.isArray(parsed.signals.buying) ? parsed.signals.buying : [],
+      risk: Array.isArray(parsed.signals.risk) ? parsed.signals.risk : [],
+      growth: Array.isArray(parsed.signals.growth) ? parsed.signals.growth : [],
+      technology: Array.isArray(parsed.signals.technology) ? parsed.signals.technology : [],
+      hiring: Array.isArray(parsed.signals.hiring) ? parsed.signals.hiring : [],
+      expansion: Array.isArray(parsed.signals.expansion) ? parsed.signals.expansion : [],
+      pricing: Array.isArray(parsed.signals.pricing) ? parsed.signals.pricing : [],
+      leadership: Array.isArray(parsed.signals.leadership) ? parsed.signals.leadership : [],
+      techAdoption: Array.isArray(parsed.signals.techAdoption) ? parsed.signals.techAdoption : [],
+    } : { buying: [], risk: [], growth: [], technology: [], hiring: [], expansion: [], pricing: [], leadership: [], techAdoption: [] },
+    timeline: Array.isArray(parsed.timeline) ? parsed.timeline.map((t: any) => ({
+      date: t.date || 'Unknown',
+      event: t.event || '',
+      type: ['funding', 'hiring', 'technology', 'growth', 'general'].includes(t.type) ? t.type : 'general'
+    })) : [],
+    market: parsed.market ? {
+      competitors: Array.isArray(parsed.market.competitors) ? parsed.market.competitors : [],
+      products: Array.isArray(parsed.market.products) ? parsed.market.products : [],
+      targetSegments: Array.isArray(parsed.market.targetSegments) ? parsed.market.targetSegments : [],
+    } : { competitors: [], products: [], targetSegments: [] },
+    rawOutput: parsed
   };
 
   return result;

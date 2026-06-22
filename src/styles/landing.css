@@ -1,0 +1,97 @@
+/* ArchRevenue Luxury Landing Page Styles */
+
+/* Base overrides for the isolated landing route */
+.landing-page {
+  background-color: var(--color-surface-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-body, system-ui, sans-serif);
+  overflow-x: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Overrides for Classic Aesthetic */
+.landing-page .font-display {
+  font-family: var(--font-display, var(--font-heading, system-ui, sans-serif));
+  letter-spacing: -0.04em;
+  font-weight: 400; /* Drop font weight for elegance */
+}
+
+/* ProductChrome Parallax wrapper */
+.parallax-wrapper {
+  will-change: transform;
+}
+
+/* Ultra-minimalist Product Chrome */
+.product-chrome-outer {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-default);
+  /* Remove border radius for stark luxury feel */
+  border-radius: 0;
+  /* Very subtle, refined shadow */
+  box-shadow: 0 40px 100px -20px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.product-chrome-header {
+  height: 36px;
+  background: var(--color-surface-secondary);
+  border-bottom: 1px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.product-chrome-dots {
+  display: flex;
+  gap: 6px;
+}
+
+/* Monochromatic dots for luxury feel */
+.product-chrome-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-background);
+}
+
+/* Accordion max-height transition */
+.faq-accordion-content {
+  overflow: hidden;
+  transition: max-height 300ms cubic-bezier(0.16, 1, 0.3, 1), opacity 300ms ease;
+}
+
+/* Minimalist Button Hover Effect */
+.btn-luxury {
+  position: relative;
+  overflow: hidden;
+}
+.btn-luxury::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.1);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  pointer-events: none;
+}
+.btn-luxury:hover::after {
+  opacity: 1;
+}
+
+/* Reduced Motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .parallax-wrapper {
+    transform: none !important;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "factAccuracy": 85,
+  "eventAccuracy": 50,
+  "precision": 15.384615384615385,
+  "recall": 50,
+  "f1": 23.529411764705884
+}

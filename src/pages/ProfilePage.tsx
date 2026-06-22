@@ -1,12 +1,19 @@
-import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { auth } from '../lib/firebase';
+import React, { useState, useEffect } from 'react';
+import { useOutletContext, useNavigate } from 'react-router-dom';
+import { auth, db } from '../lib/firebase';
 import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { Shield, User, Mail, Lock, Key, AlertCircle } from 'lucide-react';
+import { doc, onSnapshot, setDoc, serverTimestamp } from 'firebase/firestore';
+import { Shield, User, Mail, Lock, Key, AlertCircle, CheckCircle2, Circle, ChevronRight, Sparkles, Building, Briefcase, ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
+import { Page, PageHeader, PageContent } from '../components/layout/PageLayout';
+import { AppInput } from '../components/ui/AppInput';
+import { AppButton } from '../components/ui/AppButton';
 
 export default function ProfilePage() {
-  const { showToast } = useOutletContext<any>();
+  const { showToast, sellerProfile, leads } = useOutletContext<any>();
+  const navigate = useNavigate();
   
   const [displayName, setDisplayName] = useState(auth.currentUser?.displayName || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -49,101 +56,244 @@ export default function ProfilePage() {
     }
   };
 
+  // Setup steps based on profile & leads state
+  const setupSteps = [
+    {
+      id: 'profile',
+      title: 'Complete Company Profile',
+      description: 'Tell AI about your company, product, and target customer to personalise all outreach and scoring.',
+      isComplete: !!(sellerProfile?.companyName && sellerProfile?.primaryOffer),
+      icon: Building,
+      color: 'indigo',
+      actionText: 'Go to Settings',
+      actionLink: '/settings',
+    },
+    {
+      id: 'lead',
+      title: 'Add Your First Lead',
+      description: 'Create a lead manually or import from a CSV file to start building your pipeline.',
+      isComplete: leads && leads.length > 0,
+      icon: User,
+      color: 'violet',
+      actionText: 'Go to Leads',
+      actionLink: '/leads',
+    },
+    {
+      id: 'ai',
+      title: 'Run Your First AI Score',
+      description: 'Let AI analyse a lead and give you a revenue intelligence score and personalised outreach scripts.',
+      isComplete: leads && leads.some((l: any) => l.aiAnalysis),
+      icon: Sparkles,
+      color: 'emerald',
+      actionText: 'View Pipeline',
+      actionLink: '/pipeline',
+    },
+  ];
+
+  const completedCount = setupSteps.filter(s => s.isComplete).length;
+  const progress = Math.round((completedCount / setupSteps.length) * 100);
+  const allDone = progress === 100;
+
+  const colorMap: Record<string, { bg: string; border: string; text: string; icon: string; badge: string; ring: string }> = {
+    indigo: { bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-indigo-700', icon: 'text-indigo-500', badge: 'bg-indigo-100 text-indigo-700', ring: 'ring-indigo-200' },
+    violet: { bg: 'bg-violet-50', border: 'border-violet-100', text: 'text-violet-700', icon: 'text-violet-500', badge: 'bg-violet-100 text-violet-700', ring: 'ring-violet-200' },
+    emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-700', icon: 'text-emerald-500', badge: 'bg-emerald-100 text-emerald-700', ring: 'ring-emerald-200' },
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Your Profile</h1>
-        <p className="text-sm text-zinc-500 mt-1">Manage your account details and security preferences.</p>
+    <Page>
+      <PageHeader 
+        title="Your Profile" 
+        description="Manage your account details, security preferences, and setup progress." 
+      />
+      <PageContent>
+      {/* ── Setup Progress Card ───────────────────────────────── */}
+      <div className={cn(
+        "relative overflow-hidden rounded-[var(--radius-card)] border p-6 shadow-sm",
+        allDone
+          ? "bg-gradient-to-br from-emerald-50/30 to-surface-card border-emerald-200/50"
+          : "bg-gradient-to-br from-amber-50/40 to-surface-card border-amber-200/50"
+      )}>
+        {/* Top accent line */}
+        <div className={cn("absolute top-0 left-0 right-0 h-1", allDone ? "bg-gradient-to-r from-emerald-400 to-teal-400" : "bg-gradient-to-r from-amber-400 to-orange-400")} />
+
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            <div className={cn("p-2.5 rounded-[var(--radius-card)] border", allDone ? "bg-emerald-50 border-emerald-100" : "bg-amber-50 border-amber-100")}>
+              <Sparkles className={cn("w-5 h-5", allDone ? "text-emerald-500" : "text-amber-500")} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-[17px] font-bold text-text-primary tracking-tight">
+                {allDone ? '🎉 Setup Complete!' : 'Getting Started'}
+              </h2>
+              <p className="text-[13px] text-text-secondary mt-1 leading-relaxed pr-4">
+                {allDone
+                  ? 'You\'ve completed all setup steps. Your AI-driven pipeline is fully activated.'
+                  : 'Complete these steps to unlock the full power of ArchRevenue\'s AI sales engine.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Progress ring */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="relative w-[56px] h-[56px]">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                <circle
+                  cx="18" cy="18" r="15" fill="none"
+                  stroke={allDone ? '#10b981' : '#f59e0b'}
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(progress / 100) * 94.2} 94.2`}
+                  className="transition-all duration-700"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-[11px] font-bold text-text-primary">{progress}%</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">Progress</p>
+              <p className="text-[13px] font-semibold text-text-secondary">{completedCount}/{setupSteps.length} steps</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mb-6">
+          <div className="h-2 bg-surface-hover rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className={cn("h-full rounded-full", allDone ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-gradient-to-r from-amber-400 to-orange-400")}
+            />
+          </div>
+        </div>
+
+        {/* Steps grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {setupSteps.map((step, i) => {
+            const c = colorMap[step.color];
+            const StepIcon = step.icon;
+            return (
+              <div
+                key={step.id}
+                className={cn(
+                  "rounded-[var(--radius-card)] border p-4 transition-all",
+                  step.isComplete
+                    ? "bg-emerald-50/50 border-emerald-100"
+                    : `bg-surface-card border-border-default hover:border-border-hover hover:shadow-sm`
+                )}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  {step.isComplete ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                  ) : (
+                    <div className={cn("w-5 h-5 rounded-full border-2 border-border-default shrink-0 mt-0.5 flex items-center justify-center")}>
+                      <span className="text-[10px] font-bold text-text-tertiary">{i + 1}</span>
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h4 className={cn("text-[13px] font-semibold leading-tight mb-1", step.isComplete ? "text-emerald-600 line-through decoration-emerald-300" : "text-text-primary")}>
+                      {step.title}
+                    </h4>
+                    <p className="text-[11px] text-text-secondary leading-relaxed">{step.description}</p>
+                  </div>
+                </div>
+
+                {!step.isComplete && (
+                  <Link
+                    to={step.actionLink}
+                    className={cn("inline-flex items-center text-[11px] font-bold transition-all mt-1 px-2.5 py-1.5 rounded-lg", c.badge, "hover:opacity-80")}
+                  >
+                    {step.actionText}
+                    <ChevronRight className="w-3 h-3 ml-1" />
+                  </Link>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* ── Account & Security ────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {/* Basic Info */}
-        <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6">
+        <div className="bg-surface-card border border-border-default shadow-sm rounded-[var(--radius-card)] p-6">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
-              <User className="w-5 h-5 text-blue-400" />
+            <div className="p-2 rounded-[var(--radius-card)] bg-blue-50 border border-blue-100">
+              <User className="w-4 h-4 text-blue-500" />
             </div>
-            <h2 className="text-lg font-semibold text-white">Basic Information</h2>
+            <h2 className="text-[15px] font-semibold text-text-primary">Basic Information</h2>
           </div>
 
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-[2px] shrink-0">
-                <div className="w-full h-full bg-[#121214] rounded-full flex items-center justify-center border-2 border-[#121214] overflow-hidden relative group cursor-pointer">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 p-[2px] shrink-0">
+                <div className="w-full h-full bg-surface-card rounded-full flex items-center justify-center overflow-hidden">
                   {auth.currentUser?.photoURL ? (
                     <img src={auth.currentUser.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-lg font-bold text-white">
-                      {displayName ? displayName.substring(0, 2).toUpperCase() : '??'}
+                    <span className="text-sm font-bold text-blue-500">
+                      {displayName
+                        ? displayName.substring(0, 2).toUpperCase()
+                        : (auth.currentUser?.email?.split('@')[0]?.substring(0, 2).toUpperCase() || '??')}
                     </span>
                   )}
-                  <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center">
-                    <span className="text-[10px] text-white font-medium">Edit</span>
-                  </div>
                 </div>
               </div>
-              <div className="flex-1">
-                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1">Account ID</p>
-                <p className="text-xs text-zinc-400 font-mono">{auth.currentUser?.uid}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] font-semibold text-text-tertiary uppercase tracking-wider mb-1">Account ID</p>
+                <p className="text-[11px] text-text-secondary font-mono truncate">{auth.currentUser?.uid}</p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Display Name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-                className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2 text-sm text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
-                placeholder="John Doe"
-              />
-            </div>
+            <AppInput
+              label="Display Name"
+              type="text"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder="John Doe"
+            />
 
-            <div>
-              <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Mail className="h-4 w-4 text-zinc-500" />
-                </div>
-                <input
-                  type="email"
-                  value={auth.currentUser?.email || ''}
-                  disabled
-                  className="w-full bg-black/20 border border-white/[0.04] rounded-xl pl-10 pr-4 py-2 text-sm text-zinc-400 cursor-not-allowed"
-                />
-              </div>
-              <p className="text-[10px] text-zinc-500 mt-1.5">Email address cannot be changed.</p>
-            </div>
+            <AppInput
+              label="Email Address"
+              type="email"
+              value={auth.currentUser?.email || ''}
+              disabled
+              leftIcon={<Mail className="w-4 h-4" />}
+              helperText="Email address cannot be changed."
+            />
 
             <div className="pt-2">
-              <button
+              <AppButton
                 type="submit"
-                disabled={loading}
-                className="w-full py-2.5 bg-white text-black font-semibold rounded-xl text-sm hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                variant="primary"
+                className="w-full"
+                isLoading={loading}
               >
-                {loading ? 'Saving...' : 'Save Profile'}
-              </button>
+                Save Profile
+              </AppButton>
             </div>
           </form>
         </div>
 
         {/* Security */}
-        <div className="bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                <Shield className="w-5 h-5 text-emerald-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-white">Security</h2>
+        <div className="bg-surface-card border border-border-default shadow-sm rounded-[var(--radius-card)] p-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 rounded-[var(--radius-card)] bg-surface-secondary border border-border-default">
+              <Shield className="w-4 h-4 text-text-secondary" />
             </div>
+            <h2 className="text-[15px] font-semibold text-text-primary">Security</h2>
           </div>
 
           {auth.currentUser?.providerData.some(p => p.providerId === 'google.com') && (
-            <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+            <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-[var(--radius-card)] flex items-start space-x-3">
+              <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-sm font-medium text-amber-400">Google Authentication</h3>
-                <p className="text-[11px] text-amber-400/80 mt-1">
+                <h3 className="text-[13px] font-semibold text-amber-700">Google Authentication</h3>
+                <p className="text-[12px] text-amber-600 mt-1 leading-relaxed">
                   You are logged in via Google. You do not need to set a password unless you wish to detach your Google account.
                 </p>
               </div>
@@ -151,50 +301,39 @@ export default function ProfilePage() {
           )}
 
           <form onSubmit={handleChangePassword} className="space-y-4">
-            <div>
-              <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">Current Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Lock className="h-4 w-4 text-zinc-500" />
-                </div>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
+            <AppInput
+              label="Current Password"
+              type="password"
+              value={currentPassword}
+              onChange={e => setCurrentPassword(e.target.value)}
+              placeholder="••••••••"
+              leftIcon={<Lock className="w-4 h-4" />}
+            />
 
-            <div>
-              <label className="block text-[11px] font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">New Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <Key className="h-4 w-4 text-zinc-500" />
-                </div>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
+            <AppInput
+              label="New Password"
+              type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              placeholder="••••••••"
+              leftIcon={<Key className="w-4 h-4" />}
+            />
 
             <div className="pt-2">
-              <button
+              <AppButton
                 type="submit"
+                variant="secondary"
+                className="w-full"
                 disabled={loading || !currentPassword || !newPassword}
-                className="w-full py-2.5 bg-emerald-500/10 text-emerald-400 font-semibold rounded-xl text-sm border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                isLoading={loading}
               >
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
+                Update Password
+              </AppButton>
             </div>
           </form>
         </div>
       </div>
-    </div>
+      </PageContent>
+    </Page>
   );
 }

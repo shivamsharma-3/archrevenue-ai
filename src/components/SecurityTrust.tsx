@@ -1,132 +1,88 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Lock, ArrowLeft, CheckCircle2, ShieldCheck, Database, Key } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { ShieldAlert, Server, Users, Key, TerminalSquare, AlertTriangle, Code } from 'lucide-react';
 import Shell from './Shell';
+import '../styles/landing.css';
 
 export default function SecurityTrust() {
+  useEffect(() => {
+    document.title = "Security & Trust | ArchRevenue";
+  }, []);
+
   return (
     <Shell hideSidebar={true}>
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto px-6 mt-16"
-      >
-        <div className="mb-12 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#6366f1]/10 border border-[#6366f1]/20 mb-6">
-            <ShieldCheck className="w-8 h-8 text-[#6366f1]" />
+      <div className="landing-page min-h-screen bg-surface-background">
+        <div className="max-w-[800px] mx-auto px-6 py-24 lg:py-40">
+          
+          <div className="mb-16 border-b border-border-default pb-12">
+            <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-8 font-medium">Security Framework</div>
+            <h1 className="text-4xl md:text-5xl font-display text-text-primary font-medium tracking-[-0.02em] mb-6">
+              Security & Trust
+            </h1>
+            <p className="text-[18px] font-body text-text-secondary leading-[1.8] font-light max-w-[600px]">
+              Enterprise-grade security architecture designed to protect your revenue pipeline.
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight font-display mb-4">Security & Trust Center</h1>
-          <p className="text-zinc-400 text-lg leading-relaxed">
-            Enterprise-grade security built into every layer. We designed Arch Revenues so you can focus on closing deals, knowing your pipeline is mathematically protected.
-          </p>
-        </div>
-        {/* Trust Indicators Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-          {[
-            'Firebase Authentication',
-            'User-Level Data Isolation',
-            'Firestore Security Rules',
-            'Encrypted Data In Transit',
-            'Secure Google Authentication',
-            'Restricted Database Access'
-          ].map((item, i) => (
-            <div key={i} className="flex items-center space-x-3 bg-white/[0.02] border border-white/[0.04] rounded-xl p-4">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-              <span className="text-sm font-medium text-white">{item}</span>
-            </div>
-          ))}
-        </div>
 
-        <div className="space-y-6">
-          {/* Section 1 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-3xl p-8 md:p-10 backdrop-blur-xl">
-            <div className="flex items-start space-x-6">
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
-                <Database className="w-6 h-6 text-blue-400" />
+          <div className="space-y-16">
+            
+            <section className="relative">
+              <div className="flex items-center space-x-4 mb-6">
+                <Users className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">User Isolation (Tenant Architecture)</h2>
               </div>
-              <div>
-                <h2 className="text-2xl font-semibold text-white mb-3 font-display">1. Lead Data Isolation & Database Security</h2>
-                <p className="leading-relaxed text-zinc-400 mb-4">
-                  In Arch Revenues, your leads are strictly scoped to your account. Why can't users see each other's leads? Because our database architecture uses rigorous Firestore Security Rules that evaluate every single request at the server level. 
-                </p>
-                <p className="leading-relaxed text-zinc-400">
-                  Even if someone tries to request data outside the application, the database explicitly rejects any read or write where the authenticated user ID doesn't perfectly match the data owner. This guarantees complete pipeline isolation.
-                </p>
-              </div>
-            </div>
-          </section>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>We employ mathematically verified Firestore Security Rules to guarantee strict multi-tenant isolation. Your database requests are evaluated at the edge before they ever reach our servers.</p>
+                
+                <div className="bg-[#0a0a0a] border border-[#262626] rounded-none overflow-hidden my-6 font-mono text-[13px] text-white p-6">
+                  <p className="text-[#a3a3a3] mb-3">// Edge-level read/write validation</p>
+                  <p><span className="text-[#fb7185]">match</span> <span className="text-[#38bdf8]">/users/&#123;userId&#125;</span> &#123;</p>
+                  <p className="ml-4"><span className="text-[#fb7185]">allow</span> read, write: <span className="text-[#fb7185]">if</span> request.auth != <span className="text-[#818cf8]">null</span> && request.auth.uid == userId;</p>
+                  <p>&#125;</p>
+                </div>
 
-          {/* Section 2 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-3xl p-8 md:p-10 backdrop-blur-xl">
-            <div className="flex items-start space-x-6">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                <Key className="w-6 h-6 text-emerald-400" />
+                <p>It is structurally impossible for another ArchRevenue user to query or access your leads, profile, or token usage data.</p>
               </div>
-              <div>
-                <h2 className="text-2xl font-semibold text-white mb-3 font-display">2. Authentication Security</h2>
-                <p className="leading-relaxed text-zinc-400 mb-4">
-                  We leverage Google's enterprise-grade identity platform (Firebase Authentication) to handle all sign-ins. This means your passwords are never stored in plain text, and you can opt to use secure Google Authentication to bypass passwords entirely.
-                </p>
-                <p className="leading-relaxed text-zinc-400">
-                  Every session is cryptographically signed, ensuring that only you can access your terminal.
-                </p>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Section 3 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-3xl p-8 md:p-10 backdrop-blur-xl">
-            <div className="flex items-start space-x-6">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-6 h-6 text-amber-400" />
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <Server className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">Cloud Infrastructure & Encryption</h2>
               </div>
-              <div>
-                <h2 className="text-2xl font-semibold text-white mb-3 font-display">3. Customer Data Protection</h2>
-                <p className="leading-relaxed text-zinc-400 mb-4">
-                  Your trust is our ultimate metric. Arch Revenues does not sell customer data to third parties. Your proprietary pipeline, notes, and strategies remain yours. All customer information is stored securely on modern cloud infrastructure with encryption applied to data in transit.
-                </p>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>ArchRevenue is built on Google Cloud Platform (GCP). All data is encrypted both in transit (via modern TLS 1.3) and at rest (using AES-256 encryption).</p>
+                <p>We do not manage our own physical servers. By leveraging GCP's global infrastructure, we inherit their world-class physical security, compliance certifications (SOC 2, ISO 27001), and DDoS protection.</p>
               </div>
-            </div>
-          </section>
+            </section>
 
-          {/* Section 4 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-3xl p-8 md:p-10 backdrop-blur-xl">
-            <div className="flex items-start space-x-6">
-              <div className="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shrink-0">
-                <Lock className="w-6 h-6 text-violet-400" />
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <TerminalSquare className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">AI Safety & Hallucination Mitigation</h2>
               </div>
-              <div>
-                <h2 className="text-2xl font-semibold text-white mb-3 font-display">4. AI Processing Security</h2>
-                <p className="leading-relaxed text-zinc-400 mb-4">
-                  Our AI intelligence engine processes your requests in real-time. The data sent to our AI providers (like Groq) is ephemeral—used strictly to score leads or generate outreach for that specific request, and never retained to train public models.
-                </p>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>LLMs are powerful but prone to hallucinations. To ensure the reliability of Lead Intelligence and Deal Coaching:</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>We enforce strict JSON-schema adherence on all AI outputs using OpenAI's Structured Outputs.</li>
+                  <li>We require the AI to provide evidence arrays explaining why a specific score or insight was generated based on the scraped context.</li>
+                  <li>We utilize a "zero-training" Enterprise API agreement with OpenAI, ensuring your data is never retained for model improvement.</li>
+                </ul>
               </div>
-            </div>
-          </section>
-        </div>
+            </section>
 
-        {/* Security Best Practices */}
-        <div className="mt-16 bg-gradient-to-br from-[#6366f1]/10 to-transparent border border-[#6366f1]/20 rounded-3xl p-8 md:p-10">
-          <h2 className="text-2xl font-semibold text-white mb-6 font-display text-center">Security Best Practices</h2>
-          <div className="grid md:grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-[#6366f1] font-semibold mb-2">Use Strong Passwords</div>
-              <p className="text-sm text-zinc-400">If using email login, ensure your password is unique and complex.</p>
-            </div>
-            <div>
-              <div className="text-[#6366f1] font-semibold mb-2">Google Sign-in</div>
-              <p className="text-sm text-zinc-400">Use Google Auth for seamless, passwordless security backed by your workspace.</p>
-            </div>
-            <div>
-              <div className="text-[#6366f1] font-semibold mb-2">Review Access</div>
-              <p className="text-sm text-zinc-400">Regularly monitor your active sessions and connected accounts.</p>
-            </div>
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <Key className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">Authentication</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>We utilize Google Workspace SSO (Single Sign-On) alongside Firebase Authentication. ArchRevenue never stores, hashes, or handles your passwords. Your login security inherits the 2FA and security policies you have configured on your Google account.</p>
+              </div>
+            </section>
+
           </div>
         </div>
-      </motion.div>
+      </div>
     </Shell>
   );
 }
-

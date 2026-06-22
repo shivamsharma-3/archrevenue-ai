@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Upload, FileText, CheckCircle2, AlertCircle, Loader2, Database, History, Download } from 'lucide-react';
+import { X, Upload, FileText, CheckCircle2, AlertCircle, Loader2, Database, History, Download, Sparkles, Coins } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { SellerProfile, ImportBatch } from '../lib/types';
 import { startBulkImport, BulkImportProgress } from '../lib/bulkProcessor';
 import { cn } from '../lib/utils';
+import toast from 'react-hot-toast';
+import posthog from 'posthog-js';
+import { AppModal } from './ui/AppModal';
+import { AppButton } from './ui/AppButton';
 
 interface Props {
   isOpen: boolean;
@@ -66,7 +70,7 @@ export default function CsvImportModal({ isOpen, onClose, sellerProfile }: Props
 
   const handleFileSelection = (selectedFile: File) => {
     if (selectedFile.type !== 'text/csv' && !selectedFile.name.endsWith('.csv')) {
-      alert('Please select a valid CSV file.');
+      toast.error('Please select a valid CSV file.');
       return;
     }
     setFile(selectedFile);
@@ -76,8 +80,11 @@ export default function CsvImportModal({ isOpen, onClose, sellerProfile }: Props
     if (!file) return;
     startBulkImport(file, sellerProfile, (prog) => {
       setProgress(prog);
-      if (prog.status === 'completed' || prog.status === 'failed') {
-        // We could auto-close or let the user see the final state
+      if (prog.status === 'completed') {
+        toast.success('Import completed successfully');
+        posthog.capture('CSV Imported', { totalLeads: prog.total, completed: prog.completed });
+      } else if (prog.status === 'failed') {
+        toast.error(prog.error || 'Import failed');
       }
     });
   };
@@ -88,234 +95,252 @@ export default function CsvImportModal({ isOpen, onClose, sellerProfile }: Props
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => progress?.status !== 'processing' && onClose()}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        />
-
-        {/* Modal */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-3xl bg-[#0a0a0b] border border-white/[0.08] rounded-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden font-sans flex flex-col max-h-[90vh]"
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/[0.03] to-transparent pointer-events-none" />
-          
-          <div className="px-8 py-6 border-b border-white/[0.04] flex justify-between items-center relative shrink-0">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight text-white font-display flex items-center">
-                <Database className="w-5 h-5 mr-3 text-blue-500" /> Bulk Import & AI Processing
-              </h2>
-              <p className="text-sm text-zinc-400 mt-1">Upload a CSV to automatically research, score, and draft outreach.</p>
-            </div>
-            {progress?.status !== 'processing' && (
-              <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white rounded-xl transition-colors bg-white/[0.02] hover:bg-white/[0.05]">
-                <X className="w-5 h-5" />
-              </button>
-            )}
+    <AppModal
+      isOpen={isOpen}
+      onClose={() => { if (progress?.status !== 'processing') onClose(); }}
+      maxWidth="lg"
+      noPadding
+    >
+      <div className="flex flex-col h-full max-h-[85vh] relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/[0.02] to-transparent pointer-events-none" />
+        
+        <div className="px-8 py-6 border-b border-border-default flex justify-between items-center relative shrink-0 bg-surface-card">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-text-primary flex items-center">
+              <Database className="w-5 h-5 mr-3 text-blue-500" /> Bulk Import & AI Processing
+            </h2>
+            <p className="text-[13px] text-text-secondary mt-1">Upload a CSV to automatically research, score, and draft outreach.</p>
           </div>
+          {progress?.status !== 'processing' && (
+            <button onClick={onClose} className="p-1.5 text-text-tertiary hover:text-text-primary rounded-button transition-colors hover:bg-surface-hover">
+              <X className="w-5 h-5" />
+            </button>
+          )}
+        </div>
 
-          <div className="flex flex-col flex-1 overflow-y-auto p-8 space-y-8">
-            
-            {/* Main Action Area */}
-            {!progress ? (
-              <div className="space-y-4">
-                <div 
-                  className={cn(
-                    "border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center transition-all cursor-pointer relative overflow-hidden",
-                    isDragging ? "border-blue-500 bg-blue-500/5" : "border-white/[0.1] bg-white/[0.01] hover:bg-white/[0.02]",
-                    file ? "border-emerald-500/50 bg-emerald-500/5" : ""
-                  )}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => !file && fileInputRef.current?.click()}
-                >
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    accept=".csv"
-                    onChange={(e) => e.target.files && handleFileSelection(e.target.files[0])}
-                  />
-                  
-                  {file ? (
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
-                        <FileText className="w-8 h-8" />
-                      </div>
-                      <h3 className="text-lg font-medium text-white">{file.name}</h3>
-                      <p className="text-zinc-400 text-sm mt-1">Ready for AI processing</p>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                        className="mt-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 hover:text-red-400 transition-colors"
-                      >
-                        Remove File
-                      </button>
+        <div className="flex flex-col flex-1 overflow-y-auto p-8 space-y-8 bg-surface-card relative z-10">
+          
+          {/* Main Action Area */}
+          {!progress ? (
+            <div className="space-y-6">
+              <div 
+                className={cn(
+                  "border-2 border-dashed rounded-[var(--radius-card)] p-10 flex flex-col items-center justify-center transition-all cursor-pointer relative overflow-hidden",
+                  isDragging ? "border-blue-500 bg-blue-50" : "border-border-default bg-surface-background hover:bg-surface-hover",
+                  file ? "border-blue-500/50 bg-blue-50" : ""
+                )}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => !file && fileInputRef.current?.click()}
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept=".csv"
+                  onChange={(e) => e.target.files && handleFileSelection(e.target.files[0])}
+                />
+                
+                {file ? (
+                  <div className="text-center">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100">
+                      <FileText className="w-8 h-8" />
                     </div>
-                  ) : (
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                        <Upload className="w-8 h-8" />
-                      </div>
-                      <h3 className="text-lg font-medium text-white">Drag & drop your CSV here</h3>
-                      <p className="text-zinc-400 text-sm mt-1">or click to browse files</p>
-                      
-                      <div className="mt-6 flex justify-center space-x-4">
-                        <div className="text-left text-xs text-zinc-500">
-                          <p className="font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Required Columns:</p>
-                          <ul className="list-disc list-inside space-y-0.5">
-                            <li>Name</li>
-                          </ul>
-                        </div>
-                        <div className="text-left text-xs text-zinc-500">
-                          <p className="font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Recommended Columns:</p>
-                          <ul className="list-disc list-inside space-y-0.5">
-                            <li>Email</li>
-                            <li>Company</li>
-                            <li>Website</li>
-                          </ul>
-                        </div>
-                      </div>
+                    <h3 className="text-lg font-medium text-text-primary">{file.name}</h3>
+                    <p className="text-text-secondary text-sm mt-1">Ready for AI processing</p>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                      className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary hover:text-red-500 transition-colors"
+                    >
+                      Remove File
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-surface-secondary text-text-tertiary rounded-full flex items-center justify-center mx-auto mb-4 border border-border-default">
+                      <Upload className="w-8 h-8" />
                     </div>
-                  )}
-                </div>
-
-                {file && (
-                  <button
-                    onClick={handleStartImport}
-                    className="w-full py-4 bg-white text-black rounded-2xl font-bold text-lg hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] flex items-center justify-center"
-                  >
-                    <SparklesIcon className="w-5 h-5 mr-2" /> Start Bulk Processing
-                  </button>
+                    <h3 className="text-[15px] font-semibold text-text-primary">Drag & drop your CSV here</h3>
+                    <p className="text-text-secondary text-[13px] mt-1">or click to browse files</p>
+                  </div>
                 )}
               </div>
-            ) : (
-              <div className="bg-black/40 border border-white/[0.08] rounded-3xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-white/[0.05]">
-                  <motion.div 
-                    className={cn(
-                      "h-full", 
-                      progress.status === 'failed' ? "bg-red-500" : progress.status === 'completed' ? "bg-emerald-500" : "bg-blue-500"
-                    )}
-                    initial={{ width: '0%' }}
-                    animate={{ width: `${percentage}%` }}
-                    transition={{ ease: "linear" }}
-                  />
+
+              {/* Import Requirements & Token Cost Details */}
+              <div className="bg-surface-secondary border border-border-default rounded-[var(--radius-card)] p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-text-primary">
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2 text-text-primary font-semibold text-[13px]">
+                    <FileText className="w-4 h-4 text-blue-500" />
+                    <span>CSV Columns & Formats</span>
+                  </div>
+                  <ul className="space-y-2 text-[12px] text-text-secondary list-none pl-0">
+                    <li className="flex items-start">
+                      <span className="text-blue-500 mr-2 font-bold">•</span>
+                      <span><strong>Required:</strong> A column named <code className="bg-surface-hover border border-border-default px-1 rounded font-mono text-[11px]">Name</code> or <code className="bg-surface-hover border border-border-default px-1 rounded font-mono text-[11px]">Full Name</code>.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-500 mr-2 font-bold">•</span>
+                      <span><strong>Auto-Mapped Columns:</strong> Email, Company, Website, Industry, Job Title, Location, Revenue, and Employees.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-500 mr-2 font-bold">•</span>
+                      <span>Compatible with exports from Apollo, Sales Navigator, Clay, Hunter, etc.</span>
+                    </li>
+                  </ul>
                 </div>
 
-                <div className="flex flex-col items-center justify-center text-center space-y-4 relative z-10">
-                  {progress.status === 'processing' && (
-                    <div className="w-16 h-16 relative flex items-center justify-center mb-2">
-                      <div className="absolute inset-0 border-4 border-blue-500/20 rounded-full" />
-                      <div 
-                        className="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin" 
-                      />
-                      <span className="text-sm font-bold text-white">{percentage}%</span>
-                    </div>
-                  )}
-                  {progress.status === 'completed' && (
-                    <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mb-2 border border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                      <CheckCircle2 className="w-8 h-8" />
-                    </div>
-                  )}
-                  {progress.status === 'failed' && (
-                    <div className="w-16 h-16 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mb-2 border border-red-500/30">
-                      <AlertCircle className="w-8 h-8" />
-                    </div>
-                  )}
-
-                  <div>
-                    <h3 className="text-2xl font-bold text-white font-display">
-                      {progress.status === 'parsing' && 'Reading CSV...'}
-                      {progress.status === 'processing' && `Importing ${progress.total} Leads`}
-                      {progress.status === 'completed' && 'Processing Complete'}
-                      {progress.status === 'failed' && 'Import Failed'}
-                    </h3>
-                    {progress.error && (
-                      <p className="text-red-400 text-sm mt-2">{progress.error}</p>
-                    )}
+                <div className="space-y-3 border-t md:border-t-0 md:border-l border-border-default pt-4 md:pt-0 md:pl-6">
+                  <div className="flex items-center space-x-2 text-text-primary font-semibold text-[13px]">
+                    <Coins className="w-4 h-4 text-purple-500" />
+                    <span>AI Token Quota Impact</span>
                   </div>
-
-                  {progress.status !== 'parsing' && progress.status !== 'failed' && (
-                    <div className="grid grid-cols-3 gap-4 w-full max-w-lg mt-6">
-                      <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4 flex flex-col items-center">
-                        <span className="text-3xl font-bold text-white font-display">{progress.completed}</span>
-                        <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold mt-1">Completed</span>
-                      </div>
-                      <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4 flex flex-col items-center">
-                        <span className="text-3xl font-bold text-blue-400 font-display">{remaining}</span>
-                        <span className="text-[11px] uppercase tracking-wider text-blue-400/70 font-semibold mt-1">Remaining</span>
-                      </div>
-                      <div className="bg-white/[0.03] border border-white/[0.05] rounded-2xl p-4 flex flex-col items-center">
-                        <span className="text-3xl font-bold text-zinc-400 font-display">{progress.duplicatesSkipped}</span>
-                        <span className="text-[11px] uppercase tracking-wider text-zinc-500 font-semibold mt-1">Skipped</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {progress.status === 'completed' && (
-                    <button
-                      onClick={onClose}
-                      className="mt-8 px-8 py-3 bg-white/[0.05] hover:bg-white/[0.1] text-white rounded-xl text-sm font-semibold transition-colors border border-white/[0.08]"
-                    >
-                      Return to Dashboard
-                    </button>
-                  )}
+                  <ul className="space-y-2 text-[12px] text-text-secondary list-none pl-0">
+                    <li className="flex items-start">
+                      <span className="text-purple-500 mr-2 font-bold">•</span>
+                      <span><strong>With Website URL:</strong> ~1,200 - 2,500 tokens per lead. Performs deep website intelligence gathering, scoring, and personalized outreach drafting.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-purple-500 mr-2 font-bold">•</span>
+                      <span><strong>Without Website:</strong> ~600 - 1,200 tokens per lead. Performs form-based scoring and basic outreach drafting only.</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-purple-500 mr-2 font-bold">•</span>
+                      <span>Tokens are consumed from your monthly plan quota. Monitor usage in the <strong>Billing</strong> section.</span>
+                    </li>
+                  </ul>
                 </div>
               </div>
-            )}
 
-            {/* Import History */}
-            {history.length > 0 && !progress && (
-              <div className="pt-8 border-t border-white/[0.04]">
-                <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4 flex items-center">
-                  <History className="w-4 h-4 mr-2 text-zinc-400" /> Recent Imports
-                </h4>
-                <div className="space-y-3">
-                  {history.map((batch) => (
-                    <div key={batch.id} className="flex items-center justify-between p-4 bg-white/[0.01] border border-white/[0.04] rounded-2xl hover:bg-white/[0.02] transition-colors">
-                      <div className="flex items-center space-x-4">
-                        <div className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center border",
-                          batch.status === 'completed' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
-                          batch.status === 'processing' ? "bg-blue-500/10 border-blue-500/20 text-blue-400" :
-                          "bg-red-500/10 border-red-500/20 text-red-400"
-                        )}>
-                          {batch.status === 'completed' ? <CheckCircle2 className="w-5 h-5" /> :
-                           batch.status === 'processing' ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                           <AlertCircle className="w-5 h-5" />}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-white">Import Batch #{batch.id.substring(0,6)}</p>
-                          <p className="text-xs text-zinc-500 mt-0.5">
-                            {batch.date?.toDate ? batch.date.toDate().toLocaleString() : 'Just now'}
-                          </p>
-                        </div>
+              {file && (
+                <AppButton
+                  variant="primary"
+                  onClick={handleStartImport}
+                  className="w-full h-12 text-[14px]"
+                  leftIcon={<SparklesIcon className="w-5 h-5" />}
+                >
+                  Start Bulk Processing
+                </AppButton>
+              )}
+            </div>
+          ) : (
+            <div className="bg-surface-secondary border border-border-default rounded-[var(--radius-card)] p-8 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-border-default">
+                <motion.div 
+                  className={cn(
+                    "h-full", 
+                    progress.status === 'failed' ? "bg-red-500" : progress.status === 'completed' ? "bg-emerald-500" : "bg-blue-500"
+                  )}
+                  initial={{ width: '0%' }}
+                  animate={{ width: `${percentage}%` }}
+                  transition={{ ease: "linear" }}
+                />
+              </div>
+
+              <div className="flex flex-col items-center justify-center text-center space-y-4 relative z-10">
+                {progress.status === 'processing' && (
+                  <div className="w-16 h-16 relative flex items-center justify-center mb-2">
+                    <div className="absolute inset-0 border-4 border-blue-100 rounded-full" />
+                    <div 
+                      className="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin" 
+                    />
+                    <span className="text-sm font-bold text-blue-600">{percentage}%</span>
+                  </div>
+                )}
+                {progress.status === 'completed' && (
+                  <div className="w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-2 border border-emerald-200 shadow-sm">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                )}
+                {progress.status === 'failed' && (
+                  <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2 border border-red-200 shadow-sm">
+                    <AlertCircle className="w-8 h-8" />
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-xl font-bold text-text-primary">
+                    {progress.status === 'parsing' && 'Reading CSV...'}
+                    {progress.status === 'processing' && `Importing ${progress.total} Leads`}
+                    {progress.status === 'completed' && 'Processing Complete'}
+                    {progress.status === 'failed' && 'Import Failed'}
+                  </h3>
+                  {progress.error && (
+                    <p className="text-red-500 text-sm mt-2">{progress.error}</p>
+                  )}
+                </div>
+
+                {progress.status !== 'parsing' && progress.status !== 'failed' && (
+                  <div className="grid grid-cols-3 gap-4 w-full max-w-lg mt-6">
+                    <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-4 flex flex-col items-center shadow-sm">
+                      <span className="text-2xl font-bold text-text-primary">{progress.completed}</span>
+                      <span className="text-[11px] uppercase tracking-wider text-text-secondary font-semibold mt-1">Completed</span>
+                    </div>
+                    <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-4 flex flex-col items-center shadow-sm">
+                      <span className="text-2xl font-bold text-blue-500">{remaining}</span>
+                      <span className="text-[11px] uppercase tracking-wider text-blue-500/70 font-semibold mt-1">Remaining</span>
+                    </div>
+                    <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-4 flex flex-col items-center shadow-sm">
+                      <span className="text-2xl font-bold text-text-tertiary">{progress.duplicatesSkipped}</span>
+                      <span className="text-[11px] uppercase tracking-wider text-text-tertiary font-semibold mt-1">Skipped</span>
+                    </div>
+                  </div>
+                )}
+
+                {progress.status === 'completed' && (
+                  <AppButton
+                    onClick={onClose}
+                    className="mt-8"
+                  >
+                    Return to Dashboard
+                  </AppButton>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Import History */}
+          {history.length > 0 && !progress && (
+            <div className="pt-8 border-t border-border-default">
+              <h4 className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider mb-4 flex items-center">
+                <History className="w-4 h-4 mr-2" /> Recent Imports
+              </h4>
+              <div className="space-y-3">
+                {history.map((batch) => (
+                  <div key={batch.id} className="flex items-center justify-between p-4 bg-surface-secondary border border-border-default rounded-[var(--radius-card)] hover:bg-surface-hover transition-colors shadow-sm">
+                    <div className="flex items-center space-x-4">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center border",
+                        batch.status === 'completed' ? "bg-emerald-50 border-emerald-200 text-emerald-500" :
+                        batch.status === 'processing' ? "bg-blue-50 border-blue-200 text-blue-500" :
+                        "bg-red-50 border-red-200 text-red-500"
+                      )}>
+                        {batch.status === 'completed' ? <CheckCircle2 className="w-5 h-5" /> :
+                         batch.status === 'processing' ? <Loader2 className="w-5 h-5 animate-spin" /> :
+                         <AlertCircle className="w-5 h-5" />}
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-white">{batch.totalLeads} Leads</p>
-                        <p className="text-xs text-zinc-500 mt-0.5">
-                          {batch.duplicatesSkipped} skipped
+                      <div>
+                        <p className="text-[13px] font-semibold text-text-primary">Import Batch #{batch.id.substring(0,6)}</p>
+                        <p className="text-[11px] text-text-tertiary mt-0.5">
+                          {batch.date?.toDate ? batch.date.toDate().toLocaleString() : 'Just now'}
                         </p>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    <div className="text-right">
+                      <p className="text-[13px] font-medium text-text-primary">{batch.totalLeads} Leads</p>
+                      <p className="text-[11px] text-text-tertiary mt-0.5">
+                        {batch.duplicatesSkipped} skipped
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          )}
 
-          </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
+    </AppModal>
   );
 }
 

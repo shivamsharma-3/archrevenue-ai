@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Building, Target, Users, Settings, X, ChevronRight, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
+import posthog from 'posthog-js';
 import { SellerProfile } from '../lib/types';
 import { saveProfile } from '../lib/profile';
 import { auth } from '../lib/firebase';
 import { cn } from '../lib/utils';
+
+import { AppModal } from './ui/AppModal';
+import { AppButton } from './ui/AppButton';
+import { AppInput } from './ui/AppInput';
 
 type Step = 'company' | 'offer' | 'icp' | 'preferences';
 
@@ -13,6 +19,7 @@ interface Props {
   onComplete: (profile: SellerProfile) => void;
   onSkip?: () => void;       // Only shown when editing an existing profile
   initialData?: SellerProfile | null;
+  defaultStep?: Step;
 }
 
 const pricingModels: SellerProfile['pricingModel'][] = [
@@ -29,27 +36,10 @@ const steps: { id: Step; label: string; icon: React.FC<{ className?: string }> }
   { id: 'preferences', label: 'Preferences',  icon: Settings  },
 ];
 
-const stepColors: Record<Step, string> = {
-  company:     'border-indigo-500 text-indigo-400',
-  offer:       'border-violet-500 text-violet-400',
-  icp:         'border-emerald-500 text-emerald-400',
-  preferences: 'border-amber-500 text-amber-400',
-};
+const selectCls = () =>
+  `block w-full h-10 px-4 text-[13px] bg-surface-card border border-border-default rounded-input focus:ring-2 focus:ring-blue-100 focus:border-border-active hover:border-border-hover transition-all outline-none text-text-primary appearance-none`;
 
-const focusColors: Record<Step, string> = {
-  company:     'focus:border-indigo-500/50',
-  offer:       'focus:border-violet-500/50',
-  icp:         'focus:border-emerald-500/50',
-  preferences: 'focus:border-amber-500/50',
-};
-
-const inputCls = (step: Step) =>
-  `block w-full px-4 py-3 bg-white/[0.02] border border-white/[0.08] rounded-xl ${focusColors[step]} focus:ring-0 focus:bg-white/[0.04] transition-all text-sm outline-none placeholder:text-zinc-600 text-white`;
-
-const selectCls = (step: Step) =>
-  `block w-full px-4 py-3 bg-[#121214] border border-white/[0.08] rounded-xl ${focusColors[step]} focus:ring-0 transition-all text-sm outline-none text-white appearance-none`;
-
-export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initialData }: Props) {
+export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initialData, defaultStep }: Props) {
   const [activeStep, setActiveStep] = useState<Step>('company');
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<Partial<SellerProfile>>({});
@@ -61,9 +51,9 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
     } else {
       setProfile({});
     }
-    setActiveStep('company');
+    setActiveStep(defaultStep || 'company');
     setDontShowToday(false);
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, defaultStep]);
 
   const handleSkip = () => {
     if (dontShowToday) {
@@ -77,8 +67,8 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
 
   const handleSave = async () => {
     if (!auth.currentUser) return;
-    if (!profile.companyName?.trim()) { alert('Company name is required.'); return; }
-    if (!profile.primaryOffer?.trim()) { alert('Primary offer is required.'); return; }
+    if (!profile.companyName?.trim()) { toast.error('Company name is required.'); return; }
+    if (!profile.primaryOffer?.trim()) { toast.error('Primary offer is required.'); return; }
 
     setSaving(true);
     try {
@@ -101,9 +91,11 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
         setupComplete:     true,
       };
       await saveProfile(auth.currentUser.uid, data);
+      toast.success('Profile saved successfully!');
+      posthog.capture('Wizard Completed', { industry: data.industry, pricingModel: data.pricingModel });
       onComplete(data);
     } catch (err: any) {
-      alert('Failed to save profile: ' + (err.message || 'Unknown error'));
+      toast.error('Failed to save profile: ' + (err.message || 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -124,52 +116,39 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
   if (!isOpen) return null;
 
   const isLastStep = currentStepIndex === steps.length - 1;
-  const color = stepColors[activeStep];
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
-        />
-
-        {/* Modal */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-black border border-white/[0.08] rounded-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden font-sans flex flex-col max-h-[90vh]"
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
-
+    <AppModal
+      isOpen={isOpen}
+      onClose={() => { if (onSkip) handleSkip(); }}
+      maxWidth="lg"
+      noPadding
+    >
+      <div className="flex flex-col h-full max-h-[85vh]">
           {/* Header */}
-          <div className="px-6 py-5 border-b border-white/[0.04] flex justify-between items-start relative shrink-0">
+          <div className="px-6 py-5 border-b border-border-default flex justify-between items-start shrink-0 bg-surface-card">
             <div>
               <div className="flex items-center space-x-2 mb-1">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                <h2 className="text-lg font-medium tracking-tight text-white font-display">
+                <Sparkles className="w-4 h-4 text-blue-500" />
+                <h2 className="text-[16px] font-semibold tracking-tight text-text-primary">
                   {initialData ? 'Edit Company Profile' : 'Set Up Your Company Profile'}
                 </h2>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-[13px] text-text-secondary">
                 {initialData
                   ? 'Update your profile to improve AI outreach accuracy.'
                   : 'This is used by the AI in every score, outreach, and analysis. Set it once.'}
               </p>
             </div>
             {onSkip && (
-              <button onClick={handleSkip} className="p-2 text-zinc-400 hover:text-white rounded-lg transition-colors bg-white/[0.02] hover:bg-white/[0.05]">
+              <button onClick={handleSkip} className="p-1.5 text-text-tertiary hover:text-text-primary rounded-button transition-colors hover:bg-surface-hover">
                 <X className="w-5 h-5" />
               </button>
             )}
           </div>
 
           {/* Step tabs */}
-          <div className="flex border-b border-white/[0.04] shrink-0 bg-white/[0.01]">
+          <div className="flex border-b border-border-default shrink-0 bg-surface-secondary">
             {steps.map((step, idx) => {
               const Icon = step.icon;
               const isActive = activeStep === step.id;
@@ -180,12 +159,12 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                   type="button"
                   onClick={() => setActiveStep(step.id)}
                   className={cn(
-                    "flex-1 py-3 text-xs font-semibold uppercase tracking-wider flex items-center justify-center border-b-2 transition-colors",
+                    "flex-1 py-3 text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center border-b-2 transition-colors",
                     isActive
-                      ? color
+                      ? "border-blue-500 text-blue-600"
                       : isDone
-                        ? "border-white/20 text-zinc-400"
-                        : "border-transparent text-zinc-600 hover:text-zinc-400"
+                        ? "border-emerald-400 text-emerald-600"
+                        : "border-transparent text-text-tertiary hover:text-text-secondary"
                   )}
                 >
                   <Icon className="w-4 h-4 mr-1.5" />
@@ -197,50 +176,39 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
 
           {/* Body */}
           <div className="flex flex-col flex-1 overflow-hidden relative">
-            <div className="p-6 overflow-y-auto flex-1 space-y-5">
+            <div className="p-6 overflow-y-auto flex-1 space-y-5 bg-surface-card">
 
               {activeStep === 'company' && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-zinc-300">Company Name <span className="text-red-400">*</span></label>
-                    <input
-                      type="text"
-                      value={profile.companyName || ''}
-                      onChange={e => update('companyName', e.target.value)}
-                      placeholder="Arch Revenues"
-                      className={inputCls('company')}
+                  <AppInput
+                    label="Company Name *"
+                    value={profile.companyName || ''}
+                    onChange={e => update('companyName', e.target.value)}
+                    placeholder="Arch Revenues"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <AppInput
+                      label="Website"
+                      type="url"
+                      value={profile.website || ''}
+                      onChange={e => update('website', e.target.value)}
+                      placeholder="https://archrevenues.com"
+                    />
+                    <AppInput
+                      label="Your Industry"
+                      value={profile.industry || ''}
+                      onChange={e => update('industry', e.target.value)}
+                      placeholder="B2B SaaS / Revenue Intelligence"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Website</label>
-                      <input
-                        type="url"
-                        value={profile.website || ''}
-                        onChange={e => update('website', e.target.value)}
-                        placeholder="https://archrevenues.com"
-                        className={inputCls('company')}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Your Industry</label>
-                      <input
-                        type="text"
-                        value={profile.industry || ''}
-                        onChange={e => update('industry', e.target.value)}
-                        placeholder="B2B SaaS / Revenue Intelligence"
-                        className={inputCls('company')}
-                      />
-                    </div>
-                  </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-zinc-300">Company Description</label>
+                    <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Company Description</label>
                     <textarea
                       value={profile.description || ''}
                       onChange={e => update('description', e.target.value)}
                       placeholder="What does your company do? Who do you help? How?"
                       rows={3}
-                      className={`${inputCls('company')} resize-none`}
+                      className="block w-full px-4 py-3 text-[13px] bg-surface-card border border-border-default rounded-input focus:ring-2 focus:ring-blue-100 focus:border-border-active hover:border-border-hover transition-all outline-none placeholder:text-text-tertiary text-text-primary resize-none"
                     />
                   </div>
                 </motion.div>
@@ -248,101 +216,91 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
 
               {activeStep === 'offer' && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
+                  <AppInput
+                    label="Primary Offer *"
+                    value={profile.primaryOffer || ''}
+                    onChange={e => update('primaryOffer', e.target.value)}
+                    placeholder="AI-powered lead scoring & outreach automation"
+                  />
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-zinc-300">Primary Offer <span className="text-red-400">*</span></label>
-                    <input
-                      type="text"
-                      value={profile.primaryOffer || ''}
-                      onChange={e => update('primaryOffer', e.target.value)}
-                      placeholder="AI-powered lead scoring & outreach automation"
-                      className={inputCls('offer')}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-zinc-300">Offer Description</label>
+                    <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Offer Description</label>
                     <textarea
                       value={profile.offerDescription || ''}
                       onChange={e => update('offerDescription', e.target.value)}
                       placeholder="Describe specifically what your offer does and the outcome it delivers for customers."
                       rows={3}
-                      className={`${inputCls('offer')} resize-none`}
+                      className="block w-full px-4 py-3 text-[13px] bg-surface-card border border-border-default rounded-input focus:ring-2 focus:ring-blue-100 focus:border-border-active hover:border-border-hover transition-all outline-none placeholder:text-text-tertiary text-text-primary resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Pricing Model</label>
-                      <select
-                        value={profile.pricingModel || ''}
-                        onChange={e => update('pricingModel', e.target.value as SellerProfile['pricingModel'])}
-                        className={selectCls('offer')}
-                      >
-                        <option value="">Select Model</option>
-                        {pricingModels.map(m => <option key={m} value={m}>{m}</option>)}
-                      </select>
+                      <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Pricing Model</label>
+                      <div className="relative">
+                        <select
+                          value={profile.pricingModel || ''}
+                          onChange={e => update('pricingModel', e.target.value as SellerProfile['pricingModel'])}
+                          className={selectCls()}
+                        >
+                          <option value="">Select Model</option>
+                          {pricingModels.map(m => <option key={m} value={m}>{m}</option>)}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-text-tertiary">
+                          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Starting Price</label>
-                      <input
-                        type="text"
-                        value={profile.startingPrice || ''}
-                        onChange={e => update('startingPrice', e.target.value)}
-                        placeholder="$499/month"
-                        className={inputCls('offer')}
-                      />
-                    </div>
+                    <AppInput
+                      label="Starting Price"
+                      value={profile.startingPrice || ''}
+                      onChange={e => update('startingPrice', e.target.value)}
+                      placeholder="$499/month"
+                    />
                   </div>
                 </motion.div>
               )}
 
               {activeStep === 'icp' && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                  <div className="px-4 py-3 bg-blue-500/5 border border-blue-500/15 rounded-xl">
-                    <p className="text-xs text-blue-400">The AI uses your ICP to evaluate whether a lead is a strong match — this directly affects scores and prioritization.</p>
+                  <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-[var(--radius-card)]">
+                    <p className="text-[12px] text-blue-700">The AI uses your ICP to evaluate whether a lead is a strong match — this directly affects scores and prioritization.</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
+                    <AppInput
+                      label="Target Industry"
+                      value={profile.targetIndustry || ''}
+                      onChange={e => update('targetIndustry', e.target.value)}
+                      placeholder="B2B SaaS, Technology, Finance…"
+                    />
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Target Industry</label>
-                      <input
-                        type="text"
-                        value={profile.targetIndustry || ''}
-                        onChange={e => update('targetIndustry', e.target.value)}
-                        placeholder="B2B SaaS, Technology, Finance…"
-                        className={inputCls('icp')}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Target Company Size</label>
-                      <select
-                        value={profile.targetCompanySize || ''}
-                        onChange={e => update('targetCompanySize', e.target.value)}
-                        className={selectCls('icp')}
-                      >
-                        <option value="">Any size</option>
-                        {companySizes.map(s => <option key={s} value={s}>{s} employees</option>)}
-                      </select>
+                      <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Target Company Size</label>
+                      <div className="relative">
+                        <select
+                          value={profile.targetCompanySize || ''}
+                          onChange={e => update('targetCompanySize', e.target.value)}
+                          className={selectCls()}
+                        >
+                          <option value="">Any size</option>
+                          {companySizes.map(s => <option key={s} value={s}>{s} employees</option>)}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-text-tertiary">
+                          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Target Revenue Range</label>
-                      <input
-                        type="text"
-                        value={profile.targetRevenueRange || ''}
-                        onChange={e => update('targetRevenueRange', e.target.value)}
-                        placeholder="$1M-$20M ARR"
-                        className={inputCls('icp')}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Target Geography</label>
-                      <input
-                        type="text"
-                        value={profile.targetGeography || ''}
-                        onChange={e => update('targetGeography', e.target.value)}
-                        placeholder="North America, EMEA…"
-                        className={inputCls('icp')}
-                      />
-                    </div>
+                    <AppInput
+                      label="Target Revenue Range"
+                      value={profile.targetRevenueRange || ''}
+                      onChange={e => update('targetRevenueRange', e.target.value)}
+                      placeholder="$1M-$20M ARR"
+                    />
+                    <AppInput
+                      label="Target Geography"
+                      value={profile.targetGeography || ''}
+                      onChange={e => update('targetGeography', e.target.value)}
+                      placeholder="North America, EMEA…"
+                    />
                   </div>
                 </motion.div>
               )}
@@ -351,7 +309,7 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Communication Tone</label>
+                      <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Communication Tone</label>
                       <div className="grid grid-cols-2 gap-2">
                         {tones.map(t => (
                           <button
@@ -359,17 +317,17 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                             type="button"
                             onClick={() => update('tone', t)}
                             className={cn(
-                              "px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-center",
+                              "px-3 py-2 rounded-button text-[12px] font-semibold border transition-all text-center",
                               profile.tone === t
-                                ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                                : "bg-white/[0.02] text-zinc-400 border-white/[0.08] hover:bg-white/[0.06] hover:text-white"
+                                ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                                : "bg-surface-card text-text-secondary border-border-default hover:bg-surface-hover hover:text-text-primary"
                             )}
                           >{t}</button>
                         ))}
                       </div>
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-zinc-300">Outreach Style</label>
+                      <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Outreach Style</label>
                       <div className="grid grid-cols-1 gap-2">
                         {outreachStyles.map(s => (
                           <button
@@ -377,93 +335,70 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                             type="button"
                             onClick={() => update('outreachStyle', s)}
                             className={cn(
-                              "px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-center",
+                              "px-3 py-2 rounded-button text-[12px] font-semibold border transition-all text-center",
                               profile.outreachStyle === s
-                                ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                                : "bg-white/[0.02] text-zinc-400 border-white/[0.08] hover:bg-white/[0.06] hover:text-white"
+                                ? "bg-blue-50 text-blue-700 border-blue-200 shadow-sm"
+                                : "bg-surface-card text-text-secondary border-border-default hover:bg-surface-hover hover:text-text-primary"
                             )}
                           >{s}</button>
                         ))}
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-zinc-300">Preferred CTA</label>
-                    <input
-                      type="text"
-                      value={profile.ctaStyle || ''}
-                      onChange={e => update('ctaStyle', e.target.value)}
-                      placeholder="Book a 15-minute discovery call"
-                      className={inputCls('preferences')}
-                    />
-                  </div>
+                  <AppInput
+                    label="Preferred CTA"
+                    value={profile.ctaStyle || ''}
+                    onChange={e => update('ctaStyle', e.target.value)}
+                    placeholder="Book a 15-minute discovery call"
+                  />
                 </motion.div>
               )}
             </div>
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-white/[0.04] bg-black/50 shrink-0 flex justify-between items-center">
-            <div className="flex items-center space-x-6">
+          <div className="p-5 border-t border-border-default bg-surface-secondary shrink-0 flex justify-between items-center">
+            <div className="flex items-center space-x-4">
               {onSkip && !initialData && (
-                <div className="flex items-center space-x-2 text-xs text-white">
+                <div className="flex items-center space-x-2 text-[12px] text-text-secondary">
                   <div className="relative flex items-center justify-center">
                     <input
                       type="checkbox"
                       checked={dontShowToday}
                       onChange={(e) => setDontShowToday(e.target.checked)}
-                      className="w-4 h-4 rounded bg-black border border-white/[0.2] checked:bg-indigo-500 checked:border-indigo-500 focus:ring-0 focus:ring-offset-0 transition-colors appearance-none cursor-pointer"
+                      className="w-4 h-4 rounded border-border-default checked:bg-blue-500 checked:border-blue-500 focus:ring-blue-400 focus:ring-offset-0 transition-colors cursor-pointer"
                     />
-                    {dontShowToday && (
-                      <svg className="w-3 h-3 text-white absolute pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    )}
                   </div>
                   <span>Do not show this today</span>
                 </div>
               )}
-              <button
-                type="button"
+              <AppButton
+                variant="ghost"
                 onClick={goPrev}
                 disabled={currentStepIndex === 0}
-                className="px-4 py-2.5 bg-transparent text-zinc-400 rounded-xl text-sm font-medium hover:text-white transition-colors disabled:opacity-0"
+                className={currentStepIndex === 0 ? "opacity-0" : ""}
               >
                 Back
-              </button>
+              </AppButton>
             </div>
             <div className="flex space-x-3">
               {onSkip && (
-                <button
-                  type="button"
-                  onClick={handleSkip}
-                  className="px-5 py-2.5 bg-transparent text-zinc-500 rounded-xl text-sm font-medium hover:text-zinc-300 transition-colors"
-                >
+                <AppButton variant="secondary" onClick={handleSkip}>
                   {initialData ? 'Cancel' : 'Do it later'}
-                </button>
+                </AppButton>
               )}
               {!isLastStep ? (
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="px-6 py-2.5 bg-white text-black rounded-xl text-sm font-semibold hover:bg-zinc-200 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(255,255,255,0.15)] flex items-center"
-                >
-                  Next <ChevronRight className="w-4 h-4 ml-1" />
-                </button>
+                <AppButton variant="primary" onClick={goNext} rightIcon={<ChevronRight className="w-4 h-4" />}>
+                  Next
+                </AppButton>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="px-6 py-2.5 bg-indigo-500 text-white rounded-xl text-sm font-semibold hover:bg-indigo-400 active:scale-[0.98] transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(99,102,241,0.3)] flex items-center"
-                >
-                  {saving ? 'Saving...' : (initialData ? 'Save Changes' : 'Complete Setup')}
-                </button>
+                <AppButton variant="primary" onClick={handleSave} isLoading={saving}>
+                  {initialData ? 'Save Changes' : 'Complete Setup'}
+                </AppButton>
               )}
             </div>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </div>
+    </AppModal>
   );
 }

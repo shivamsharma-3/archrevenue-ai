@@ -7,13 +7,30 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    function isAdmin() {
+      return request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    // ── Waitlist & Demo Requests ────────────────────────────────────────────
+    match /waitlist/{docId} {
+      allow create: if true; // Public can join waitlist
+    }
+    match /demo_requests/{docId} {
+      allow create: if true; // Public can request demo
+    }
+    match /feedback/{docId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin();
+    }
+
     // ── Leads ────────────────────────────────────────────────────────────────
     // A user can only read, write, update, and delete their OWN leads.
     // Cross-account access is impossible: resource.data.userId is enforced
     // both on reads (existing docs) and on creates (new docs).
     match /leads/{leadId} {
       allow read:   if request.auth != null
-                    && resource.data.userId == request.auth.uid;
+                    && (resource.data.userId == request.auth.uid || isAdmin());
 
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid
@@ -26,16 +43,49 @@ service cloud.firestore {
                     && resource.data.userId == request.auth.uid;
     }
 
+    // ── Global Company Intelligence ──────────────────────────────────────────
+    // Companies are shared across users to build a global Revenue Intelligence Graph.
+    match /companies/{domain} {
+      allow read, write: if request.auth != null;
+      
+      match /events/{eventId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
     // ── User Profiles ────────────────────────────────────────────────────────
     // Stored at users/{userId}/profile/main
     // Only the user themselves can read or write their own profile.
     match /users/{userId} {
-      allow read, write: if request.auth != null
-                         && request.auth.uid == userId;
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null
+                   && request.auth.uid == userId
+                   && (!request.resource.data.keys().hasAny(['role']) || isAdmin());
+      allow update: if request.auth != null
+                   && request.auth.uid == userId
+                   && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin());
 
-      match /{subcollection}/{document} {
+      match /profile/{document} {
         allow read, write: if request.auth != null
                            && request.auth.uid == userId;
+      }
+      
+      match /imports/{document} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /companies/{document} {
+        allow read, write: if false; // Deprecated, moved to global
+      }
+      
+      match /usage/{document} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId 
+                      && request.resource.data.limit == 50000;
+        allow update: if request.auth != null && request.auth.uid == userId 
+                      && request.resource.data.limit == resource.data.limit
+                      && request.resource.data.tokensUsed >= resource.data.tokensUsed;
       }
     }
     // Stripe Customers & Subscriptions

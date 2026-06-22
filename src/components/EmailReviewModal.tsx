@@ -5,6 +5,9 @@ import { Lead } from '../lib/types';
 import { sendEmail } from '../lib/email';
 import { connectGmail } from '../lib/firebase';
 import { cn } from '../lib/utils';
+import { AppModal } from './ui/AppModal';
+import { AppButton } from './ui/AppButton';
+import { AppInput } from './ui/AppInput';
 
 interface EmailReviewModalProps {
   isOpen: boolean;
@@ -94,87 +97,57 @@ export function EmailReviewModal({ isOpen, onClose, lead, onSendSuccess }: Email
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-2xl bg-[#0a0a0b] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+    <AppModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Review Email"
+      maxWidth="lg"
+      footer={
+        <>
+          <AppButton variant="ghost" onClick={onClose} disabled={isSending}>
+            Cancel
+          </AppButton>
+          <AppButton
+            variant="primary"
+            onClick={handleSend}
+            disabled={isSending || !toEmail}
+            isLoading={isSending}
+            leftIcon={!isSending && <Send className="w-4 h-4" />}
           >
-            <div className="px-6 py-4 border-b border-white/[0.08] flex items-center justify-between shrink-0">
-              <h2 className="text-lg font-semibold text-white flex items-center">
-                <Send className="w-5 h-5 mr-2 text-blue-500" /> Review Email
-              </h2>
-              <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/[0.05] transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 overflow-y-auto space-y-4">
-              {error && (
-                <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm font-medium">
-                  {error}
-                </div>
-              )}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">To</label>
-                <input 
-                  type="email" 
-                  value={toEmail}
-                  onChange={(e) => setToEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Subject</label>
-                <input 
-                  type="text" 
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all font-medium"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Message</label>
-                <textarea 
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  rows={12}
-                  className="w-full bg-white/[0.02] border border-white/[0.06] rounded-xl px-4 py-3 text-zinc-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all text-sm leading-relaxed"
-                />
-              </div>
-            </div>
-            
-            <div className="px-6 py-4 border-t border-white/[0.08] flex justify-end space-x-3 shrink-0 bg-white/[0.01]">
-              <button
-                onClick={onClose}
-                disabled={isSending}
-                className="px-5 py-2.5 text-sm font-semibold text-zinc-300 hover:text-white transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSend}
-                disabled={isSending || !toEmail}
-                className="flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-50 disabled:hover:bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-              >
-                {isSending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                {isSending ? 'Sending...' : 'Send via Gmail'}
-              </button>
-            </div>
-          </motion.div>
+            Send via Gmail
+          </AppButton>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-500 px-4 py-3 rounded-[var(--radius-card)] text-[13px] font-medium shadow-sm">
+            {error}
+          </div>
+        )}
+        <AppInput
+          label="To"
+          type="email"
+          value={toEmail}
+          onChange={(e) => setToEmail(e.target.value)}
+          placeholder="name@company.com"
+        />
+        <AppInput
+          label="Subject"
+          type="text"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+        />
+        <div className="w-full flex flex-col gap-1.5">
+          <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Message</label>
+          <textarea 
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={12}
+            className="w-full bg-surface-card border border-border-default rounded-input px-4 py-3 text-text-primary focus:outline-none focus:border-border-active focus:ring-2 focus:ring-blue-100 hover:border-border-hover transition-all text-[13px] leading-relaxed resize-none shadow-sm"
+          />
         </div>
-      )}
-    </AnimatePresence>
+      </div>
+    </AppModal>
   );
 }

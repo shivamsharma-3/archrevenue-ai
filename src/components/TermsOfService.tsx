@@ -1,109 +1,105 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { FileText, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { FileText, Scale, Activity, Zap, CheckCircle2, ShieldCheck, Cpu } from 'lucide-react';
 import Shell from './Shell';
+import '../styles/landing.css';
 
 export default function TermsOfService() {
+  useEffect(() => {
+    document.title = "Terms of Service | ArchRevenue";
+  }, []);
+
   return (
     <Shell hideSidebar={true}>
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto px-6 mt-16"
-      >
-        <div className="mb-12 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#6366f1]/10 border border-[#6366f1]/20 mb-6">
-            <FileText className="w-8 h-8 text-[#6366f1]" />
-          </div>
-          <h1 className="text-4xl md:text-5xl font-semibold text-white tracking-tight font-display mb-4">Terms of Service</h1>
-          <p className="text-zinc-400 text-lg">The rules of engagement for using the Arch Revenues platform.</p>
-        </div>
-
-        <div className="space-y-8">
-          {/* Section 1 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">1. Acceptance of Terms</h2>
-            <p className="leading-relaxed">
-              By accessing and using Arch Revenues, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the platform. Our platform is designed to provide AI-powered revenue intelligence for professional B2B teams.
+      <div className="landing-page min-h-screen bg-surface-background">
+        <div className="max-w-[800px] mx-auto px-6 py-24 lg:py-40">
+          
+          <div className="mb-16 border-b border-border-default pb-12">
+            <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-8 font-medium">Legal Framework</div>
+            <h1 className="text-4xl md:text-5xl font-display text-text-primary font-medium tracking-[-0.02em] mb-6">
+              Terms of Service
+            </h1>
+            <p className="text-[18px] font-body text-text-secondary leading-[1.8] font-light max-w-[600px]">
+              Rules of engagement for using the ArchRevenue platform.
             </p>
-          </section>
-
-          {/* Section 2 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">2. Account Responsibilities</h2>
-            <p className="leading-relaxed">
-              You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.
-            </p>
-          </section>
-
-          {/* Section 3 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">3. Acceptable Use</h2>
-            <p className="leading-relaxed mb-4">
-              Arch Revenues must be used in a professional manner. You agree not to use the platform to process illegal, misleading, or malicious data. Accounts found engaging in abusive practices, spamming, or violating platform integrity may be suspended immediately.
-            </p>
-            <p className="leading-relaxed text-[#ff4b4b] font-medium">
-              We reserve the right to suspend accounts for abuse of the service.
-            </p>
-          </section>
-
-          {/* Section 4 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">4. User Content Ownership</h2>
-            <p className="leading-relaxed">
-              You retain complete ownership of all data, leads, and content you upload to or generate within the platform. Arch Revenues claims no ownership rights over your proprietary business information. We only use this data to provide the service to you.
-            </p>
-          </section>
-
-          {/* Section 5 */}
-          <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-            <h2 className="text-xl font-semibold text-white mb-4 font-display">5. AI Generated Content Disclaimer</h2>
-            <p className="leading-relaxed mb-4">
-              Arch Revenues provides AI-generated insights, scoring, and outreach recommendations. While we strive for high accuracy, these outputs are informational and not guaranteed. 
-            </p>
-            <p className="leading-relaxed text-amber-400 font-medium">
-              Users are solely responsible for validating AI-generated recommendations before taking action or sending outreach to prospects.
-            </p>
-          </section>
-
-          {/* Section 6 & 7 */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">6. Service Availability</h2>
-              <p className="leading-relaxed">
-                We strive to maintain maximum uptime for the platform. However, the service is provided "as is," and we do not guarantee uninterrupted access or operations.
-              </p>
-            </section>
-
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">7. Limitation of Liability</h2>
-              <p className="leading-relaxed">
-                Arch Revenues is not liable for any direct, indirect, or consequential business losses or damages resulting from the use or inability to use our platform or AI recommendations.
-              </p>
-            </section>
           </div>
 
-          {/* Section 8 & 9 */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">8. Termination</h2>
-              <p className="leading-relaxed">
-                You may terminate your account at any time. We may also terminate or suspend your access if you breach these terms. Upon termination, your right to use the platform ceases immediately.
-              </p>
+          <div className="space-y-16">
+            
+            <section className="relative">
+              <div className="flex items-center space-x-4 mb-6">
+                <Activity className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">1. Early Access & Availability</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>ArchRevenue is currently in an Early Access phase. By participating in this phase, you acknowledge that the platform is actively evolving and receiving rapid updates.</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>Features may be modified, upgraded, or optimized based on user feedback.</li>
+                  <li>While we strive for 99.9% uptime, occasional maintenance windows or service upgrades may occur to enhance the AI engine.</li>
+                </ul>
+              </div>
             </section>
 
-            <section className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-8 backdrop-blur-xl">
-              <h2 className="text-xl font-semibold text-white mb-4 font-display">9. Contact Information</h2>
-              <p className="leading-relaxed">
-                For legal inquiries or questions about these Terms of Service, please contact our administrative team via the dashboard support channel.
-              </p>
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <Cpu className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">2. Subscription & API Tokens</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>The core ArchRevenue CRM is provided on a subscription basis. Our advanced AI features (Lead Intelligence, Deal Coach, Outreach Generation) consume compute resources and are subject to hard API token limits based on your tier.</p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="border border-border-default p-6 bg-surface-card">
+                    <h3 className="text-[15px] font-medium text-text-primary mb-3">Starter Tier</h3>
+                    <p className="text-[14px] text-text-primary font-medium mb-3">50,000 Tokens / mo</p>
+                    <p className="text-[13px] text-text-secondary">Designed for individual sales reps. Tokens reset on your monthly billing date.</p>
+                  </div>
+                  <div className="border border-border-default p-6 bg-surface-card">
+                    <h3 className="text-[15px] font-medium text-text-primary mb-3">Pro Tier</h3>
+                    <p className="text-[14px] text-text-primary font-medium mb-3">150,000 Tokens / mo</p>
+                    <p className="text-[13px] text-text-secondary">Designed for power users generating outreach at scale. Tokens reset monthly.</p>
+                  </div>
+                </div>
+
+                <div className="border border-border-default bg-surface-card p-6 flex items-start mt-4">
+                  <CheckCircle2 className="w-4 h-4 mr-3 mt-1 shrink-0 text-text-primary" strokeWidth={1.5} />
+                  <p className="text-text-primary font-medium">Tokens do not roll over month-to-month. If you exceed your token limit, AI features will be temporarily paused until the next billing cycle unless additional capacity is purchased.</p>
+                </div>
+              </div>
             </section>
+
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <FileText className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">3. Acceptable Use Policy</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>You agree not to use ArchRevenue to:</p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>Generate or distribute malicious, illegal, or highly regulated content.</li>
+                  <li>Attempt to reverse engineer the AI scoring models or web-scraping infrastructure.</li>
+                  <li>Send unsolicited, spam-compliant outreach that violates CAN-SPAM, GDPR, or similar regional regulations.</li>
+                  <li>Attempt to bypass API token tracking mechanisms or spoof token usage.</li>
+                </ul>
+                <div className="border border-border-default bg-surface-card p-4 mt-4 inline-block">
+                  <p className="text-[13px] font-medium text-text-primary uppercase tracking-widest">Violation of these terms may result in immediate account suspension.</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <ShieldCheck className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">4. Warranty & Liability</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>ArchRevenue provides an AI-assisted intelligence layer. The platform does not guarantee any specific financial or revenue outcomes. You are solely responsible for reviewing any AI-generated communication before it is sent to a prospect.</p>
+                <p>In no event shall ArchRevenue be liable for any indirect, incidental, or consequential damages arising out of your use or inability to use the platform.</p>
+              </div>
+            </section>
+
           </div>
         </div>
-      </motion.div>
+      </div>
     </Shell>
   );
 }
-
