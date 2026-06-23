@@ -1,23 +1,17 @@
 import Groq from 'groq-sdk';
-import { Lead, AIAnalysis, CompanyResearch, ScoringEvidence, SellerProfile, Note, AITask, TaskStatus } from './types';
-import { serverTimestamp } from 'firebase/firestore';
+import { Lead, AIAnalysis, CompanyKnowledge, ScoringEvidence, SellerProfile, Note, AITask, TaskStatus } from './types';
+import * as admin from 'firebase-admin';
 import { researchCompany } from './research';
-import { auth } from './firebase';
 import { checkTokenLimit, incrementTokenUsage } from './usage';
-
-const groq = new Groq({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-async function callGroq(prompt: string, temperature = 0.2): Promise<string> {
-  const userId = auth.currentUser?.uid;
+async function callGroq(prompt: string, userId: string, temperature = 0.2): Promise<string> {
   if (userId) {
     await checkTokenLimit(userId);
   }
 
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const completion = await groq.chat.completions.create({
     model: 'llama-3.1-8b-instant',
     messages: [{ role: 'user', content: prompt }],
@@ -82,7 +76,7 @@ function getOutreachPrompt(
   sellerCtx: string, 
   profile: SellerProfile | null | undefined, 
   leadName: string | undefined,
-  research: CompanyResearch | null,
+  research: CompanyKnowledge | null,
   hasRealResearch: boolean
 ): string {
   return `
@@ -163,7 +157,7 @@ LEAD FORM DATA (30% weight — self-reported, treat as signals not facts):
 
 // ─── Layer 3: Website Intelligence (70% weight) ──────────────────────────────
 
-function buildResearchContext(research: CompanyResearch): string {
+function buildResearchContext(research: CompanyKnowledge): string {
   const services      = research.services      ?? [];
   const growthSignals = research.growthSignals ?? [];
   const hiringSignals = research.hiringSignals ?? [];
@@ -187,7 +181,7 @@ WEBSITE INTELLIGENCE (70% weight — primary source of truth):
 
 // ─── Score Gate: prevents unearned Hot/High ratings ──────────────────────────
 
-function buildScoringEvidence(lead: Lead, research: CompanyResearch | null, profile: SellerProfile | null): ScoringEvidence {
+function buildScoringEvidence(lead: Lead, research: CompanyKnowledge | null, profile: SellerProfile | null): ScoringEvidence {
   const hasBudget       = !!(lead.estimatedBudget && lead.estimatedBudget !== 'Not stated');
   const hasMaturity     = !!(research?.businessMaturity && research.businessMaturity !== 'Unknown');
   const hasGrowthSignals = (research?.growthSignals?.length ?? 0) > 0;
@@ -232,9 +226,9 @@ function buildScoringEvidence(lead: Lead, research: CompanyResearch | null, prof
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
-export async function scoreLead(lead: Lead, profile?: SellerProfile | null): Promise<AIAnalysis> {
-  if (!import.meta.env.VITE_GROQ_API_KEY) {
-    throw new Error('Missing VITE_GROQ_API_KEY in .env file');
+export async function scoreLead(lead: Lead, userId: string, profile?: SellerProfile | null): Promise<AIAnalysis> {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error('Missing GROQ_API_KEY in environment');
   }
 
   // ── Step 1: Research website if it exists and not already researched ─────
@@ -243,7 +237,7 @@ export async function scoreLead(lead: Lead, profile?: SellerProfile | null): Pro
   if (lead.website && !research) {
     try {
       console.log('[AI] No existing research — fetching website intelligence first...');
-      research = await researchCompany(lead.website);
+      research = await researchCompany(lead.website, userId);
     } catch (err) {
       console.warn('[AI] Website research failed, continuing with form data only:', err);
       research = null;
@@ -312,13 +306,13 @@ Return ONLY this JSON, no markdown:
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
   // ── Step 4: Fire calls in parallel (skip outreach for Internal/Test) ──────
-  const groqPromises: Promise<string>[] = [callGroq(scorePrompt, 0.1)];
+  const groqPromises: Promise<string>[] = [callGroq(scorePrompt, userId, 0.1)];
 
   if (lead.companyType === 'Internal/Test') {
     console.log('[AI] Internal/Test — skipping outreach generation.');
     groqPromises.push(Promise.resolve(JSON.stringify({ email: '', linkedin: '', callScript: '' })));
   } else {
-    groqPromises.push(callGroq(outreachPrompt, 0.35));
+    groqPromises.push(callGroq(outreachPrompt, userId, 0.35));
   }
 
   const [scoreRaw, outreachRaw] = await Promise.all(groqPromises);
@@ -416,15 +410,15 @@ Return ONLY this JSON, no markdown:
     followUp,
     evidence,
     suggestedFollowUpDays,
-    analyzedAt: serverTimestamp(),
+    analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
     // Attach any auto-fetched research so caller can persist it
     ...(research && !lead.research ? { _freshResearch: research } : {}),
-  } as AIAnalysis & { _freshResearch?: CompanyResearch };
+  } as AIAnalysis & { _freshResearch?: CompanyKnowledge };
 }
 
-export async function regenerateOutreach(lead: Lead, profile?: SellerProfile | null): Promise<AIAnalysis['followUp']> {
-  if (!import.meta.env.VITE_GROQ_API_KEY) {
-    throw new Error('Missing VITE_GROQ_API_KEY in .env file');
+export async function regenerateOutreach(lead: Lead, userId: string, profile?: SellerProfile | null): Promise<AIAnalysis['followUp']> {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error('Missing GROQ_API_KEY in environment');
   }
 
   const research = lead.research ?? null;
@@ -437,7 +431,7 @@ export async function regenerateOutreach(lead: Lead, profile?: SellerProfile | n
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
-  const outreachRaw = await callGroq(outreachPrompt, 0.4);
+  const outreachRaw = await callGroq(outreachPrompt, userId, 0.4);
   let raw = (JSON.parse(outreachRaw) && typeof JSON.parse(outreachRaw) === 'object') ? JSON.parse(outreachRaw) : {};
   if (raw.outreach && typeof raw.outreach === 'object') {
     raw = raw.outreach;
@@ -467,7 +461,7 @@ export async function regenerateOutreach(lead: Lead, profile?: SellerProfile | n
 
 // ─── Layer 4: Notes Summarization ────────────────────────────────────────────
 
-export async function generateNotesSummary(notes: Note[]): Promise<string> {
+export async function generateNotesSummary(notes: Note[], userId: string): Promise<string> {
   if (!notes || notes.length === 0) return '';
 
   const notesText = notes.map(n => {
@@ -495,7 +489,7 @@ Example response:
 `;
 
   console.log('[AI SUMMARY] Generating summary for notes...');
-  const jsonStr = await callGroq(prompt, 0.1);
+  const jsonStr = await callGroq(prompt, userId, 0.1);
   console.log('[AI SUMMARY] Received response:', jsonStr);
 
   try {
@@ -509,7 +503,7 @@ Example response:
 
 // ─── Layer 5: AI Task Generation ─────────────────────────────────────────────
 
-export async function generateTasks(lead: Lead, sellerProfile?: SellerProfile | null): Promise<AITask[]> {
+export async function generateTasks(lead: Lead, userId: string, sellerProfile?: SellerProfile | null): Promise<AITask[]> {
   const analysis = lead.aiAnalysis;
   const research = lead.research;
   const notes = lead.notes?.slice(-3) ?? [];
@@ -565,7 +559,7 @@ Example:
 `;
 
   console.log('[AI TASKS] Generating tasks for:', lead.fullName);
-  const jsonStr = await callGroq(prompt, 0.3);
+  const jsonStr = await callGroq(prompt, userId, 0.3);
   console.log('[AI TASKS] Received response:', jsonStr);
 
   try {
@@ -598,7 +592,7 @@ export interface DealCoachResult {
   generatedAt: string;
 }
 
-export async function generateDealCoach(lead: Lead, sellerProfile?: SellerProfile | null): Promise<DealCoachResult> {
+export async function generateDealCoach(lead: Lead, userId: string, sellerProfile?: SellerProfile | null): Promise<DealCoachResult> {
   const research = lead.research ?? null;
   const analysis = lead.aiAnalysis ?? null;
   const notes = (lead.notes ?? []).slice(-5).map(n => `- [${n.type || 'Note'}] ${n.content}`).join('\n');
@@ -634,7 +628,7 @@ Return ONLY this JSON:
 `.trim();
 
   console.log('[AI DEAL COACH] Generating for:', lead.fullName);
-  const jsonStr = await callGroq(prompt, 0.2);
+  const jsonStr = await callGroq(prompt, userId, 0.2);
 
   try {
     const raw = JSON.parse(jsonStr);
@@ -650,5 +644,90 @@ Return ONLY this JSON:
   } catch (err) {
     console.error('[AI DEAL COACH] Failed to parse JSON:', err);
     throw new Error('Deal Coach AI returned an unexpected response. Please try again.');
+  }
+}
+
+export async function generateSingleOutreach(
+  type: 'email' | 'linkedin' | 'callScript',
+  lead: Lead,
+  userId: string,
+  profile?: SellerProfile | null
+): Promise<string> {
+  const research = lead.research ?? null;
+  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
+  const leadCtx    = buildLeadContext(lead);
+  const researchCtx = research
+    ? buildResearchContext(research)
+    : 'WEBSITE INTELLIGENCE: Not available.';
+
+  const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
+
+  let typePrompt = '';
+  if (type === 'email') {
+    typePrompt = `
+OUTREACH TASK: Write a casual, human-sounding sales outreach email from ${profile?.companyName ?? 'Arch Revenues'} to ${lead.fullName || 'the prospect'}.
+RULES:
+1. Max 80 words. No buzzwords or corporate jargon.
+2. Strictly follow this template:
+   Subject: [short, casual subject]
+
+   Hi [First Name],
+
+   [Observation: 1 short sentence about company context]
+
+   [Problem: 1 short sentence about a common challenge they face]
+
+   [Solution: 1 short sentence about how we help]
+
+   [CTA: casual question, e.g. "Open to a quick chat?"]
+
+   Best,
+   [Your Name]
+3. Return ONLY a JSON object: { "email": "<raw text of email matching template, escape newlines as \\n>" }
+    `.trim();
+  } else if (type === 'linkedin') {
+    typePrompt = `
+OUTREACH TASK: Write a short, highly personalized LinkedIn connection request message from ${profile?.companyName ?? 'Arch Revenues'} to ${lead.fullName || 'the prospect'}.
+RULES:
+1. Under 220 characters total. Direct, casual, and human.
+2. Reference one growth, hiring, or business signal.
+3. Return ONLY a JSON object: { "linkedin": "<raw text of message, escape newlines as \\n>" }
+    `.trim();
+  } else {
+    typePrompt = `
+OUTREACH TASK: Write a cold call script for calling ${lead.fullName || 'the prospect'} on behalf of ${profile?.companyName ?? 'Arch Revenues'}.
+RULES:
+1. Include Opener, Value Prop (ties their pain to our offer), and a low-friction CTA.
+2. No fake stats.
+3. Return ONLY a JSON object: { "callScript": "<OPENER: [opener]\\n\\nVALUE PROP: [value prop]\\n\\nCTA: [cta], escape newlines as \\n>" }
+    `.trim();
+  }
+
+  const prompt = `
+${sellerCtx}
+
+${leadCtx}
+
+${researchCtx}
+
+${hasRealResearch ? `
+INTEL:
+- Growth/Hiring: ${(research!.growthSignals ?? []).concat(research!.hiringSignals ?? []).slice(0, 2).join('; ')}
+- Pain Points: ${(research!.painPoints ?? []).slice(0, 2).join('; ')}
+- Pitch Angle: ${research!.recommendedPitch ?? ''}
+` : ''}
+
+${typePrompt}
+  `.trim();
+
+  const resContent = await callGroq(prompt, userId, 0.35);
+  try {
+    const raw = JSON.parse(resContent);
+    if (type === 'email') return raw.email || '';
+    if (type === 'linkedin') return raw.linkedin || '';
+    return raw.callScript || '';
+  } catch (err) {
+    console.error('Failed to parse single outreach JSON:', err);
+    throw new Error('AI returned an unexpected response. Please try again.');
   }
 }

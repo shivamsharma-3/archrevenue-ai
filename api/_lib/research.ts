@@ -1,14 +1,7 @@
 import Groq from 'groq-sdk';
-import { CompanyResearch } from './types';
-import { auth } from './firebase';
+import { CompanyKnowledge } from './types';
+import * as admin from 'firebase-admin';
 import { checkTokenLimit, incrementTokenUsage } from './usage';
-
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
-
-const groq = new Groq({
-  apiKey: GROQ_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
 
 // ─── HTML scraping helpers ────────────────────────────────────────────────────
 
@@ -63,10 +56,13 @@ function scrapeHtml(html: string): { title: string; metaDesc: string; text: stri
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
-export async function researchCompany(url: string): Promise<CompanyResearch> {
+export async function researchCompany(url: string, userId: string): Promise<CompanyKnowledge> {
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
   if (!GROQ_API_KEY) {
-    throw new Error('Missing VITE_GROQ_API_KEY in environment variables.');
+    throw new Error('Missing GROQ_API_KEY in environment variables.');
   }
+
+  const groq = new Groq({ apiKey: GROQ_API_KEY });
 
   let targetUrl = url.trim();
   if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
@@ -129,7 +125,6 @@ Return ONLY this JSON, no markdown, no code blocks:
 `.trim();
 
   // ── Step 3: Call Groq ────────────────────────────────────────────────────
-  const userId = auth.currentUser?.uid;
   if (userId) {
     await checkTokenLimit(userId);
   }
@@ -158,7 +153,7 @@ Return ONLY this JSON, no markdown, no code blocks:
     throw new Error('AI returned malformed research JSON');
   }
 
-  const result: CompanyResearch = {
+  const result: CompanyKnowledge = {
     industry: parsed.industry || 'Unknown',
     services: Array.isArray(parsed.services) ? parsed.services : [],
     summary: parsed.summary || '',

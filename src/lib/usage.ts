@@ -43,25 +43,6 @@ export async function checkTokenLimit(userId: string): Promise<void> {
  * Increments the token usage for the user.
  */
 export async function incrementTokenUsage(userId: string, newTokens: number): Promise<void> {
-  if (!userId || newTokens <= 0) return;
-
-  const usageRef = doc(db, 'users', userId, 'usage', 'tokens');
-  
-  try {
-    await updateDoc(usageRef, {
-      tokensUsed: increment(newTokens),
-      lastUpdated: serverTimestamp()
-    });
-  } catch (error: any) {
-    // If the document doesn't exist, set it.
-    if (error?.code === 'not-found') {
-      await setDoc(usageRef, {
-        tokensUsed: newTokens,
-        limit: DEFAULT_TOKEN_LIMIT,
-        lastUpdated: serverTimestamp()
-      });
-    } else {
-      console.error('Failed to increment token usage:', error);
-    }
-  }
+  // Token increments are now securely handled by the Firebase Cloud Functions backend.
+  console.log('[Usage] Token increment bypass — handled by secure backend.');
 }
