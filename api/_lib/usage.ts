@@ -1,5 +1,4 @@
-import * as admin from 'firebase-admin';
-import { db } from './firebase-admin';
+import { db, FieldValue } from './firebase-admin';
 
 export const DEFAULT_TOKEN_LIMIT = 50000;
 
@@ -21,7 +20,7 @@ export async function checkTokenLimit(userId: string): Promise<void> {
     await usageRef.set({
       tokensUsed: 0,
       limit: DEFAULT_TOKEN_LIMIT,
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      lastUpdated: FieldValue.serverTimestamp()
     });
     return;
   }
@@ -41,15 +40,15 @@ export async function incrementTokenUsage(userId: string, newTokens: number): Pr
   
   try {
     await usageRef.update({
-      tokensUsed: admin.firestore.FieldValue.increment(newTokens),
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      tokensUsed: FieldValue.increment(newTokens),
+      lastUpdated: FieldValue.serverTimestamp()
     });
   } catch (error: any) {
     if (error?.code === 5 || error?.message?.includes('NOT_FOUND')) {
       await usageRef.set({
         tokensUsed: newTokens,
         limit: DEFAULT_TOKEN_LIMIT,
-        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+        lastUpdated: FieldValue.serverTimestamp()
       });
     } else {
       console.error('Failed to increment token usage:', error);

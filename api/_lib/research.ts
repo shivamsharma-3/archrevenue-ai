@@ -153,7 +153,7 @@ Return ONLY this JSON, no markdown, no code blocks:
     throw new Error('AI returned malformed research JSON');
   }
 
-  const result: CompanyKnowledge = {
+  const result = {
     industry: parsed.industry || 'Unknown',
     services: Array.isArray(parsed.services) ? parsed.services : [],
     summary: parsed.summary || '',
@@ -166,7 +166,7 @@ Return ONLY this JSON, no markdown, no code blocks:
     recommendedPitch: parsed.recommendedPitch || '',
     confidenceLevel: parsed.confidenceLevel || 'Low',
     researchSource: fetchSucceeded ? 'website' : 'form-only',
-  };
+  } as unknown as CompanyKnowledge;
 
   return result;
 }

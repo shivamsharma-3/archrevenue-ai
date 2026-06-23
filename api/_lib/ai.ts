@@ -1,6 +1,6 @@
 import Groq from 'groq-sdk';
 import { Lead, AIAnalysis, CompanyKnowledge, ScoringEvidence, SellerProfile, Note, AITask, TaskStatus } from './types';
-import * as admin from 'firebase-admin';
+import { FieldValue } from './firebase-admin';
 import { researchCompany } from './research';
 import { checkTokenLimit, incrementTokenUsage } from './usage';
 
@@ -410,7 +410,7 @@ Return ONLY this JSON, no markdown:
     followUp,
     evidence,
     suggestedFollowUpDays,
-    analyzedAt: admin.firestore.FieldValue.serverTimestamp(),
+    analyzedAt: FieldValue.serverTimestamp(),
     // Attach any auto-fetched research so caller can persist it
     ...(research && !lead.research ? { _freshResearch: research } : {}),
   } as AIAnalysis & { _freshResearch?: CompanyKnowledge };
