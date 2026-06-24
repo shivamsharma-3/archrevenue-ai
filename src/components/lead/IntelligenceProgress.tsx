@@ -26,17 +26,19 @@ export const IntelligenceProgress: React.FC<IntelligenceProgressProps> = ({ work
 
   if (isWorkflowFinished && workflow.status === 'completed') {
     return (
-      <AppCard level={1} className="p-6 bg-emerald-50 border-emerald-200 mb-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-top-4">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-          <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+      <AppCard level={1} className="p-6 bg-emerald-50 border-emerald-200 mb-6 animate-in fade-in slide-in-from-top-4">
+        <div className="flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+            <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+          </div>
+          <h2 className="text-xl font-bold text-emerald-900 mb-2">Analysis Complete</h2>
+          <p className="text-emerald-700 font-medium mb-6" style={{ maxWidth: '480px' }}>
+            {workflow.summary}
+          </p>
+          <AppButton variant="primary" onClick={onDismiss} className="bg-emerald-600 hover:bg-emerald-700 text-white border-transparent">
+            View Intelligence Report
+          </AppButton>
         </div>
-        <h2 className="text-xl font-bold text-emerald-900 mb-2">Analysis Complete</h2>
-        <p className="text-emerald-700 font-medium w-full max-w-md mx-auto mb-6 text-center">
-          {workflow.summary}
-        </p>
-        <AppButton variant="primary" onClick={onDismiss} className="bg-emerald-600 hover:bg-emerald-700 text-white border-transparent">
-          View Intelligence Report
-        </AppButton>
       </AppCard>
     );
   }
