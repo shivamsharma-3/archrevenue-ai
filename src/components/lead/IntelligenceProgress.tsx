@@ -31,7 +31,7 @@ export const IntelligenceProgress: React.FC<IntelligenceProgressProps> = ({ work
           <CheckCircle2 className="w-8 h-8 text-emerald-600" />
         </div>
         <h2 className="text-xl font-bold text-emerald-900 mb-2">Analysis Complete</h2>
-        <p className="text-emerald-700 font-medium max-w-md mx-auto mb-6">
+        <p className="text-emerald-700 font-medium w-full max-w-md mx-auto mb-6 text-center">
           {workflow.summary}
         </p>
         <AppButton variant="primary" onClick={onDismiss} className="bg-emerald-600 hover:bg-emerald-700 text-white border-transparent">
