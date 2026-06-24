@@ -1,8 +1,8 @@
 import Groq from 'groq-sdk';
-import { Lead, AIAnalysis, CompanyKnowledge, ScoringEvidence, SellerProfile, Note, AITask, TaskStatus } from './types';
-import { FieldValue } from './firebase-admin';
-import { researchCompany } from './research';
-import { checkTokenLimit, incrementTokenUsage } from './usage';
+import { Lead, AIAnalysis, CompanyKnowledge, ScoringEvidence, SellerProfile, Note, AITask, TaskStatus } from './types.js';
+import { FieldValue } from './firebase-admin.js';
+import { researchCompany } from './research.js';
+import { checkTokenLimit, incrementTokenUsage } from './usage.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

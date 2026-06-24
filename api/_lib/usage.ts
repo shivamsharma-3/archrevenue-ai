@@ -1,4 +1,4 @@
-import { db, FieldValue } from './firebase-admin';
+import { db, FieldValue } from './firebase-admin.js';
 
 export const DEFAULT_TOKEN_LIMIT = 50000;
 

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { auth } from './firebase-admin';
+import { auth } from './firebase-admin.js';
 
 export async function verifyAuth(req: VercelRequest, res: VercelResponse): Promise<string | null> {
   const authHeader = req.headers.authorization;

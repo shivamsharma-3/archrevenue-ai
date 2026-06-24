@@ -1,6 +1,7 @@
+export const maxDuration = 60;
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { verifyAuth } from './_lib/auth';
-import { researchCompany } from './_lib/research';
+import { verifyAuth } from './_lib/auth.js';
+import { researchCompany } from './_lib/research.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

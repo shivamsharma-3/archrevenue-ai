@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk';
-import { CompanyKnowledge } from './types';
+import { CompanyKnowledge } from './types.js';
 import * as admin from 'firebase-admin';
-import { checkTokenLimit, incrementTokenUsage } from './usage';
+import { checkTokenLimit, incrementTokenUsage } from './usage.js';
 
 // ─── HTML scraping helpers ────────────────────────────────────────────────────
 
