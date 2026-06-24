@@ -75,21 +75,28 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
       const data: SellerProfile = {
         companyName:       profile.companyName   || '',
         primaryOffer:      profile.primaryOffer  || '',
-        website:           profile.website,
-        industry:          profile.industry,
-        description:       profile.description,
-        offerDescription:  profile.offerDescription,
+        website:           profile.website || '',
+        industry:          profile.industry || '',
+        description:       profile.description || '',
+        offerDescription:  profile.offerDescription || '',
         pricingModel:      profile.pricingModel,
-        startingPrice:     profile.startingPrice,
-        targetIndustry:    profile.targetIndustry,
-        targetCompanySize: profile.targetCompanySize,
-        targetRevenueRange: profile.targetRevenueRange,
-        targetGeography:   profile.targetGeography,
+        startingPrice:     profile.startingPrice || '',
+        targetIndustry:    profile.targetIndustry || '',
+        targetCompanySize: profile.targetCompanySize || '',
+        targetRevenueRange: profile.targetRevenueRange || '',
+        targetGeography:   profile.targetGeography || '',
         tone:              profile.tone,
         outreachStyle:     profile.outreachStyle,
-        ctaStyle:          profile.ctaStyle,
+        ctaStyle:          profile.ctaStyle || '',
         setupComplete:     true,
       };
+
+      // Firestore crashes if ANY field is exactly undefined.
+      Object.keys(data).forEach(key => {
+        if ((data as any)[key] === undefined) {
+          delete (data as any)[key];
+        }
+      });
       await saveProfile(auth.currentUser.uid, data);
       toast.success('Profile saved successfully!');
       posthog.capture('Wizard Completed', { industry: data.industry, pricingModel: data.pricingModel });
