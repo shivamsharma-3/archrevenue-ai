@@ -22,12 +22,8 @@ export async function checkTokenLimit(userId: string): Promise<void> {
   const snap = await getDoc(usageRef);
 
   if (!snap.exists()) {
-    // Initialize usage tracking if it doesn't exist
-    await setDoc(usageRef, {
-      tokensUsed: 0,
-      limit: DEFAULT_TOKEN_LIMIT,
-      lastUpdated: serverTimestamp()
-    });
+    // If usage tracking doesn't exist yet, assume 0 tokens used.
+    // The backend handles initialization and incrementing securely.
     return;
   }
 
