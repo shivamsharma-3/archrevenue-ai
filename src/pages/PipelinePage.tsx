@@ -11,8 +11,22 @@ import { AppButton } from '../components/ui/AppButton';
 
 export default function PipelinePage() {
   const {
-    leads, openDetailsPanel, handleScoreLead, aiScoringLoading, setIsModalOpen, setIsImportModalOpen, setEditingLead
+    leads, loading, openDetailsPanel, handleScoreLead, aiScoringLoading, setIsModalOpen, setIsImportModalOpen, setEditingLead
   } = useOutletContext<any>();
+
+  if (loading) {
+    return (
+      <Page>
+        <PageHeader title="Pipeline" />
+        <PageContent className="items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center justify-center space-y-4 text-text-tertiary">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <span className="text-[13px] font-medium">Loading pipeline...</span>
+          </div>
+        </PageContent>
+      </Page>
+    );
+  }
 
   if (leads.length === 0) {
     return (
@@ -61,12 +75,14 @@ export default function PipelinePage() {
       
       <div className="flex-1 min-h-0 rounded-[var(--radius-card)] border border-border-default shadow-sm bg-surface-card overflow-hidden flex flex-col relative mt-2">
         <div className="flex-1 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-2 w-full hide-scrollbar">
-          {['new', 'contacted', 'qualified', 'lost', 'won'].map((status, index) => (
+          {['new', 'contacted', 'qualified', 'meeting_booked', 'proposal', 'lost', 'won'].map((status, index) => (
             <div key={status} className={cn(
               "w-[85vw] sm:w-auto sm:flex-1 shrink-0 min-w-[260px] p-4 h-full flex flex-col snap-center relative overflow-hidden",
-              index !== 4 && "border-r border-border-default",
+              index !== 6 && "border-r border-border-default",
               status === 'won' ? 'bg-emerald-50/30' :
               status === 'lost' ? 'bg-red-50/30' :
+              status === 'proposal' ? 'bg-purple-50/30' :
+              status === 'meeting_booked' ? 'bg-teal-50/30' :
               status === 'qualified' ? 'bg-amber-50/30' :
               status === 'contacted' ? 'bg-indigo-50/30' :
               'bg-surface-secondary/50'
@@ -74,12 +90,14 @@ export default function PipelinePage() {
               <div className={cn("absolute inset-0 pointer-events-none opacity-50",
                 status === 'won' ? 'bg-gradient-to-b from-emerald-100/20 to-transparent' :
                 status === 'lost' ? 'bg-gradient-to-b from-red-100/20 to-transparent' :
+                status === 'proposal' ? 'bg-gradient-to-b from-purple-100/20 to-transparent' :
+                status === 'meeting_booked' ? 'bg-gradient-to-b from-teal-100/20 to-transparent' :
                 status === 'qualified' ? 'bg-gradient-to-b from-amber-100/20 to-transparent' :
                 status === 'contacted' ? 'bg-gradient-to-b from-indigo-100/20 to-transparent' :
                 'bg-gradient-to-b from-surface-secondary/50 to-transparent'
               )} />
               <h3 className="relative z-10 text-text-primary text-sm font-semibold uppercase tracking-wider mb-5 flex items-center justify-between">
-                <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                <span>{status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                 <span className="text-text-secondary bg-surface-background border border-border-default px-2.5 py-0.5 rounded-full text-xs font-semibold">
                   {leads.filter((l: Lead) => l.status === status).length}
                 </span>

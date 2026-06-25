@@ -113,7 +113,7 @@ export default function SettingsPage() {
     }
   };
 
-  const profileIsComplete = !!(sellerProfile?.companyName && sellerProfile?.primaryOffer);
+  const profileIsComplete = !!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer);
 
   const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) => (
     <button

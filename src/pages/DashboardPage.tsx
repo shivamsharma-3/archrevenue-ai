@@ -13,7 +13,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import MissionBriefing from '../components/MissionBriefing';
 import { 
   Plus, Upload, Search, MessageSquare, Calendar, FolderOpen,
-  DollarSign, Target, Activity, Clock
+  DollarSign, Target, Activity, Clock, Loader2
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -82,6 +82,17 @@ export default function DashboardPage() {
     };
   }, [leads]);
 
+  const recentActivities = useMemo(() => {
+    return leads.flatMap((lead: Lead) => 
+      (lead.activities || []).map(a => ({
+        id: a.id,
+        action: a.action,
+        company: lead.company || lead.fullName,
+        timestamp: a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp)
+      }))
+    ).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()).slice(0, 5);
+  }, [leads]);
+
   const fmtRev = (n: number) =>
     n >= 1000000 ? `$${(n / 1000000).toFixed(1)}M` :
     n >= 1000 ? `$${(n / 1000).toFixed(0)}K` : `$${n}`;
@@ -90,7 +101,21 @@ export default function DashboardPage() {
   const handleAddLead = () => { setEditingLead(null); setIsModalOpen(true); };
   const handleImport = () => setIsImportModalOpen(true);
 
-  if (!loading && leads.length === 0) {
+  if (loading) {
+    return (
+      <Page>
+        <PageHeader title="Command Center" />
+        <PageContent className="items-center justify-center min-h-[60vh]">
+          <div className="flex flex-col items-center justify-center space-y-4 text-text-tertiary">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <span className="text-[13px] font-medium">Loading command center...</span>
+          </div>
+        </PageContent>
+      </Page>
+    );
+  }
+
+  if (leads.length === 0) {
     return (
       <Page>
         <PageHeader title="Command Center" />
@@ -191,7 +216,7 @@ export default function DashboardPage() {
                       {getFollowUpStatus(lead) === 'overdue' && (
                         <AppBadge variant="danger">Overdue</AppBadge>
                       )}
-                      <AppButton variant="ghost" size="sm">Review</AppButton>
+                      <AppButton variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDetailsPanel(lead); }}>View Deal</AppButton>
                     </div>
                   </AppCard>
                 ))}
@@ -207,21 +232,16 @@ export default function DashboardPage() {
             <PageSection title="Activity Timeline" description="Recent business events and milestones.">
               <AppCard level={1}>
                 <div className="relative border-l border-border-default ml-3 space-y-6 pb-2">
-                  <div className="relative pl-6">
-                    <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-emerald-500 ring-4 ring-surface-card" />
-                    <p className="text-[13px] font-medium text-text-primary">Deal Advanced: Acme Corp</p>
-                    <p className="text-[12px] text-text-secondary mt-0.5">Moved to Proposal stage.</p>
-                  </div>
-                  <div className="relative pl-6">
-                    <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-surface-card" />
-                    <p className="text-[13px] font-medium text-text-primary">Lead Scored: TechFlow Inc</p>
-                    <p className="text-[12px] text-text-secondary mt-0.5">AI identified a peak buying window.</p>
-                  </div>
-                  <div className="relative pl-6">
-                    <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-amber-500 ring-4 ring-surface-card" />
-                    <p className="text-[13px] font-medium text-text-primary">Meeting Booked</p>
-                    <p className="text-[12px] text-text-secondary mt-0.5">Discovery call with Sarah Jenkins scheduled for tomorrow.</p>
-                  </div>
+                  {recentActivities.length > 0 ? recentActivities.map((activity, index) => (
+                    <div key={activity.id || index} className="relative pl-6">
+                      <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-indigo-500 ring-4 ring-surface-card" />
+                      <p className="text-[13px] font-medium text-text-primary">{activity.action}</p>
+                      <p className="text-[12px] text-text-secondary mt-0.5">{activity.company}</p>
+                      <p className="text-[10px] text-text-tertiary mt-0.5">{activity.timestamp.toLocaleDateString()} {activity.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
+                  )) : (
+                    <div className="pl-6 text-sm text-text-tertiary">No recent activity found.</div>
+                  )}
                 </div>
               </AppCard>
             </PageSection>
@@ -231,24 +251,21 @@ export default function DashboardPage() {
             {/* SECTION 3: Revenue Pipeline */}
             <PageSection title="Pipeline Health">
               <AppCard className="flex flex-col gap-5">
-                <div>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <span className="text-[12px] text-text-secondary font-medium">Win Rate</span>
-                    <span className="text-[14px] font-semibold text-text-primary">{closeRate}%</span>
-                  </div>
-                  <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${closeRate}%` }} />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <span className="text-[12px] text-text-secondary font-medium">Pipeline Coverage</span>
-                    <span className="text-[14px] font-semibold text-text-primary">3.2x</span>
-                  </div>
-                  <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: '75%' }} />
-                  </div>
-                </div>
+                {['new', 'contacted', 'qualified', 'meeting_booked', 'proposal'].map(status => {
+                  const count = leads.filter((l: Lead) => l.status === status).length;
+                  const pct = activePipeline > 0 ? Math.round((count / activePipeline) * 100) : 0;
+                  return (
+                    <div key={status}>
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-[12px] text-text-secondary font-medium capitalize">{status.replace('_', ' ')}</span>
+                        <span className="text-[14px] font-semibold text-text-primary">{count}</span>
+                      </div>
+                      <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </AppCard>
             </PageSection>
 

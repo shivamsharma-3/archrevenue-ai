@@ -50,7 +50,7 @@ export default function LeadsPage() {
     allVisibleSelected, someSelected,
     handleExportCsv, handleBulkDelete, handleDelete,
     handleStatusChange, handleScoreLead,
-    openDetailsPanel, openEditModal, setIsModalOpen, setEditingLead,
+    openDetailsPanel, openEditModal, setIsModalOpen, setEditingLead, setEmailingLead,
     aiScoringLoading, statusColors, search, setSearch, setIsImportModalOpen
   } = useOutletContext<any>();
 
@@ -197,13 +197,9 @@ export default function LeadsPage() {
               </button>
               <button
                 onClick={() => {
-                  openConfirm(
-                    "Delete Leads",
-                    `Are you sure you want to delete ${selectedLeads.size} leads? This action cannot be undone.`,
-                    "Delete Selected",
-                    true,
-                    () => handleBulkDelete()
-                  );
+                  if (window.confirm(`Are you sure you want to delete ${selectedLeads.size} leads? This action cannot be undone.`)) {
+                    handleBulkDelete();
+                  }
                 }}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm"
               >
@@ -222,7 +218,7 @@ export default function LeadsPage() {
         )}
 
         <div className="overflow-x-auto overflow-y-auto flex-1 relative z-10 hide-scrollbar">
-          <table className="w-full text-left text-sm whitespace-nowrap">
+          <table className="hidden md:table w-full text-left text-sm whitespace-nowrap">
             <thead className="border-b border-border-default text-[10px] uppercase font-bold text-text-tertiary tracking-[0.15em] sticky top-0 z-10 bg-surface-header backdrop-blur-md">
               <tr>
                 <th className="pl-5 pr-2 py-4 w-10">
@@ -416,7 +412,7 @@ export default function LeadsPage() {
                               {aiScoringLoading[lead.id!] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                             </button>
                             <button
-                              onClick={(e) => { e.stopPropagation(); openDetailsPanel(lead); }}
+                              onClick={(e) => { e.stopPropagation(); setEmailingLead(lead); }}
                               className="p-1.5 text-text-tertiary hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
                               title="Send Email"
                             >
@@ -434,13 +430,9 @@ export default function LeadsPage() {
                               onClick={(e) => { 
                                 e.stopPropagation(); 
                                 e.preventDefault();
-                                openConfirm(
-                                  "Delete Lead",
-                                  "Are you sure you want to delete this lead? This action cannot be undone.",
-                                  "Delete Lead",
-                                  true,
-                                  () => handleDelete(lead.id!)
-                                );
+                                if (window.confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
+                                  handleDelete(lead.id!);
+                                }
                               }}
                               className="p-1.5 text-text-tertiary hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               title="Delete"
@@ -456,6 +448,53 @@ export default function LeadsPage() {
               )}
             </tbody>
           </table>
+
+          {/* Mobile View */}
+          <div className="md:hidden flex flex-col p-4 space-y-3">
+            {loading ? (
+              [1, 2, 3].map(i => (
+                <div key={i} className="animate-pulse bg-surface-card border border-border-default rounded-xl p-4">
+                  <div className="h-4 bg-surface-secondary rounded w-1/2 mb-3" />
+                  <div className="h-3 bg-surface-secondary rounded w-1/3" />
+                </div>
+              ))
+            ) : filteredLeads.length === 0 ? (
+              <div className="py-12 flex justify-center">
+                <span className="text-sm text-text-secondary">No leads found</span>
+              </div>
+            ) : (
+              filteredLeads.map((lead: Lead) => (
+                <div key={lead.id} className="bg-surface-card border border-border-default rounded-xl p-4 flex flex-col gap-3 shadow-sm" onClick={() => openDetailsPanel(lead)}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-text-primary text-[14px]">{lead.fullName || 'Unknown'}</h3>
+                      {lead.company && <p className="text-text-secondary text-[12px] mt-0.5 flex items-center"><Building className="w-3 h-3 mr-1" />{lead.company}</p>}
+                    </div>
+                    {lead.aiAnalysis ? (
+                      <span className={cn(
+                        "px-2 py-0.5 rounded-lg text-[10px] font-bold border",
+                        lead.aiAnalysis.category === 'Hot' ? "bg-orange-50 text-orange-600 border-orange-200" :
+                        lead.aiAnalysis.category === 'Warm' ? "bg-amber-50 text-amber-600 border-amber-200" :
+                        "bg-indigo-50 text-indigo-600 border-indigo-200"
+                      )}>{lead.aiAnalysis.score} · {lead.aiAnalysis.category}</span>
+                    ) : (
+                      <button onClick={(e) => { e.stopPropagation(); handleScoreLead(lead); }} disabled={aiScoringLoading[lead.id!]} className="px-2 py-1 rounded-md border border-violet-200 text-violet-600 bg-violet-50 text-[10px] font-medium flex items-center">
+                        {aiScoringLoading[lead.id!] ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />} Analyze
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 pt-3 border-t border-border-default">
+                    <span className={cn("px-2 py-0.5 rounded-md text-[10px] font-semibold border uppercase", statusColors[lead.status] || "bg-surface-secondary text-text-secondary border-border-default")}>
+                      {lead.status}
+                    </span>
+                    <AppButton variant="secondary" size="sm" className="h-7 text-[11px] px-3" onClick={(e) => { e.stopPropagation(); openDetailsPanel(lead); }}>
+                      View HQ
+                    </AppButton>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
       </PageContent>

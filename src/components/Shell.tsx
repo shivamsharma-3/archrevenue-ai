@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { LayoutDashboard, Target, Users, Settings, HelpCircle, Bell, LogOut, X, CreditCard, ShieldCheck, TrendingUp, CheckCircle2, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Target, Users, Settings, HelpCircle, Bell, LogOut, X, CreditCard, ShieldCheck, TrendingUp, CheckCircle2, UserCircle, Menu } from 'lucide-react';
 import { cn } from '../lib/utils';
 import BrandLogo from './BrandLogo';
 import { auth } from '../lib/firebase';
@@ -16,10 +16,12 @@ interface ShellProps {
   hideSidebar?: boolean;
   profileComplete?: boolean;
   hasModal?: boolean;
+  recentActivities?: { id: string; title: string; subtitle: string; date: Date }[];
 }
 
-export default function Shell({ children, hideSidebar = false, onMenuChange, profileComplete = true, hasModal = false }: ShellProps) {
+export default function Shell({ children, hideSidebar = false, onMenuChange, profileComplete = true, hasModal = false, recentActivities = [] }: ShellProps) {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +60,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
     } else {
       navigate(`/${menu}`);
     }
+    setShowMobileMenu(false);
   };
 
   return (
@@ -231,14 +234,23 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
                       </button>
                     </div>
                     <div className="space-y-2">
-                      <div className="p-2.5 bg-surface-secondary hover:bg-surface-hover border border-border-default rounded-xl cursor-pointer transition-colors">
-                        <p className="text-xs font-medium text-text-primary mb-0.5">2 overdue follow-ups</p>
-                        <p className="text-[10px] text-text-tertiary">Pipeline needs attention</p>
-                      </div>
-                      <div className="p-2.5 bg-surface-secondary hover:bg-surface-hover border border-border-default rounded-xl cursor-pointer transition-colors">
-                        <p className="text-xs font-medium text-text-primary mb-0.5">1 email reply</p>
-                        <p className="text-[10px] text-text-tertiary">From Sarah at TechCorp</p>
-                      </div>
+                      {recentActivities.length > 0 ? (
+                        recentActivities.slice(0, 5).map((activity, i) => (
+                          <div key={activity.id || i} className="p-2.5 bg-surface-secondary hover:bg-surface-hover border border-border-default rounded-xl cursor-pointer transition-colors">
+                            <div className="flex justify-between items-start mb-0.5">
+                              <p className="text-xs font-medium text-text-primary pr-2">{activity.title}</p>
+                            </div>
+                            <p className="text-[10px] text-text-tertiary">{activity.subtitle}</p>
+                            <p className="text-[9px] text-text-tertiary mt-1 opacity-60">
+                              {activity.date.toLocaleDateString()} {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center">
+                          <p className="text-xs text-text-tertiary font-medium">No new intelligence</p>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -277,17 +289,59 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
               <Users className="w-5 h-5 mb-1" />
               <span className="text-[10px] font-medium">Directory</span>
             </button>
-            <button onClick={() => handleNavigation('billing')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'billing' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
-              <CreditCard className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-medium">Billing</span>
+            <button onClick={() => handleNavigation('insights')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'insights' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
+              <TrendingUp className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Insights</span>
             </button>
-            <button onClick={() => handleNavigation('settings')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'settings' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
-              <Settings className="w-5 h-5 mb-1" />
-              <span className="text-[10px] font-medium">Settings</span>
+            <button onClick={() => setShowMobileMenu(true)} className="flex flex-col items-center p-2 rounded-xl transition-all text-text-tertiary hover:text-text-secondary">
+              <Menu className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Menu</span>
             </button>
           </div>
         </div>
         )}
+
+        {/* Mobile Full Screen Menu */}
+        <AnimatePresence>
+          {showMobileMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-0 z-[100] bg-surface-background flex flex-col md:hidden"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-border-default bg-surface-card">
+                <span className="font-semibold text-text-primary text-lg">Menu</span>
+                <button onClick={() => setShowMobileMenu(false)} className="p-2 text-text-secondary rounded-lg bg-surface-hover">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {!profileComplete && (
+                  <button onClick={() => handleNavigation('profile')} className="w-full flex items-center p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 mb-4 font-semibold">
+                    <UserCircle className="w-5 h-5 mr-3 text-amber-500" /> Complete Profile
+                  </button>
+                )}
+                <button onClick={() => handleNavigation('settings')} className="w-full flex items-center p-4 bg-surface-card border border-border-default rounded-xl font-medium text-text-secondary">
+                  <Settings className="w-5 h-5 mr-3 text-text-primary" /> Settings
+                </button>
+                <button onClick={() => handleNavigation('billing')} className="w-full flex items-center p-4 bg-surface-card border border-border-default rounded-xl font-medium text-text-secondary">
+                  <CreditCard className="w-5 h-5 mr-3 text-text-primary" /> Billing
+                </button>
+                <button onClick={() => handleNavigation('help')} className="w-full flex items-center p-4 bg-surface-card border border-border-default rounded-xl font-medium text-text-secondary">
+                  <HelpCircle className="w-5 h-5 mr-3 text-text-primary" /> Help Center
+                </button>
+                <button onClick={() => { setShowMobileMenu(false); setShowNotifications(true); }} className="w-full flex items-center p-4 bg-surface-card border border-border-default rounded-xl font-medium text-text-secondary">
+                  <Bell className="w-5 h-5 mr-3 text-text-primary" /> Intelligence Feed
+                </button>
+                <button onClick={() => { handleLogout(); setShowMobileMenu(false); }} className="w-full flex items-center p-4 bg-rose-50 border border-rose-100 rounded-xl font-medium text-rose-600 mt-4">
+                  <LogOut className="w-5 h-5 mr-3" /> Sign Out
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Global Beta Feedback Widget for Authenticated Users */}

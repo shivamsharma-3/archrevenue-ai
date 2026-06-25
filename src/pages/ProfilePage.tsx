@@ -62,7 +62,7 @@ export default function ProfilePage() {
       id: 'profile',
       title: 'Complete Company Profile',
       description: 'Tell AI about your company, product, and target customer to personalise all outreach and scoring.',
-      isComplete: !!(sellerProfile?.companyName && sellerProfile?.primaryOffer),
+      isComplete: !!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer),
       icon: Building,
       color: 'indigo',
       actionText: 'Go to Settings',

@@ -124,12 +124,14 @@ export default function AppLayout() {
       const unsubscribe = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
           setSellerProfile({ id: docSnap.id, ...(docSnap.data() as any) } as SellerProfile);
-        } else {
+        } else if (!localStorage.getItem('profileDismissed')) {
           setShowProfileWizard(true);
         }
       }, (error) => {
         console.error("Error fetching seller profile:", error);
-        setShowProfileWizard(true);
+        if (!localStorage.getItem('profileDismissed')) {
+          setShowProfileWizard(true);
+        }
       });
       return () => unsubscribe();
     }, []);
@@ -262,6 +264,11 @@ export default function AppLayout() {
 
   const handleScoreLead = async (lead: Lead) => {
     if (!lead.id) return;
+    if (lead.aiAnalysis) {
+      if (!window.confirm("This lead has already been scored. Re-scoring will overwrite the existing score. Continue?")) {
+        return;
+      }
+    }
     setAiScoringLoading(prev => ({ ...prev, [lead.id!]: true }));
     try {
       const analysis = await scoreLead(lead);
@@ -428,11 +435,21 @@ export default function AppLayout() {
     filteredLeads, visibleIds, allVisibleSelected, someSelected, statusColors, stats, winRate
   };
 
-  const profileComplete = !!(sellerProfile?.companyName && sellerProfile?.primaryOffer);
-  const hasModal = isModalOpen || isImportModalOpen || isDetailsPanelOpen || showProfileWizard || !!emailingLead;
+  const profileComplete = !!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer);
+  const recentActivities = leads.flatMap(lead => 
+    (lead.activities || []).map(a => {
+      const dateObj = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+      return {
+        id: a.id,
+        title: a.action,
+        subtitle: lead.fullName,
+        date: dateObj
+      };
+    })
+  ).sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
 
   return (
-    <Shell profileComplete={profileComplete} hasModal={hasModal}>
+    <Shell activeMenu="dashboard" onMenuChange={() => {}} profileComplete={profileComplete} hasModal={isImportModalOpen || isModalOpen || showProfileWizard} recentActivities={recentActivities}>
       <Outlet context={contextValue} />
       
       {/* Modals and Overlays (Imported from AppLayout) */}
@@ -463,7 +480,10 @@ export default function AppLayout() {
           <CompanyProfileWizard
             isOpen={showProfileWizard}
             onComplete={(profile) => { setSellerProfile(profile); setShowProfileWizard(false); }}
-            onSkip={() => setShowProfileWizard(false)}
+            onSkip={() => {
+              localStorage.setItem('profileDismissed', 'true');
+              setShowProfileWizard(false);
+            }}
             initialData={sellerProfile}
           />
         )}

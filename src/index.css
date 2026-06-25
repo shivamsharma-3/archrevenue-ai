@@ -1,9 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Inter-fallback";
+  size-adjust: 107.5%;
+  ascent-override: 90%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+  src: local("Arial");
+}
+
+@font-face {
+  font-family: "Outfit-fallback";
+  size-adjust: 104%;
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  src: local("Arial");
+}
+
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", "Inter-fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", "Outfit-fallback", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* Surface Colors */

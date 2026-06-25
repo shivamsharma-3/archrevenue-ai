@@ -51,7 +51,15 @@ export const LeadHeader = memo(({ lead, onStatusChange, onAnalyze, isAnalyzing }
       <div className="flex items-end gap-4 shrink-0">
         <AppButton 
           variant="primary" 
-          onClick={onAnalyze} 
+          onClick={() => {
+            if (lead.aiAnalysis) {
+              if (window.confirm("This account has already been analyzed. Re-running will overwrite the existing score and strategy. Continue?")) {
+                onAnalyze();
+              }
+            } else {
+              onAnalyze();
+            }
+          }} 
           disabled={isAnalyzing}
           className="shadow-sm bg-indigo-600 hover:bg-indigo-700 text-white h-10"
         >
@@ -76,6 +84,8 @@ export const LeadHeader = memo(({ lead, onStatusChange, onAnalyze, isAnalyzing }
               <option value="new">New Lead</option>
               <option value="contacted">Contacted</option>
               <option value="qualified">Qualified</option>
+              <option value="meeting_booked">Meeting Booked</option>
+              <option value="proposal">Proposal</option>
               <option value="lost">Lost</option>
               <option value="won">Won</option>
             </select>
