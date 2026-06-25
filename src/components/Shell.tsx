@@ -20,9 +20,7 @@ interface ShellProps {
 }
 
 export default function Shell({ children, hideSidebar = false, onMenuChange, profileComplete = true, hasModal = false, recentActivities = [] }: ShellProps) {
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const notificationsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const activeMenu = location.pathname === '/dashboard' ? 'dashboard' : location.pathname === '/pipeline' ? 'pipeline' : location.pathname === '/leads' ? 'directory' : location.pathname === '/settings' ? 'settings' : location.pathname === '/billing' ? 'billing' : location.pathname === '/help' ? 'help' : location.pathname === '/insights' ? 'insights' : '';
@@ -32,15 +30,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
   const isNearingLimit = usagePercent > 85;
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (showNotifications && notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showNotifications]);
+
 
   const handleLogout = () => {
     auth.signOut();
@@ -186,7 +176,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
               <span>Help Center</span>
             </button>
 
-            <div className="relative" ref={notificationsRef}>
+            <div className="relative">
               <div className="flex items-center justify-between p-2 bg-surface-secondary border border-border-default rounded-[var(--radius-card)] hover:border-border-hover transition-colors group cursor-pointer">
                 <div className="flex items-center min-w-0 flex-1 hover:bg-surface-hover p-1 -m-1 rounded-xl transition-colors" onClick={() => navigate('/profile')}>
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 p-[1px] mr-2.5 flex-shrink-0">
@@ -202,59 +192,13 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
                   </div>
                 </div>
                 <div className="flex items-center flex-shrink-0 pr-1 space-x-0.5">
-                  <button 
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className={cn("p-1.5 transition-all relative rounded-[var(--radius-button)]", showNotifications ? "text-blue-600 bg-blue-50 shadow-sm" : "text-text-tertiary hover:text-text-primary hover:bg-surface-hover")} 
-                    title="Intelligence Feed"
-                  >
-                    <Bell className="w-4 h-4" />
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full border-2 border-surface-card" />
-                  </button>
+
                   <button onClick={handleLogout} className="p-1.5 text-text-tertiary hover:text-rose-500 hover:bg-rose-50 rounded-[var(--radius-button)] transition-colors" title="Sign Out">
                     <LogOut className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-              
-              <AnimatePresence>
-                {showNotifications && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="fixed bottom-24 left-6 w-64 bg-surface-card border border-border-default shadow-xl rounded-[var(--radius-card)] p-4 z-[100]"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <h4 className="text-sm font-semibold text-text-primary">Intelligence Feed</h4>
-                        <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">3 New</span>
-                      </div>
-                      <button onClick={() => setShowNotifications(false)} className="p-1 text-text-tertiary hover:text-text-primary rounded-md hover:bg-surface-hover transition-colors">
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {recentActivities.length > 0 ? (
-                        recentActivities.slice(0, 5).map((activity, i) => (
-                          <div key={activity.id || i} className="p-2.5 bg-surface-secondary hover:bg-surface-hover border border-border-default rounded-xl cursor-pointer transition-colors">
-                            <div className="flex justify-between items-start mb-0.5">
-                              <p className="text-xs font-medium text-text-primary pr-2">{activity.title}</p>
-                            </div>
-                            <p className="text-[10px] text-text-tertiary">{activity.subtitle}</p>
-                            <p className="text-[9px] text-text-tertiary mt-1 opacity-60">
-                              {activity.date.toLocaleDateString()} {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="p-4 text-center">
-                          <p className="text-xs text-text-tertiary font-medium">No new intelligence</p>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+
             </div>
             
             <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 justify-center text-[10px] font-medium text-text-tertiary">
@@ -332,9 +276,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
                 <button onClick={() => handleNavigation('help')} className="w-full flex items-center p-4 bg-surface-card border border-border-default rounded-xl font-medium text-text-secondary">
                   <HelpCircle className="w-5 h-5 mr-3 text-text-primary" /> Help Center
                 </button>
-                <button onClick={() => { setShowMobileMenu(false); setShowNotifications(true); }} className="w-full flex items-center p-4 bg-surface-card border border-border-default rounded-xl font-medium text-text-secondary">
-                  <Bell className="w-5 h-5 mr-3 text-text-primary" /> Intelligence Feed
-                </button>
+
                 <button onClick={() => { handleLogout(); setShowMobileMenu(false); }} className="w-full flex items-center p-4 bg-rose-50 border border-rose-100 rounded-xl font-medium text-rose-600 mt-4">
                   <LogOut className="w-5 h-5 mr-3" /> Sign Out
                 </button>
