@@ -269,7 +269,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <div className="relative z-20 h-screen overflow-y-auto overflow-x-hidden flex flex-col pb-16 md:pb-0 scroll-smooth">
+        <div className="relative h-screen overflow-y-auto overflow-x-hidden flex flex-col pb-16 md:pb-0 scroll-smooth">
           {children}
         </div>
 
