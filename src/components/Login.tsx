@@ -13,6 +13,10 @@ interface LoginProps {
 import BrandLogo from './BrandLogo';
 
 export default function Login({ onLoginSuccess, initialIsRegistering = false }: LoginProps) {
+  const [isRegistering, setIsRegistering] = useState(initialIsRegistering);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError(null);

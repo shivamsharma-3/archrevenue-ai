@@ -10,6 +10,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth, handleRedirectResult } from './lib/firebase';
 import * as Sentry from '@sentry/react';
 import posthog from 'posthog-js';
+import { Analytics } from "@vercel/analytics/react";
 import LandingPage from './pages/LandingPage';
 import Login from './components/Login';
 import AppLayout from './layouts/AppLayout';
@@ -122,6 +123,7 @@ export default function App() {
           duration: 4000,
         }} 
       />
+      <Analytics />
     </BrowserRouter>
   );
 }
