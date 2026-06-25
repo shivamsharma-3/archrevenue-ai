@@ -395,9 +395,14 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                 </AppButton>
               )}
               {!isLastStep ? (
-                <AppButton variant="primary" onClick={goNext} rightIcon={<ChevronRight className="w-4 h-4" />}>
-                  Next
-                </AppButton>
+                <>
+                  <AppButton variant="secondary" onClick={handleSave} isLoading={saving}>
+                    Save & Close
+                  </AppButton>
+                  <AppButton variant="primary" onClick={goNext} rightIcon={<ChevronRight className="w-4 h-4" />}>
+                    Next
+                  </AppButton>
+                </>
               ) : (
                 <AppButton variant="primary" onClick={handleSave} isLoading={saving}>
                   {initialData ? 'Save Changes' : 'Complete Setup'}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { collection, query, where, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, arrayUnion } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy, arrayUnion, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
 import { Lead, LeadStatus, OperationType, SellerProfile } from '../lib/types';
@@ -480,9 +480,13 @@ export default function AppLayout() {
           <CompanyProfileWizard
             isOpen={showProfileWizard}
             onComplete={(profile) => { setSellerProfile(profile); setShowProfileWizard(false); }}
-            onSkip={() => {
+            onSkip={async () => {
               localStorage.setItem('profileDismissed', 'true');
               setShowProfileWizard(false);
+              if (auth.currentUser) {
+                const docRef = doc(db, 'users', auth.currentUser.uid, 'profile', 'main');
+                await setDoc(docRef, { setupComplete: false, profileDismissed: true }, { merge: true });
+              }
             }}
             initialData={sellerProfile}
           />
