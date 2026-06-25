@@ -6,6 +6,8 @@ import {
   signInWithRedirect,
   getRedirectResult,
   signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
@@ -58,6 +60,14 @@ export const loginWithGoogle = async () => {
     console.error('Google sign-in error:', error);
     throw error;
   }
+};
+
+export const registerWithEmail = (email: string, pass: string) => {
+  return createUserWithEmailAndPassword(auth, email, pass);
+};
+
+export const loginWithEmail = (email: string, pass: string) => {
+  return signInWithEmailAndPassword(auth, email, pass);
 };
 
 /**

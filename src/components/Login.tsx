@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, ArrowRight, Sparkles, BarChart3, Users } from 'lucide-react';
-import { loginWithGoogle, auth } from '../lib/firebase';
+import { loginWithGoogle, auth, registerWithEmail, loginWithEmail } from '../lib/firebase';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -16,6 +16,29 @@ export default function Login({ onLoginSuccess, initialIsRegistering = false }: 
   const [isRegistering, setIsRegistering] = useState(initialIsRegistering);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      if (isRegistering) {
+        await registerWithEmail(email, password);
+      } else {
+        await loginWithEmail(email, password);
+      }
+      onLoginSuccess();
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed.');
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -122,18 +145,67 @@ export default function Login({ onLoginSuccess, initialIsRegistering = false }: 
             </p>
           </div>
           
-          <div className="space-y-6">
+          <form onSubmit={handleEmailAuth} className="space-y-4">
             {error && (
-              <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center">
+              <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center mb-2">
                 {error}
               </div>
             )}
+
+            <div>
+              <label className="block text-[13px] font-medium text-text-secondary mb-1.5 ml-1">Email Address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className="h-4 w-4 text-text-tertiary" />
+                </div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/[0.06] rounded-xl text-[14px] text-white placeholder-text-tertiary focus:outline-none focus:ring-1 focus:ring-[#6366f1] focus:border-[#6366f1] transition-all"
+                  placeholder="you@company.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-medium text-text-secondary mb-1.5 ml-1">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className="h-4 w-4 text-text-tertiary" />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="block w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/[0.06] rounded-xl text-[14px] text-white placeholder-text-tertiary focus:outline-none focus:ring-1 focus:ring-[#6366f1] focus:border-[#6366f1] transition-all"
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center py-[14px] px-4 rounded-xl text-[15px] font-medium text-white bg-[#6366f1] hover:bg-[#5355e1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0b] focus:ring-[#6366f1] disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-6"
+            >
+              {isLoading ? 'Processing...' : (isRegistering ? 'Create Account' : 'Sign In')}
+            </button>
+
+            <div className="relative flex items-center py-4">
+              <div className="flex-grow border-t border-white/[0.06]"></div>
+              <span className="flex-shrink-0 mx-4 text-text-tertiary text-xs">OR</span>
+              <div className="flex-grow border-t border-white/[0.06]"></div>
+            </div>
             
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="w-full flex items-center justify-center py-[14px] px-4 rounded-xl text-[15px] font-medium text-black bg-surface-card hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0b] focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-6"
+              className="w-full flex items-center justify-center py-[14px] px-4 rounded-xl text-[15px] font-medium text-black bg-surface-card hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0a0a0b] focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <svg className="w-5 h-5 mr-3 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -144,7 +216,7 @@ export default function Login({ onLoginSuccess, initialIsRegistering = false }: 
               <span>{isLoading ? 'Processing...' : (isRegistering ? 'Sign up with Google' : 'Sign in with Google')}</span>
             </button>
             
-            <div className="mt-8 text-center">
+            <div className="mt-8 text-center pt-2">
               <span className="text-text-tertiary text-[13px] font-medium">
                 {isRegistering ? 'Already have an account? ' : "Don't have access? "}
               </span>
@@ -156,7 +228,7 @@ export default function Login({ onLoginSuccess, initialIsRegistering = false }: 
                 {isRegistering ? 'Sign In' : 'Request an account'}
               </button>
             </div>
-          </div>
+          </form>
 
         </motion.div>
 
