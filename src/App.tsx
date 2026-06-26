@@ -110,6 +110,7 @@ export default function App() {
       </Routes>
       <Toaster 
         position="bottom-right" 
+        containerStyle={{ zIndex: 99999 }}
         toastOptions={{ 
           className: '!bg-surface-card/90 !backdrop-blur-xl !border !border-border-default/60 !shadow-[0_8px_30px_rgb(0,0,0,0.08)] !text-text-primary !rounded-2xl !font-sans !px-5 !py-4',
           success: {

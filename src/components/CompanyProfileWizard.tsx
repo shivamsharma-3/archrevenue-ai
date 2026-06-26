@@ -67,8 +67,10 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
 
   const handleSave = async () => {
     if (!auth.currentUser) return;
-    if (!profile.companyName?.trim()) { toast.error('Company name is required.'); return; }
-    if (!profile.primaryOffer?.trim()) { toast.error('Primary offer is required.'); return; }
+    if (!profile.companyName?.trim() && !profile.primaryOffer?.trim()) { 
+      toast.error('Please provide at least a Company Name or Primary Offer to save.'); 
+      return; 
+    }
 
     setSaving(true);
     try {
