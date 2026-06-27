@@ -10,6 +10,7 @@ import { deleteUser } from 'firebase/auth';
 import CompanyProfileWizard from '../components/CompanyProfileWizard';
 import { Page, PageHeader, PageContent, PageSection } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
+import { AppModal } from '../components/ui/AppModal';
 
 // ─── MAIN SETTINGS PAGE ──────────────────────────────────────────────────────
 
@@ -28,6 +29,7 @@ export default function SettingsPage() {
   const [calendarConnecting, setCalendarConnecting] = useState(false);
   const [showProfileWizard, setShowProfileWizard] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'leads' | 'account' | null }>({ isOpen: false, type: null });
 
   // Notification prefs (local only for now)
   const [notifEmailDigest, setNotifEmailDigest] = useState(() => localStorage.getItem('notif_email_digest') !== 'false');
@@ -97,11 +99,15 @@ export default function SettingsPage() {
     toast.success('Data exported successfully');
   };
 
-  const handleDeleteAllLeads = async () => {
+  const promptDeleteAllLeads = () => {
+    if (!leads?.length) return;
+    setConfirmModal({ isOpen: true, type: 'leads' });
+  };
+
+  const executeDeleteAllLeads = async () => {
     if (!auth.currentUser) return;
-    const confirmed = window.confirm(`Are you sure you want to delete ALL ${leads?.length || 0} leads? This cannot be undone.`);
-    if (!confirmed) return;
     setDeletingData(true);
+    setConfirmModal({ isOpen: false, type: null });
     try {
       const q = query(collection(db, 'leads'), where('userId', '==', auth.currentUser.uid));
       const snap = await getDocs(q);
@@ -114,14 +120,15 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
+  const promptDeleteAccount = () => {
+    setConfirmModal({ isOpen: true, type: 'account' });
+  };
+
+  const executeDeleteAccount = async () => {
     const user = auth.currentUser;
     if (!user) return;
-    const confirmed = window.confirm(
-      'Are you absolutely sure you want to delete your entire account? This will permanently delete your user profile, all leads, and remove your login access. This action CANNOT be undone.'
-    );
-    if (!confirmed) return;
     setDeletingData(true);
+    setConfirmModal({ isOpen: false, type: null });
     try {
       // 1. Delete all leads
       const q = query(collection(db, 'leads'), where('userId', '==', user.uid));
@@ -339,9 +346,9 @@ export default function SettingsPage() {
                 </div>
                 <AppButton
                   variant="danger"
-                  onClick={handleDeleteAllLeads}
+                  onClick={promptDeleteAllLeads}
                   disabled={deletingData || !leads?.length}
-                  isLoading={deletingData}
+                  isLoading={deletingData && confirmModal.type === 'leads'}
                   leftIcon={<Trash2 className="w-4 h-4" />}
                 >
                   Delete All Leads
@@ -354,9 +361,9 @@ export default function SettingsPage() {
                 </div>
                 <AppButton
                   variant="danger"
-                  onClick={handleDeleteAccount}
+                  onClick={promptDeleteAccount}
                   disabled={deletingData}
-                  isLoading={deletingData}
+                  isLoading={deletingData && confirmModal.type === 'account'}
                   leftIcon={<Trash2 className="w-4 h-4" />}
                 >
                   Delete Account
@@ -377,6 +384,45 @@ export default function SettingsPage() {
           initialData={sellerProfile}
         />
       )}
+
+      {/* Danger Zone Confirmation Modal */}
+      <AppModal 
+        isOpen={confirmModal.isOpen} 
+        onClose={() => !deletingData && setConfirmModal({ isOpen: false, type: null })}
+        maxWidth="sm"
+      >
+        <div className="flex flex-col items-center text-center pt-4 pb-2">
+          <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mb-4 border border-rose-200">
+            <AlertTriangle className="w-6 h-6 text-rose-600" />
+          </div>
+          <h3 className="text-lg font-bold text-text-primary mb-2">
+            {confirmModal.type === 'leads' ? 'Delete All Leads?' : 'Delete Account?'}
+          </h3>
+          <p className="text-sm text-text-secondary mb-8 leading-relaxed">
+            {confirmModal.type === 'leads' 
+              ? `Are you sure you want to delete ALL ${leads?.length || 0} leads from your workspace? This action cannot be undone and will permanently remove all associated intelligence data.`
+              : 'Are you absolutely sure you want to delete your entire account? This will permanently delete your user profile, all leads, and remove your login access. This action CANNOT be undone.'}
+          </p>
+          <div className="flex items-center gap-3 w-full">
+            <AppButton 
+              className="flex-1"
+              variant="secondary"
+              onClick={() => setConfirmModal({ isOpen: false, type: null })}
+              disabled={deletingData}
+            >
+              Cancel
+            </AppButton>
+            <AppButton 
+              className="flex-1"
+              variant="danger"
+              onClick={confirmModal.type === 'leads' ? executeDeleteAllLeads : executeDeleteAccount}
+              isLoading={deletingData}
+            >
+              {confirmModal.type === 'leads' ? 'Delete All Leads' : 'Delete Account'}
+            </AppButton>
+          </div>
+        </div>
+      </AppModal>
     </>
   );
 }
