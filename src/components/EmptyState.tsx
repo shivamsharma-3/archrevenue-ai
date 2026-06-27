@@ -25,13 +25,13 @@ export function EmptyState({
       <div className="w-16 h-16 rounded-2xl bg-surface-secondary border border-border-default flex items-center justify-center mb-6 shadow-sm">
         <Icon className="w-8 h-8 text-text-tertiary" />
       </div>
-      <h3 className="text-lg font-semibold text-text-primary mb-2">{title}</h3>
-      <p className="text-sm text-text-tertiary max-w-sm mb-8 leading-relaxed">
+      <h3 className="text-lg font-semibold text-text-primary mb-2 w-full">{title}</h3>
+      <p className="text-sm text-text-tertiary w-full max-w-sm mb-8 leading-relaxed">
         {description}
       </p>
       
       {(actionLabel || secondaryActionLabel) && (
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-center w-full gap-3">
           {actionLabel && onAction && (
             <button
               onClick={onAction}
