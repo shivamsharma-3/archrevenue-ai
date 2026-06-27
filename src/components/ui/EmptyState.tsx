@@ -20,26 +20,33 @@ export function EmptyState({
   return (
     <div 
       className={cn(
-        "w-full flex flex-col items-center justify-center p-12 text-center rounded-card border border-dashed border-border-default bg-surface-secondary/50",
+        "w-full flex flex-col items-center justify-center p-12 sm:p-16 text-center rounded-[24px] border border-border-default bg-surface-card shadow-sm relative overflow-hidden",
         className
       )}
       {...props}
     >
+      <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/[0.03] to-transparent pointer-events-none" />
+      
       {icon && (
-        <div className="w-12 h-12 rounded-full bg-surface-card border border-border-default flex items-center justify-center mb-4 text-text-tertiary shadow-sm">
-          {icon}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full" />
+          <div className="relative w-16 h-16 rounded-2xl bg-surface-background border border-border-default flex items-center justify-center text-indigo-500 shadow-md">
+            {icon}
+          </div>
         </div>
       )}
-      <h3 className="text-[14px] font-semibold text-text-primary mb-1">
+      <h3 className="relative text-[18px] font-bold text-text-primary mb-3 tracking-tight">
         {title}
       </h3>
       {description && (
-        <p className="text-[13px] text-text-secondary max-w-[380px] w-full mx-auto mb-6">
+        <p className="relative text-[14px] text-text-secondary max-w-[420px] w-full mx-auto mb-8 leading-relaxed">
           {description}
         </p>
       )}
       {action && (
-        <div>{action}</div>
+        <div className="relative z-10 w-full flex justify-center">
+          {action}
+        </div>
       )}
     </div>
   );
