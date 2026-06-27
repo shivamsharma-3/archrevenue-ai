@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { getFollowUpStatus } from '../lib/utils';
-import { EmptyState } from '../components/EmptyState';
+import { EmptyState } from '../components/ui/EmptyState';
 import { Page, PageHeader, PageActions, PageContent } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
@@ -263,11 +263,16 @@ export default function LeadsPage() {
                 <tr>
                   <td colSpan={7} className="px-8 py-24">
                     <EmptyState
-                      icon={Users}
+                      icon={<Users className="w-5 h-5" />}
                       title="No leads found"
                       description="Create a new lead or clear your active filters to see results here."
-                      actionLabel="Add First Lead"
-                      onAction={() => { setEditingLead(null); setIsModalOpen(true); }}
+                      action={
+                        <div className="mt-2 flex justify-center">
+                          <AppButton variant="primary" onClick={() => { setEditingLead(null); setIsModalOpen(true); }}>
+                            Add First Lead
+                          </AppButton>
+                        </div>
+                      }
                     />
                   </td>
                 </tr>

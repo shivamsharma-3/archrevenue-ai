@@ -4,7 +4,7 @@ import { Lead } from '../lib/types';
 import { Building, Sparkles, Loader2, Users, Plus } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { getFollowUpStatus } from '../lib/utils';
-import { EmptyState } from '../components/EmptyState';
+import { EmptyState } from '../components/ui/EmptyState';
 import { PipelineAnalytics } from '../components/PipelineAnalytics';
 import { Page, PageHeader, PageActions, PageContent } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
@@ -34,13 +34,19 @@ export default function PipelinePage() {
         <PageHeader title="Pipeline" />
         <PageContent className="items-center justify-center min-h-[60vh]">
           <EmptyState
-            icon={Users}
+            icon={<Users className="w-6 h-6" />}
             title="Pipeline Empty"
             description="You don't have any leads in your pipeline yet. Add some leads to see them organized by stage."
-            actionLabel="Add First Lead"
-            onAction={() => { setEditingLead(null); setIsModalOpen(true); }}
-            secondaryActionLabel="Import CSV"
-            onSecondaryAction={() => setIsImportModalOpen(true)}
+            action={
+              <div className="flex items-center justify-center gap-3 mt-2">
+                <AppButton variant="primary" onClick={() => { setEditingLead(null); setIsModalOpen(true); }}>
+                  Add First Lead
+                </AppButton>
+                <AppButton variant="secondary" onClick={() => setIsImportModalOpen(true)}>
+                  Import CSV
+                </AppButton>
+              </div>
+            }
           />
         </PageContent>
       </Page>
