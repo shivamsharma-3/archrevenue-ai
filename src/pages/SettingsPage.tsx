@@ -30,6 +30,7 @@ export default function SettingsPage() {
   const [showProfileWizard, setShowProfileWizard] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'leads' | 'account' | null }>({ isOpen: false, type: null });
+  const [confirmText, setConfirmText] = useState('');
 
   // Notification prefs (local only for now)
   const [notifEmailDigest, setNotifEmailDigest] = useState(() => localStorage.getItem('notif_email_digest') !== 'false');
@@ -101,13 +102,13 @@ export default function SettingsPage() {
 
   const promptDeleteAllLeads = () => {
     if (!leads?.length) return;
+    setConfirmText('');
     setConfirmModal({ isOpen: true, type: 'leads' });
   };
 
   const executeDeleteAllLeads = async () => {
     if (!auth.currentUser) return;
     setDeletingData(true);
-    setConfirmModal({ isOpen: false, type: null });
     try {
       const q = query(collection(db, 'leads'), where('userId', '==', auth.currentUser.uid));
       const snap = await getDocs(q);
@@ -117,10 +118,12 @@ export default function SettingsPage() {
       toast.error(e.message || 'Failed to delete leads');
     } finally {
       setDeletingData(false);
+      setConfirmModal({ isOpen: false, type: null });
     }
   };
 
   const promptDeleteAccount = () => {
+    setConfirmText('');
     setConfirmModal({ isOpen: true, type: 'account' });
   };
 
@@ -128,7 +131,6 @@ export default function SettingsPage() {
     const user = auth.currentUser;
     if (!user) return;
     setDeletingData(true);
-    setConfirmModal({ isOpen: false, type: null });
     try {
       // 1. Delete all leads
       const q = query(collection(db, 'leads'), where('userId', '==', user.uid));
@@ -145,7 +147,8 @@ export default function SettingsPage() {
       await deleteUser(user);
       
       toast.success('Account completely deleted');
-      // The onAuthStateChanged listener in App.tsx will automatically redirect to the login page.
+      // Force redirect to login page immediately
+      window.location.href = '/';
     } catch (e: any) {
       if (e.code === 'auth/requires-recent-login') {
         toast.error('For security reasons, please log out and log back in before deleting your account.');
@@ -154,6 +157,7 @@ export default function SettingsPage() {
       }
     } finally {
       setDeletingData(false);
+      setConfirmModal({ isOpen: false, type: null });
     }
   };
 
@@ -403,6 +407,22 @@ export default function SettingsPage() {
               ? `Are you sure you want to delete ALL ${leads?.length || 0} leads from your workspace? This action cannot be undone and will permanently remove all associated intelligence data.`
               : 'Are you absolutely sure you want to delete your entire account? This will permanently delete your user profile, all leads, and remove your login access. This action CANNOT be undone.'}
           </p>
+
+          {confirmModal.type === 'account' && (
+            <div className="w-full mb-8 text-left">
+              <label className="block text-[13px] font-medium text-text-primary mb-2">
+                Type <span className="font-bold text-rose-600 select-all">DELETE</span> to confirm
+              </label>
+              <input 
+                type="text" 
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder="DELETE"
+                className="w-full bg-surface-background border border-border-default rounded-[var(--radius-card)] px-4 py-2.5 text-[14px] text-text-primary outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all placeholder:text-text-tertiary"
+              />
+            </div>
+          )}
+
           <div className="flex items-center gap-3 w-full">
             <AppButton 
               className="flex-1"
@@ -417,6 +437,7 @@ export default function SettingsPage() {
               variant="danger"
               onClick={confirmModal.type === 'leads' ? executeDeleteAllLeads : executeDeleteAccount}
               isLoading={deletingData}
+              disabled={confirmModal.type === 'account' && confirmText !== 'DELETE'}
             >
               {confirmModal.type === 'leads' ? 'Delete All Leads' : 'Delete Account'}
             </AppButton>
