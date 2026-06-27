@@ -21,7 +21,7 @@ export function EmptyState({
   onSecondaryAction
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center bg-surface-card/[0.02] border border-border-default rounded-2xl">
+    <div className="w-full max-w-md mx-auto flex flex-col items-center justify-center p-12 text-center bg-surface-card/[0.02] border border-border-default rounded-2xl shadow-sm">
       <div className="w-16 h-16 rounded-2xl bg-surface-secondary border border-border-default flex items-center justify-center mb-6 shadow-sm">
         <Icon className="w-8 h-8 text-text-tertiary" />
       </div>
