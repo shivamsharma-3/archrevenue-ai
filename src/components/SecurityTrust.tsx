@@ -80,6 +80,17 @@ export default function SecurityTrust() {
               </div>
             </section>
 
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <ShieldAlert className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">Right to Erasure</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>You have full control over your data lifecycle. The ArchRevenue platform includes a one-click <strong>Account Deletion</strong> mechanism that cryptographically severs your authentication ties and triggers a cascade deletion of all tenant data across our Firestore databases.</p>
+                <p>Once triggered, your CRM records, profile configurations, and identity are immediately and irreversibly purged from our active systems.</p>
+              </div>
+            </section>
+
           </div>
         </div>
       </div>

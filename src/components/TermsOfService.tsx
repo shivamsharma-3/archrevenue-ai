@@ -97,6 +97,17 @@ export default function TermsOfService() {
               </div>
             </section>
 
+            <section className="relative border-t border-border-default pt-16">
+              <div className="flex items-center space-x-4 mb-6">
+                <FileText className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
+                <h2 className="text-[22px] font-display font-medium text-text-primary">5. Account Termination & Deletion</h2>
+              </div>
+              <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
+                <p>You may choose to delete your account at any time through the platform's settings. When you initiate an account deletion, we will permanently and irreversibly erase your user profile, authentication records, and all associated lead and CRM data from our primary databases.</p>
+                <p>Please note that account deletion is immediate and cannot be undone. We reserve the right to suspend or terminate accounts that violate our Acceptable Use Policy.</p>
+              </div>
+            </section>
+
           </div>
         </div>
       </div>

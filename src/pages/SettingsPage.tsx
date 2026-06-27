@@ -5,7 +5,8 @@ import { connectGmail, connectCalendar } from '../lib/firebase';
 import { auth, db } from '../lib/firebase';
 import { cn } from '../lib/utils';
 import toast from 'react-hot-toast';
-import { deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { deleteDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
+import { deleteUser } from 'firebase/auth';
 import CompanyProfileWizard from '../components/CompanyProfileWizard';
 import { Page, PageHeader, PageContent, PageSection } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
@@ -108,6 +109,42 @@ export default function SettingsPage() {
       toast.success('All leads deleted');
     } catch (e: any) {
       toast.error(e.message || 'Failed to delete leads');
+    } finally {
+      setDeletingData(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    const confirmed = window.confirm(
+      'Are you absolutely sure you want to delete your entire account? This will permanently delete your user profile, all leads, and remove your login access. This action CANNOT be undone.'
+    );
+    if (!confirmed) return;
+    setDeletingData(true);
+    try {
+      // 1. Delete all leads
+      const q = query(collection(db, 'leads'), where('userId', '==', user.uid));
+      const snap = await getDocs(q);
+      await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+      
+      // 2. Delete user profile document
+      await deleteDoc(doc(db, 'users', user.uid, 'profile', 'main'));
+      
+      // 3. Delete main user document
+      await deleteDoc(doc(db, 'users', user.uid));
+      
+      // 4. Delete Firebase Auth user
+      await deleteUser(user);
+      
+      toast.success('Account completely deleted');
+      // The onAuthStateChanged listener in App.tsx will automatically redirect to the login page.
+    } catch (e: any) {
+      if (e.code === 'auth/requires-recent-login') {
+        toast.error('For security reasons, please log out and log back in before deleting your account.');
+      } else {
+        toast.error(e.message || 'Failed to delete account');
+      }
     } finally {
       setDeletingData(false);
     }
@@ -307,7 +344,22 @@ export default function SettingsPage() {
                   isLoading={deletingData}
                   leftIcon={<Trash2 className="w-4 h-4" />}
                 >
-                  Delete All
+                  Delete All Leads
+                </AppButton>
+              </div>
+              <div className="flex items-center justify-between p-5">
+                <div>
+                  <p className="text-[13px] font-semibold text-rose-900">Delete Account</p>
+                  <p className="text-[12px] text-rose-600/80 mt-0.5">Permanently delete your entire account, profile, and all associated data.</p>
+                </div>
+                <AppButton
+                  variant="danger"
+                  onClick={handleDeleteAccount}
+                  disabled={deletingData}
+                  isLoading={deletingData}
+                  leftIcon={<Trash2 className="w-4 h-4" />}
+                >
+                  Delete Account
                 </AppButton>
               </div>
             </div>

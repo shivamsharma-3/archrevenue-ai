@@ -87,7 +87,7 @@ export default function PrivacyPolicy() {
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-4">
                 <p>We retain your data only for as long as your account remains active. You have the right to access, export, or permanently delete your pipeline data at any time through the Settings page.</p>
-                <p>If you choose to delete your data, all associated records will be permanently purged from our primary databases immediately and cannot be recovered.</p>
+                <p>You may also completely delete your account at any time. If you choose to delete your account, your profile, authentication records, and all associated lead data will be permanently purged from our primary databases immediately and cannot be recovered.</p>
               </div>
             </section>
 
