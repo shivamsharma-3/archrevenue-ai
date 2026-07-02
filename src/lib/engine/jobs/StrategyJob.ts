@@ -21,7 +21,7 @@ export class StrategyJob implements IntelligenceJob {
 
     return {
       status: 'completed',
-      tokensUsed: result.tokensUsed || 0
+      tokensUsed: (result as any).tokensUsed || 0
     };
   }
 }

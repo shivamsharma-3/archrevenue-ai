@@ -36,7 +36,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
     auth.signOut();
   };
 
-  const handleNavigation = (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'insights' | 'help' | 'admin/beta') => {
+  const handleNavigation = (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'insights' | 'help' | 'admin/beta' | 'profile') => {
     if (onMenuChange && ['dashboard', 'pipeline', 'directory', 'settings', 'billing'].includes(menu)) {
       onMenuChange(menu as any);
     }

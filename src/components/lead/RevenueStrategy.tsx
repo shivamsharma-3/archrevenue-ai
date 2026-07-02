@@ -1,18 +1,20 @@
 import React, { memo } from 'react';
 import { Lead } from '../../lib/types';
 import { AppCard } from '../ui/AppCard';
-import { Target, Lightbulb, AlertTriangle, UserCheck } from 'lucide-react';
+import { Target, Lightbulb, AlertTriangle, UserCheck, Mail, Calendar, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { AppButton } from '../ui/AppButton';
+import { AIActionBar, AIAction } from '../ui/AIActionBar';
 
 interface RevenueStrategyProps {
   lead: Lead;
   isPanel?: boolean;
   onGenerate?: () => void;
   isGenerating?: boolean;
+  onGenerateOutreach?: () => void;
 }
 
-export const RevenueStrategy = memo(({ lead, isPanel = false, onGenerate, isGenerating = false }: RevenueStrategyProps) => {
+export const RevenueStrategy = memo(({ lead, isPanel = false, onGenerate, isGenerating = false, onGenerateOutreach }: RevenueStrategyProps) => {
   const strategy = lead.dealCoach;
 
   if (!strategy) {
@@ -105,6 +107,16 @@ export const RevenueStrategy = memo(({ lead, isPanel = false, onGenerate, isGene
           </div>
         </div>
       </div>
+
+      {/* Action bar */}
+      <AIActionBar
+        label="What do you want to do next?"
+        actions={[
+          { label: 'Generate Outreach', icon: Mail, onClick: onGenerateOutreach ?? (() => {}), variant: 'primary', disabled: !onGenerateOutreach },
+          { label: 'Schedule Follow-up', icon: Calendar, onClick: () => {}, variant: 'secondary' },
+          ...(onGenerate ? [{ label: 'Regenerate Strategy', icon: Sparkles, onClick: onGenerate, variant: 'ghost' as const }] : []),
+        ]}
+      />
     </AppCard>
   );
 });

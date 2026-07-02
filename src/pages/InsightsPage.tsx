@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Lead } from '../lib/types';
-import { TrendingUp, DollarSign, Target, Mail, Zap, Clock, ShieldCheck, Sparkles, BarChart3, ArrowUpRight, ArrowDownRight, Upload } from 'lucide-react';
+import { Lead, CompanyIntelligenceRecord } from '../lib/types';
+import { TrendingUp, DollarSign, Target, Mail, Zap, Clock, ShieldCheck, Sparkles, BarChart3, ArrowUpRight, ArrowDownRight, Upload, Flame, ExternalLink, Users, Rss } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 import { Page, PageHeader, PageActions, PageContent } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
 
 export default function InsightsPage() {
-  const { leads = [], loading, handleExportCsv } = useOutletContext<any>();
+  const { leads = [], loading, handleExportCsv, openDetailsPanel } = useOutletContext<any>();
 
   // Use useMemo to prevent recalculating on every re-render
   const metrics = useMemo(() => {
@@ -74,6 +74,56 @@ export default function InsightsPage() {
     };
   }, [leads]);
 
+  // Revenue Feed Items — built from real growth/hiring signals on researched leads
+  const revenueFeedItems = useMemo(() => {
+    const items: { icon: string; iconBg: string; company: string; signal: string; opportunity: string; timeAgo: string; lead: Lead }[] = [];
+
+    (leads as Lead[]).forEach(lead => {
+      if (lead.status === 'won' || lead.status === 'lost') return;
+      const research = lead.research as CompanyIntelligenceRecord | undefined;
+      if (!research) return;
+
+      // Pull from active events first
+      const events = research.activeEvents || [];
+      events.slice(0, 1).forEach(event => {
+        const ts = event.detectedAt ? new Date(event.detectedAt) : null;
+        const hoursAgo = ts ? Math.floor((Date.now() - ts.getTime()) / 3_600_000) : null;
+        const timeAgo = hoursAgo === null ? 'Recently' : hoursAgo < 1 ? 'Just now' : hoursAgo < 24 ? `${hoursAgo}h ago` : `${Math.floor(hoursAgo / 24)}d ago`;
+
+        const isGrowth = ['FUNDING_ROUND', 'HEADCOUNT_EXPANSION', 'MARKET_EXPANSION'].includes(event.type);
+        const isHiring = ['SDR_HIRING', 'AE_HIRING', 'VP_SALES_HIRED'].includes(event.type);
+        const isLeadership = ['C_SUITE_CHANGE', 'VP_HIRE'].includes(event.type);
+
+        items.push({
+          icon: isGrowth ? '💰' : isHiring ? '👥' : isLeadership ? '🎯' : '📡',
+          iconBg: isGrowth ? 'bg-emerald-50 border-emerald-200' : isHiring ? 'bg-blue-50 border-blue-200' : 'bg-violet-50 border-violet-200',
+          company: lead.company || lead.fullName,
+          signal: event.description,
+          opportunity: isGrowth ? 'New budget likely available — perfect time to pitch' : isHiring ? 'Scaling signal detected — reach out to new hires' : 'Leadership change = new buyer — act fast',
+          timeAgo,
+          lead,
+        });
+      });
+
+      // Fallback: use growthSignals text
+      if (events.length === 0 && research.growthSignals && research.growthSignals.length > 0) {
+        items.push({
+          icon: '🔥',
+          iconBg: 'bg-orange-50 border-orange-200',
+          company: lead.company || lead.fullName,
+          signal: research.growthSignals[0],
+          opportunity: lead.aiAnalysis?.category === 'Hot'
+            ? `Hot lead (${lead.aiAnalysis.score}/100) — strike now`
+            : 'Growth signal detected — high engagement potential',
+          timeAgo: 'Recently',
+          lead,
+        });
+      }
+    });
+
+    return items.slice(0, 8);
+  }, [leads]);
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[400px]">
@@ -100,6 +150,63 @@ export default function InsightsPage() {
       </PageHeader>
 
       <PageContent>
+        {/* ── Revenue Feed ────────────────────────────────────── */}
+        {revenueFeedItems.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Rss className="w-4 h-4 text-text-secondary" />
+              <h2 className="text-[15px] font-bold text-text-primary">Live Revenue Feed</h2>
+              <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full ml-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {revenueFeedItems.length} signals
+              </span>
+            </div>
+            <div className="space-y-3">
+              {revenueFeedItems.map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-4 flex items-start gap-4 hover:border-border-hover transition-all group shadow-sm"
+                >
+                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg border', item.iconBg)}>
+                    {item.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-[13px] font-semibold text-text-primary">{item.company}</p>
+                      <span className="text-[10px] text-text-tertiary font-medium shrink-0">{item.timeAgo}</span>
+                    </div>
+                    <p className="text-[12px] text-text-secondary mb-2">{item.signal}</p>
+                    <p className="text-[11px] text-indigo-600 font-medium bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1 w-fit">{item.opportunity}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => openDetailsPanel && openDetailsPanel(item.lead)}
+                      className="px-3 py-1.5 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    >
+                      Open Deal
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (item.lead.aiAnalysis?.followUp?.email) {
+                          openDetailsPanel && openDetailsPanel(item.lead);
+                        } else {
+                          openDetailsPanel && openDetailsPanel(item.lead);
+                        }
+                      }}
+                      className="px-3 py-1.5 text-[11px] font-bold bg-surface-secondary hover:bg-surface-hover text-text-secondary border border-border-default rounded-lg transition-colors"
+                    >
+                      Generate Message
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Top Row: Core KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         

@@ -11,6 +11,7 @@ import { AppButton } from '../components/ui/AppButton';
 import { AppBadge } from '../components/ui/AppBadge';
 import { EmptyState } from '../components/ui/EmptyState';
 import MissionBriefing from '../components/MissionBriefing';
+import DailyActionQueue from '../components/DailyActionQueue';
 import { 
   Plus, Upload, Search, MessageSquare, Calendar, FolderOpen,
   DollarSign, Target, Activity, Clock, Loader2
@@ -157,6 +158,13 @@ export default function DashboardPage() {
       </PageHeader>
 
       <PageContent>
+        {/* DAILY ACTION QUEUE — always first */}
+        <DailyActionQueue
+          leads={leads}
+          onLeadClick={openDetailsPanel}
+          onScoreLead={(lead) => { openDetailsPanel(lead); }}
+        />
+
         {/* SECTION 1: Executive Overview */}
         <PageSection>
           <PageMetrics className="px-0 pt-0">
