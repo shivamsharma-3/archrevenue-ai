@@ -118,7 +118,7 @@ export default function ProfilePage() {
         {/* Top accent line */}
         <div className={cn("absolute top-0 left-0 right-0 h-1", allDone ? "bg-gradient-to-r from-emerald-400 to-teal-400" : "bg-gradient-to-r from-amber-400 to-orange-400")} />
 
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
+        <div className={cn("flex flex-col md:flex-row md:items-start justify-between gap-6", !allDone && "mb-6")}>
           <div className="flex items-start gap-4 flex-1 min-w-0">
             <div className={cn("p-2.5 rounded-[var(--radius-card)] border", allDone ? "bg-emerald-50 border-emerald-100" : "bg-amber-50 border-amber-100")}>
               <Sparkles className={cn("w-5 h-5", allDone ? "text-emerald-500" : "text-amber-500")} />
@@ -161,7 +161,9 @@ export default function ProfilePage() {
         </div>
 
         {/* Progress bar */}
-        <div className="mb-6">
+        {!allDone && (
+          <>
+            <div className="mb-6">
           <div className="h-2 bg-surface-hover rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
@@ -216,6 +218,8 @@ export default function ProfilePage() {
             );
           })}
         </div>
+        </>
+        )}
       </div>
 
       {/* ── AI & Company Setup ────────────────────────────────── */}
