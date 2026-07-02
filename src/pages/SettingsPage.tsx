@@ -26,7 +26,6 @@ export default function SettingsPage() {
 
   const [gmailConnecting, setGmailConnecting] = useState(false);
   const [calendarConnecting, setCalendarConnecting] = useState(false);
-  const [calendarConnecting, setCalendarConnecting] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'leads' | 'account' | null }>({ isOpen: false, type: null });
   const [confirmText, setConfirmText] = useState('');
