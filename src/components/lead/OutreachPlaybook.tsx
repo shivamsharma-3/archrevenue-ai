@@ -113,6 +113,9 @@ export const OutreachPlaybook = memo(({
   const { objective, messagingAngle, painPoints, email, linkedin, callScript } = followUp;
   const { subject: emailSubject } = email ? extractSubjectAndBody(email) : { subject: '' };
 
+  // All content fields are empty — AI ran but returned empty strings
+  const allContentEmpty = !email && !linkedin && !callScript;
+
   const renderScriptSection = (
     type: 'email' | 'linkedin' | 'callScript',
     title: string,
@@ -125,9 +128,18 @@ export const OutreachPlaybook = memo(({
   ) => {
     if (!content) {
       return (
-        <div className={`p-5 rounded-xl border ${bgClass} ${borderClass} flex flex-col items-center justify-center text-center gap-3`}>
+        <div className={`p-5 rounded-xl border ${bgClass} ${borderClass} flex flex-col items-center justify-center text-center gap-3 min-h-[120px]`}>
           <div className={`p-2 rounded-lg bg-surface-card shadow-sm border ${borderClass}`}>{icon}</div>
           <span className="text-[13px] text-text-secondary font-medium">No {title.toLowerCase()} generated yet.</span>
+          {onGenerate && (
+            <button
+              onClick={onGenerate}
+              disabled={isGenerating}
+              className="mt-1 px-3 py-1.5 text-[11px] font-bold rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50"
+            >
+              {isGenerating ? 'Generating...' : 'Regenerate Playbook'}
+            </button>
+          )}
         </div>
       );
     }
@@ -196,6 +208,29 @@ export const OutreachPlaybook = memo(({
           </button>
         )}
       </div>
+
+      {/* Alert: outreach content is missing — offer clear recovery */}
+      {allContentEmpty && (
+        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <span className="text-xl shrink-0">⚠️</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-amber-800 mb-1">Outreach drafts are empty</p>
+            <p className="text-[12px] text-amber-700 leading-relaxed mb-3">
+              The AI ran but returned empty email, LinkedIn, and call script fields. This usually happens when the analysis was interrupted. Click below to regenerate.
+            </p>
+            {onGenerate && (
+              <button
+                onClick={onGenerate}
+                disabled={isGenerating}
+                className="px-4 py-2 text-[12px] font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                {isGenerating ? 'Regenerating...' : 'Regenerate Playbook Now'}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Playbook Strategy Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
