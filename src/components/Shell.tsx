@@ -6,6 +6,7 @@ import { auth } from '../lib/firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTokenUsage } from '../hooks/useTokenUsage';
+import { getPlanName } from '../lib/usage';
 import { BetaFeedbackWidget } from './BetaFeedbackWidget';
 import { useAdmin } from '../hooks/useAdmin';
 
@@ -188,7 +189,9 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
                     <p className="text-[13px] font-semibold text-text-primary truncate group-hover:text-blue-600 transition-colors">
                       {auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0] || 'User'}
                     </p>
-                    <p className="text-[10px] text-text-tertiary font-medium tracking-wide">Pro Plan</p>
+                    <p className="text-[10px] text-text-tertiary font-medium tracking-wide">
+                      {getPlanName(limit)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center flex-shrink-0 pr-1 space-x-0.5">

@@ -29,8 +29,8 @@ export default function BillingPage() {
       period: '/mo',
       tokens: '100k Tokens/mo',
       features: ['14-Day Free Trial', 'Basic AI Scoring', 'Standard Outreach', 'Email Support'],
-      current: isStarter || isFreeTrial,
-      freeTrial: true
+      current: isStarter,
+      buttonText: isStarter ? 'Current Plan' : 'Upgrade to Starter'
     },
     {
       name: 'Pro',
@@ -39,7 +39,8 @@ export default function BillingPage() {
       tokens: '250k Tokens/mo',
       features: ['Advanced AI Intelligence', 'Automated Workflows', 'Priority Support', 'Custom Outreach Styles'],
       popular: !isPro,
-      current: isPro
+      current: isPro,
+      buttonText: isPro ? 'Current Plan' : 'Upgrade to Pro'
     },
     {
       name: 'Enterprise',
@@ -47,7 +48,8 @@ export default function BillingPage() {
       period: '',
       tokens: 'Unlimited Tokens',
       features: ['Dedicated Account Manager', 'Custom AI Models', 'SLA Guarantee', 'White-glove Onboarding'],
-      current: false
+      current: false,
+      buttonText: 'Contact Sales'
     }
   ];
 
@@ -200,11 +202,11 @@ export default function BillingPage() {
                     await createCheckoutSession(auth.currentUser.uid, priceId);
                   }
                 } catch (err: any) {
-                  toast.error('Failed to start checkout: ' + err.message);
+                  toast.error(err.message || 'Failed to start checkout process');
                 }
               }}
             >
-              {plan.current ? 'Current Plan' : (plan as any).freeTrial ? 'Start 14-Day Trial' : 'Upgrade Plan'}
+              {plan.buttonText}
             </AppButton>
           </div>
         ))}
