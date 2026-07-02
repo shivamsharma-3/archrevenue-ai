@@ -81,12 +81,15 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
         industry:          profile.industry || '',
         description:       profile.description || '',
         offerDescription:  profile.offerDescription || '',
+        valueProposition:  profile.valueProposition || '',
         pricingModel:      profile.pricingModel,
         startingPrice:     profile.startingPrice || '',
         targetIndustry:    profile.targetIndustry || '',
         targetCompanySize: profile.targetCompanySize || '',
         targetRevenueRange: profile.targetRevenueRange || '',
         targetGeography:   profile.targetGeography || '',
+        painPointsSolved:  profile.painPointsSolved || '',
+        competitors:       profile.competitors || '',
         tone:              profile.tone,
         outreachStyle:     profile.outreachStyle,
         ctaStyle:          profile.ctaStyle || '',
@@ -241,6 +244,16 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                       className="block w-full px-4 py-3 text-[13px] bg-surface-card border border-border-default rounded-input focus:ring-2 focus:ring-blue-100 focus:border-border-active hover:border-border-hover transition-all outline-none placeholder:text-text-tertiary text-text-primary resize-none"
                     />
                   </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Value Proposition</label>
+                    <textarea
+                      value={profile.valueProposition || ''}
+                      onChange={e => update('valueProposition', e.target.value)}
+                      placeholder="What makes your offer unique compared to alternatives?"
+                      rows={2}
+                      className="block w-full px-4 py-3 text-[13px] bg-surface-card border border-border-default rounded-input focus:ring-2 focus:ring-blue-100 focus:border-border-active hover:border-border-hover transition-all outline-none placeholder:text-text-tertiary text-text-primary resize-none"
+                    />
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Pricing Model</label>
@@ -309,6 +322,24 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                       value={profile.targetGeography || ''}
                       onChange={e => update('targetGeography', e.target.value)}
                       placeholder="North America, EMEA…"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Pain Points Solved</label>
+                    <textarea
+                      value={profile.painPointsSolved || ''}
+                      onChange={e => update('painPointsSolved', e.target.value)}
+                      placeholder="What core problems do you solve for this ICP? (e.g., low conversion rates, slow onboarding)"
+                      rows={2}
+                      className="block w-full px-4 py-3 text-[13px] bg-surface-card border border-border-default rounded-input focus:ring-2 focus:ring-blue-100 focus:border-border-active hover:border-border-hover transition-all outline-none placeholder:text-text-tertiary text-text-primary resize-none"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Main Competitors</label>
+                    <AppInput
+                      value={profile.competitors || ''}
+                      onChange={e => update('competitors', e.target.value)}
+                      placeholder="Salesforce, HubSpot, etc."
                     />
                   </div>
                 </motion.div>

@@ -43,6 +43,8 @@ function buildSellerContext(profile: SellerProfile): string {
   ];
   if (profile.offerDescription)
     lines.push(`- Offer Description: ${profile.offerDescription}`);
+  if (profile.valueProposition)
+    lines.push(`- Value Proposition: ${profile.valueProposition}`);
   if (profile.pricingModel)
     lines.push(`- Pricing Model: ${profile.pricingModel}${profile.startingPrice ? `, starting at ${profile.startingPrice}` : ''}`);
   if (profile.targetIndustry || profile.targetCompanySize)
@@ -52,6 +54,10 @@ function buildSellerContext(profile: SellerProfile): string {
       profile.targetRevenueRange,
       profile.targetGeography,
     ].filter(Boolean).join(', ')}`);
+  if (profile.painPointsSolved)
+    lines.push(`- Pain Points Solved: ${profile.painPointsSolved}`);
+  if (profile.competitors)
+    lines.push(`- Competitors: ${profile.competitors}`);
   if (profile.tone)
     lines.push(`- Communication Tone: ${profile.tone}`);
   if (profile.outreachStyle)
@@ -537,8 +543,7 @@ LATEST NOTES:
 ${notesContext}
 
 SELLER CONTEXT:
-- Seller: ${sellerProfile?.companyName || 'Arch Revenues'}
-- Offer: ${sellerProfile?.primaryOffer || 'B2B Revenue Platform'}
+${sellerProfile ? buildSellerContext(sellerProfile) : '- Seller: Arch Revenues\\n- Offer: B2B Revenue Platform'}
 
 RULES:
 1. Tasks must be SHORT, specific, and immediately actionable (start with a verb)

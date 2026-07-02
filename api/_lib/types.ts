@@ -405,6 +405,7 @@ export interface SellerProfile {
   // Offer Information
   primaryOffer: string;
   offerDescription?: string;
+  valueProposition?: string;
   pricingModel?: 'Monthly Subscription' | 'Annual Contract' | 'Per Seat' | 'Usage-based' | 'One-time';
   startingPrice?: string;
 
@@ -413,6 +414,8 @@ export interface SellerProfile {
   targetCompanySize?: string;
   targetRevenueRange?: string;
   targetGeography?: string;
+  painPointsSolved?: string;
+  competitors?: string;
 
   // Sales Preferences
   tone?: 'Professional' | 'Conversational' | 'Direct' | 'Consultative';
