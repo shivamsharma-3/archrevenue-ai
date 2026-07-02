@@ -18,23 +18,25 @@ export default function BillingPage() {
 
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
   const isNearLimit = usagePercent > 80;
-  const isPro = limit >= 100000;
+  const isStarter = limit >= 100000 && limit < 250000;
+  const isPro = limit >= 250000;
+  const isFreeTrial = limit < 100000;
 
   const plans = [
     {
       name: 'Starter',
       price: '$49',
       period: '/mo',
-      tokens: '50k Tokens/mo',
+      tokens: '100k Tokens/mo',
       features: ['14-Day Free Trial', 'Basic AI Scoring', 'Standard Outreach', 'Email Support'],
-      current: !isPro,
+      current: isStarter || isFreeTrial,
       freeTrial: true
     },
     {
       name: 'Pro',
       price: '$99',
       period: '/mo',
-      tokens: '100k Tokens/mo',
+      tokens: '250k Tokens/mo',
       features: ['Advanced AI Intelligence', 'Automated Workflows', 'Priority Support', 'Custom Outreach Styles'],
       popular: !isPro,
       current: isPro
