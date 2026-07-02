@@ -22,6 +22,7 @@ import BrandLogo from '../components/BrandLogo';
 import { EmailReviewModal } from '../components/EmailReviewModal';
 import { getFollowUpStatus } from '../lib/utils';
 import TokenUpgradeModal from '../components/TokenUpgradeModal';
+import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 
 // ─── CSV Export Helper ────────────────────────────────────────────────────────
@@ -262,16 +263,22 @@ export default function AppLayout() {
     }
   };
 
+  const [scoreConfirmLead, setScoreConfirmLead] = useState<Lead | null>(null);
+
   const handleScoreLead = async (lead: Lead) => {
     if (!lead.id) return;
     if (lead.aiAnalysis) {
-      if (!window.confirm("This lead has already been scored. Re-scoring will overwrite the existing score. Continue?")) {
-        return;
-      }
+      setScoreConfirmLead(lead);
+      return;
     }
+    await executeScoreLead(lead);
+  };
+
+  const executeScoreLead = async (lead: Lead) => {
     setAiScoringLoading(prev => ({ ...prev, [lead.id!]: true }));
     try {
       const analysis = await scoreLead(lead);
+
       const leadRef = doc(db, 'leads', lead.id);
       await updateDoc(leadRef, { aiAnalysis: analysis, updatedAt: serverTimestamp() });
       showToast('Lead scored successfully', 'success');
@@ -511,13 +518,20 @@ export default function AppLayout() {
         errorDetails={tokenModalError || ''} 
       />
 
+      <ConfirmModal
+        isOpen={!!scoreConfirmLead}
+        onClose={() => setScoreConfirmLead(null)}
+        onConfirm={() => {
+          if (scoreConfirmLead) {
+            executeScoreLead(scoreConfirmLead);
+            setScoreConfirmLead(null);
+          }
+        }}
+        title="Re-analyze Account"
+        message="This account has already been analyzed. Re-running will overwrite the existing score and strategy. Continue?"
+        confirmText="Re-analyze"
+        cancelText="Cancel"
+      />
     </Shell>
   );
 }
-
-
-
-
-
-
-

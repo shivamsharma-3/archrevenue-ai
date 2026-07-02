@@ -197,9 +197,13 @@ export default function LeadsPage() {
               </button>
               <button
                 onClick={() => {
-                  if (window.confirm(`Are you sure you want to delete ${selectedLeads.size} leads? This action cannot be undone.`)) {
-                    handleBulkDelete();
-                  }
+                  openConfirm(
+                    "Delete Leads",
+                    `Are you sure you want to delete ${selectedLeads.size} leads? This action cannot be undone.`,
+                    "Delete Leads",
+                    true,
+                    () => handleBulkDelete()
+                  );
                 }}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-all shadow-sm"
               >
@@ -435,9 +439,13 @@ export default function LeadsPage() {
                               onClick={(e) => { 
                                 e.stopPropagation(); 
                                 e.preventDefault();
-                                if (window.confirm("Are you sure you want to delete this lead? This action cannot be undone.")) {
-                                  handleDelete(lead.id!);
-                                }
+                                openConfirm(
+                                  "Delete Lead",
+                                  "Are you sure you want to delete this lead? This action cannot be undone.",
+                                  "Delete",
+                                  true,
+                                  () => handleDelete(lead.id!)
+                                );
                               }}
                               className="p-1.5 text-text-tertiary hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               title="Delete"

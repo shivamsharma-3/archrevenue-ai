@@ -1,8 +1,9 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { Lead } from '../../lib/types';
 import { cn } from '../../lib/utils';
 import { Building, Mail, PhoneCall } from 'lucide-react';
 import { AppCard } from '../ui/AppCard';
+import { ConfirmModal } from '../ui/ConfirmModal';
 
 import { AppButton } from '../ui/AppButton';
 
@@ -14,6 +15,8 @@ interface LeadHeaderProps {
 }
 
 export const LeadHeader = memo(({ lead, onStatusChange, onAnalyze, isAnalyzing }: LeadHeaderProps) => {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   return (
     <AppCard level={1} className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
@@ -53,9 +56,7 @@ export const LeadHeader = memo(({ lead, onStatusChange, onAnalyze, isAnalyzing }
           variant="primary" 
           onClick={() => {
             if (lead.aiAnalysis) {
-              if (window.confirm("This account has already been analyzed. Re-running will overwrite the existing score and strategy. Continue?")) {
-                onAnalyze();
-              }
+              setIsConfirmOpen(true);
             } else {
               onAnalyze();
             }
@@ -65,6 +66,19 @@ export const LeadHeader = memo(({ lead, onStatusChange, onAnalyze, isAnalyzing }
         >
           {isAnalyzing ? 'Analyzing...' : 'Analyze Account'}
         </AppButton>
+
+        <ConfirmModal
+          isOpen={isConfirmOpen}
+          onClose={() => setIsConfirmOpen(false)}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+            onAnalyze();
+          }}
+          title="Re-analyze Account"
+          message="This account has already been analyzed. Re-running will overwrite the existing score and strategy. Continue?"
+          confirmText="Re-analyze"
+          cancelText="Cancel"
+        />
 
         <div className="flex flex-col items-end">
           <span className="text-[10px] uppercase font-bold tracking-wider text-text-tertiary mb-1.5">Pipeline Stage</span>
