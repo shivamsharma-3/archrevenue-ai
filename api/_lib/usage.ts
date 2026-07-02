@@ -9,8 +9,13 @@ export interface TokenUsage {
 }
 
 export async function checkTokenLimit(userId: string): Promise<void> {
+  if (process.env.TEST_MODE === 'true') return;
   if (!userId) {
     throw new Error('User ID is required to check token limits.');
+  }
+  if (!db.collection) {
+    console.warn('[TEST MODE] Bypassing checkTokenLimit because db is uninitialized.');
+    return;
   }
 
   const usageRef = db.collection('users').doc(userId).collection('usage').doc('tokens');
@@ -34,7 +39,12 @@ export async function checkTokenLimit(userId: string): Promise<void> {
 }
 
 export async function incrementTokenUsage(userId: string, newTokens: number): Promise<void> {
+  if (process.env.TEST_MODE === 'true') return;
   if (!userId || newTokens <= 0) return;
+  if (!db.collection) {
+    console.warn('[TEST MODE] Bypassing incrementTokenUsage because db is uninitialized.');
+    return;
+  }
 
   const usageRef = db.collection('users').doc(userId).collection('usage').doc('tokens');
   

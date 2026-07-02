@@ -130,7 +130,7 @@ Return ONLY this JSON, no markdown, no code blocks:
   }
 
   const completion = await groq.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
+    model: 'llama-3.3-70b-versatile',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1, // Very low — we want deterministic extraction, not creativity
     response_format: { type: 'json_object' },

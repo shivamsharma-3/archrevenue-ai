@@ -3,13 +3,16 @@ import { Lead } from '../../lib/types';
 import { AppCard } from '../ui/AppCard';
 import { Target, Lightbulb, AlertTriangle, UserCheck } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { AppButton } from '../ui/AppButton';
 
 interface RevenueStrategyProps {
   lead: Lead;
   isPanel?: boolean;
+  onGenerate?: () => void;
+  isGenerating?: boolean;
 }
 
-export const RevenueStrategy = memo(({ lead, isPanel = false }: RevenueStrategyProps) => {
+export const RevenueStrategy = memo(({ lead, isPanel = false, onGenerate, isGenerating = false }: RevenueStrategyProps) => {
   const strategy = lead.dealCoach;
 
   if (!strategy) {
@@ -22,6 +25,11 @@ export const RevenueStrategy = memo(({ lead, isPanel = false }: RevenueStrategyP
           <p className="text-text-secondary mb-4 font-medium">
             No AI strategy generated yet. Run the revenue strategy to get actionable insights on closing this deal.
           </p>
+          {onGenerate && (
+            <AppButton variant="primary" onClick={onGenerate} disabled={isGenerating}>
+              {isGenerating ? 'Generating...' : 'Generate Strategy'}
+            </AppButton>
+          )}
         </div>
       </AppCard>
     );

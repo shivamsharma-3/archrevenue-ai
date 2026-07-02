@@ -9,13 +9,17 @@ interface OutreachPlaybookProps {
   onCopy: (text: string, type: string) => void;
   copiedText: string | null;
   onSendEmail: () => void;
+  onGenerate?: () => void;
+  isGenerating?: boolean;
 }
 
 export const OutreachPlaybook = memo(({ 
   lead, 
   onCopy, 
   copiedText,
-  onSendEmail 
+  onSendEmail,
+  onGenerate,
+  isGenerating = false
 }: OutreachPlaybookProps) => {
   const followUp = lead.aiAnalysis?.followUp;
 
@@ -29,6 +33,11 @@ export const OutreachPlaybook = memo(({
           <p className="text-text-secondary mb-4 font-medium">
             No outreach playbook available. Analyze the opportunity first to generate outreach strategies.
           </p>
+          {onGenerate && (
+            <AppButton variant="primary" onClick={onGenerate} disabled={isGenerating}>
+              {isGenerating ? 'Analyzing...' : 'Generate Playbook'}
+            </AppButton>
+          )}
         </div>
       </AppCard>
     );

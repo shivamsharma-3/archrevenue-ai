@@ -10,9 +10,10 @@ import { Link } from 'react-router-dom';
 import { Page, PageHeader, PageContent } from '../components/layout/PageLayout';
 import { AppInput } from '../components/ui/AppInput';
 import { AppButton } from '../components/ui/AppButton';
+import CompanyProfileWizard from '../components/CompanyProfileWizard';
 
 export default function ProfilePage() {
-  const { showToast, sellerProfile, leads } = useOutletContext<any>();
+  const { showToast, sellerProfile, setSellerProfile, leads, showProfileWizard, setShowProfileWizard } = useOutletContext<any>();
   const navigate = useNavigate();
   
   const [displayName, setDisplayName] = useState(auth.currentUser?.displayName || '');
@@ -217,6 +218,64 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* ── AI & Company Setup ────────────────────────────────── */}
+      <div className="mt-6">
+        <h2 className="text-[15px] font-semibold text-text-primary mb-4 flex items-center gap-2">
+          <Building className="w-4 h-4 text-text-secondary" />
+          AI & Company Setup
+        </h2>
+        <div
+          onClick={() => setShowProfileWizard(true)}
+          className={cn(
+            'intel-panel group cursor-pointer rounded-[var(--radius-card)] border p-6 transition-all duration-200 overflow-hidden relative shadow-sm',
+            !!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)
+              ? 'bg-surface-card border-border-default hover:border-blue-300'
+              : 'bg-gradient-to-br from-amber-50 to-surface-card border-amber-200 hover:border-amber-300'
+          )}
+        >
+          {/* Top accent */}
+          <div className={cn('absolute top-0 left-0 right-0 h-[2px]', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent' : 'bg-gradient-to-r from-transparent via-amber-400 to-transparent')} />
+
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className={cn('p-3 rounded-[var(--radius-card)] border shrink-0', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-200')}>
+                <Building className={cn('w-5 h-5', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'text-indigo-500' : 'text-amber-500')} />
+              </div>
+              <div className={cn('flex items-center gap-1 text-[13px] font-semibold transition-colors shrink-0 mt-0.5', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'text-indigo-600 group-hover:text-indigo-700' : 'text-amber-600 group-hover:text-amber-700')}>
+                {(!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'Edit' : 'Set Up Now'}
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="text-[15px] font-semibold text-text-primary">Company Profile</h3>
+                {(!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    <CheckCircle2 className="w-2.5 h-2.5" /> Configured
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full animate-pulse">
+                    Action Needed
+                  </span>
+                )}
+              </div>
+              <p className="text-[13px] text-text-secondary leading-relaxed">
+                Company details, offer, ICP, and AI outreach preferences. Used by AI in every score, outreach, and analysis.
+              </p>
+              {(!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) && (
+                <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[11px] text-text-secondary">
+                  {sellerProfile?.companyName && <span className="font-semibold text-text-primary">{sellerProfile.companyName}</span>}
+                  {sellerProfile?.industry && <span>· {sellerProfile.industry}</span>}
+                  {sellerProfile?.tone && <span>· {sellerProfile.tone} tone</span>}
+                  {sellerProfile?.targetIndustry && <span>· ICP: {sellerProfile.targetIndustry}</span>}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Account & Security ────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {/* Basic Info */}
@@ -334,6 +393,15 @@ export default function ProfilePage() {
         </div>
       </div>
       </PageContent>
+      {/* Company Profile Wizard */}
+      {showProfileWizard && (
+        <CompanyProfileWizard
+          isOpen={showProfileWizard}
+          onComplete={(profile: any) => { setSellerProfile(profile); setShowProfileWizard(false); }}
+          onSkip={() => setShowProfileWizard(false)}
+          initialData={sellerProfile}
+        />
+      )}
     </Page>
   );
 }

@@ -7,7 +7,6 @@ import { cn } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { deleteDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
 import { deleteUser } from 'firebase/auth';
-import CompanyProfileWizard from '../components/CompanyProfileWizard';
 import { Page, PageHeader, PageContent, PageSection } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
 import { AppModal } from '../components/ui/AppModal';
@@ -27,7 +26,7 @@ export default function SettingsPage() {
 
   const [gmailConnecting, setGmailConnecting] = useState(false);
   const [calendarConnecting, setCalendarConnecting] = useState(false);
-  const [showProfileWizard, setShowProfileWizard] = useState(false);
+  const [calendarConnecting, setCalendarConnecting] = useState(false);
   const [deletingData, setDeletingData] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; type: 'leads' | 'account' | null }>({ isOpen: false, type: null });
   const [confirmText, setConfirmText] = useState('');
@@ -161,7 +160,6 @@ export default function SettingsPage() {
     }
   };
 
-  const profileIsComplete = !!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer);
 
   const Toggle = ({ enabled, onChange }: { enabled: boolean; onChange: (v: boolean) => void }) => (
     <button
@@ -200,59 +198,6 @@ export default function SettingsPage() {
         />
         
         <PageContent className="flex flex-col gap-10 max-w-[800px] pt-6">
-          {/* AI & Company Setup */}
-          <PageSection title="AI & Company Setup" description="Configure your company details and AI preferences.">
-            <div
-              onClick={() => setShowProfileWizard(true)}
-              className={cn(
-                'intel-panel group cursor-pointer rounded-[var(--radius-card)] border p-6 transition-all duration-200 overflow-hidden h-full relative',
-                profileIsComplete
-                  ? 'bg-surface-card border-border-default hover:border-blue-300 shadow-sm'
-                  : 'bg-gradient-to-br from-amber-50 to-surface-card border-amber-200 hover:border-amber-300 shadow-sm'
-              )}
-            >
-              {/* Top accent */}
-              <div className={cn('absolute top-0 left-0 right-0 h-[2px]', profileIsComplete ? 'bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent' : 'bg-gradient-to-r from-transparent via-amber-400 to-transparent')} />
-
-              <div className="flex flex-col gap-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className={cn('p-3 rounded-[var(--radius-card)] border shrink-0', profileIsComplete ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-200')}>
-                    <Building className={cn('w-5 h-5', profileIsComplete ? 'text-indigo-500' : 'text-amber-500')} />
-                  </div>
-                  <div className={cn('flex items-center gap-1 text-[13px] font-semibold transition-colors shrink-0 mt-0.5', profileIsComplete ? 'text-indigo-600 group-hover:text-indigo-700' : 'text-amber-600 group-hover:text-amber-700')}>
-                    {profileIsComplete ? 'Edit' : 'Set Up Now'}
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-[15px] font-semibold text-text-primary">Company Profile</h3>
-                    {profileIsComplete ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                        <Check className="w-2.5 h-2.5" /> Configured
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full animate-pulse">
-                        Action Needed
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[13px] text-text-secondary leading-relaxed">
-                    Company details, offer, ICP, and AI outreach preferences. Used by AI in every score, outreach, and analysis.
-                  </p>
-                  {profileIsComplete && (
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[11px] text-text-secondary">
-                      {sellerProfile?.companyName && <span className="font-semibold text-text-primary">{sellerProfile.companyName}</span>}
-                      {sellerProfile?.industry && <span>· {sellerProfile.industry}</span>}
-                      {sellerProfile?.tone && <span>· {sellerProfile.tone} tone</span>}
-                      {sellerProfile?.targetIndustry && <span>· ICP: {sellerProfile.targetIndustry}</span>}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </PageSection>
 
           {/* Integrations */}
           <PageSection title="Integrations" description="Connect your email and calendar to automate tasks.">
@@ -379,15 +324,6 @@ export default function SettingsPage() {
         </PageContent>
       </Page>
 
-      {/* Company Profile Wizard */}
-      {showProfileWizard && (
-        <CompanyProfileWizard
-          isOpen={showProfileWizard}
-          onComplete={(profile: any) => { setSellerProfile(profile); setShowProfileWizard(false); }}
-          onSkip={() => setShowProfileWizard(false)}
-          initialData={sellerProfile}
-        />
-      )}
 
       {/* Danger Zone Confirmation Modal */}
       <AppModal 

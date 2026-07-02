@@ -8,9 +8,11 @@ import { cn } from '../../lib/utils';
 interface ExecutiveBriefingProps {
   lead: Lead;
   isPanel?: boolean;
+  onGenerate?: () => void;
+  isGenerating?: boolean;
 }
 
-export const ExecutiveBriefing = memo(({ lead, isPanel = false }: ExecutiveBriefingProps) => {
+export const ExecutiveBriefing = memo(({ lead, isPanel = false, onGenerate, isGenerating = false }: ExecutiveBriefingProps) => {
   if (!lead.aiAnalysis) {
     return (
       <AppCard level={2} className="flex flex-col items-center justify-center py-12 text-center">
@@ -21,6 +23,11 @@ export const ExecutiveBriefing = memo(({ lead, isPanel = false }: ExecutiveBrief
           <p className="text-text-secondary mb-4 font-medium">
             No executive briefing available yet. Analyze this opportunity to generate a comprehensive AI strategy.
           </p>
+          {onGenerate && (
+            <AppButton variant="primary" onClick={onGenerate} disabled={isGenerating}>
+              {isGenerating ? 'Analyzing...' : 'Analyze Opportunity'}
+            </AppButton>
+          )}
         </div>
       </AppCard>
     );

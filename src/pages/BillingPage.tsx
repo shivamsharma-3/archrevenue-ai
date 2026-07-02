@@ -18,7 +18,7 @@ export default function BillingPage() {
 
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
   const isNearLimit = usagePercent > 80;
-  const isPro = limit >= 150000;
+  const isPro = limit >= 100000;
 
   const plans = [
     {
@@ -34,7 +34,7 @@ export default function BillingPage() {
       name: 'Pro',
       price: '$99',
       period: '/mo',
-      tokens: '150k Tokens/mo',
+      tokens: '100k Tokens/mo',
       features: ['Advanced AI Intelligence', 'Automated Workflows', 'Priority Support', 'Custom Outreach Styles'],
       popular: !isPro,
       current: isPro

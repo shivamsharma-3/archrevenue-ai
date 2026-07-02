@@ -232,21 +232,23 @@ export default function LeadIntelligencePage() {
             />
           )}
 
-          <ExecutiveBriefing lead={lead} />
+          <ExecutiveBriefing lead={lead} onGenerate={handleAnalyzeAccount} isGenerating={isAnalyzing} />
 
-          <CompanyIntelligenceGraph lead={lead} />
+          <CompanyIntelligenceGraph lead={lead} onGenerate={handleAnalyzeAccount} isGenerating={isAnalyzing} />
 
           <BuyingSignals lead={lead} />
 
           <StakeholderMap lead={lead} />
 
-          <RevenueStrategy lead={lead} />
+          <RevenueStrategy lead={lead} onGenerate={handleAnalyzeAccount} isGenerating={isAnalyzing} />
 
           <OutreachPlaybook 
             lead={lead} 
             onCopy={handleCopy}
             copiedText={copiedText}
             onSendEmail={handleSendEmail}
+            onGenerate={handleAnalyzeAccount}
+            isGenerating={isAnalyzing}
           />
 
           <AccountTimeline 

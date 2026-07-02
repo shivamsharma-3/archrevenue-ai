@@ -13,7 +13,7 @@ async function callGroq(prompt: string, userId: string, temperature = 0.2): Prom
 
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const completion = await groq.chat.completions.create({
-    model: 'llama-3.1-8b-instant',
+    model: 'llama-3.3-70b-versatile',
     messages: [{ role: 'user', content: prompt }],
     temperature,
     response_format: { type: 'json_object' },

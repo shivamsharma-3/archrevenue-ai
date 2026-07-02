@@ -8,9 +8,11 @@ import { cn } from '../../lib/utils';
 interface CompanyIntelligenceGraphProps {
   lead: Lead;
   isPanel?: boolean;
+  onGenerate?: () => void;
+  isGenerating?: boolean;
 }
 
-export const CompanyIntelligenceGraph = memo(({ lead, isPanel = false }: CompanyIntelligenceGraphProps) => {
+export const CompanyIntelligenceGraph = memo(({ lead, isPanel = false, onGenerate, isGenerating = false }: CompanyIntelligenceGraphProps) => {
   if (!lead.research) {
     return (
       <AppCard level={2} className="flex flex-col items-center justify-center py-12 text-center">
@@ -23,6 +25,11 @@ export const CompanyIntelligenceGraph = memo(({ lead, isPanel = false }: Company
               ? "We haven't gathered company intelligence yet." 
               : "Add a website URL to the lead profile to enable gathering intelligence."}
           </p>
+          {lead.website && onGenerate && (
+            <AppButton variant="primary" onClick={onGenerate} disabled={isGenerating}>
+              {isGenerating ? 'Gathering...' : 'Gather Intelligence'}
+            </AppButton>
+          )}
         </div>
       </AppCard>
     );
