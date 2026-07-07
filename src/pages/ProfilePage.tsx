@@ -111,17 +111,15 @@ export default function ProfilePage() {
       {/* ── Setup Progress Card ───────────────────────────────── */}
       <div className={cn(
         "relative overflow-hidden rounded-[var(--radius-card)] border p-6 shadow-sm",
-        allDone
-          ? "bg-gradient-to-br from-emerald-50/30 to-surface-card border-emerald-200/50"
-          : "bg-gradient-to-br from-amber-50/40 to-surface-card border-amber-200/50"
+        "bg-gradient-to-br from-amber-50/40 to-surface-card border-amber-200/50"
       )}>
         {/* Top accent line */}
-        <div className={cn("absolute top-0 left-0 right-0 h-1", allDone ? "bg-gradient-to-r from-emerald-400 to-teal-400" : "bg-gradient-to-r from-amber-400 to-orange-400")} />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-400" />
 
-        <div className={cn("flex flex-col md:flex-row md:items-start justify-between gap-6", !allDone && "mb-6")}>
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6">
           <div className="flex items-start gap-4 flex-1 min-w-0">
-            <div className={cn("p-2.5 rounded-[var(--radius-card)] border", allDone ? "bg-emerald-50 border-emerald-100" : "bg-amber-50 border-amber-100")}>
-              <Sparkles className={cn("w-5 h-5", allDone ? "text-emerald-500" : "text-amber-500")} />
+            <div className="p-2.5 rounded-[var(--radius-card)] border bg-amber-50 border-amber-100">
+              <Sparkles className="w-5 h-5 text-amber-500" />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-[17px] font-bold text-text-primary tracking-tight">
@@ -142,7 +140,7 @@ export default function ProfilePage() {
                 <circle cx="18" cy="18" r="15" fill="none" stroke="#e2e8f0" strokeWidth="3" />
                 <circle
                   cx="18" cy="18" r="15" fill="none"
-                  stroke={allDone ? '#10b981' : '#f59e0b'}
+                  stroke="#f59e0b"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeDasharray={`${(progress / 100) * 94.2} 94.2`}
@@ -161,15 +159,13 @@ export default function ProfilePage() {
         </div>
 
         {/* Progress bar */}
-        {!allDone && (
-          <>
-            <div className="mb-6">
+        <div className="mb-6">
           <div className="h-2 bg-surface-hover rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
-              className={cn("h-full rounded-full", allDone ? "bg-gradient-to-r from-emerald-500 to-teal-400" : "bg-gradient-to-r from-amber-400 to-orange-400")}
+              className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400"
             />
           </div>
         </div>
@@ -182,23 +178,18 @@ export default function ProfilePage() {
             return (
               <div
                 key={step.id}
-                className={cn(
-                  "rounded-[var(--radius-card)] border p-4 transition-all",
-                  step.isComplete
-                    ? "bg-emerald-50/50 border-emerald-100"
-                    : `bg-surface-card border-border-default hover:border-border-hover hover:shadow-sm`
-                )}
+                className="rounded-[var(--radius-card)] border p-4 transition-all bg-surface-card border-border-default hover:border-border-hover hover:shadow-sm"
               >
                 <div className="flex items-start gap-3 mb-3">
                   {step.isComplete ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                   ) : (
                     <div className={cn("w-5 h-5 rounded-full border-2 border-border-default shrink-0 mt-0.5 flex items-center justify-center")}>
                       <span className="text-[10px] font-bold text-text-tertiary">{i + 1}</span>
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h4 className={cn("text-[13px] font-semibold leading-tight mb-1", step.isComplete ? "text-emerald-600 line-through decoration-emerald-300" : "text-text-primary")}>
+                    <h4 className="text-[13px] font-semibold leading-tight mb-1 text-text-primary">
                       {step.title}
                     </h4>
                     <p className="text-[11px] text-text-secondary leading-relaxed">{step.description}</p>
@@ -218,8 +209,6 @@ export default function ProfilePage() {
             );
           })}
         </div>
-        </>
-        )}
       </div>
 
       {/* ── AI & Company Setup ────────────────────────────────── */}
@@ -230,22 +219,17 @@ export default function ProfilePage() {
         </h2>
         <div
           onClick={() => setShowProfileWizard(true)}
-          className={cn(
-            'intel-panel group cursor-pointer rounded-[var(--radius-card)] border p-6 transition-all duration-200 overflow-hidden relative shadow-sm',
-            !!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)
-              ? 'bg-surface-card border-border-default hover:border-blue-300'
-              : 'bg-gradient-to-br from-amber-50 to-surface-card border-amber-200 hover:border-amber-300'
-          )}
+          className="intel-panel group cursor-pointer rounded-[var(--radius-card)] border p-6 transition-all duration-200 overflow-hidden relative shadow-sm bg-gradient-to-br from-amber-50 to-surface-card border-amber-200 hover:border-amber-300"
         >
           {/* Top accent */}
-          <div className={cn('absolute top-0 left-0 right-0 h-[2px]', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'bg-gradient-to-r from-transparent via-indigo-500/40 to-transparent' : 'bg-gradient-to-r from-transparent via-amber-400 to-transparent')} />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
 
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3">
-              <div className={cn('p-3 rounded-[var(--radius-card)] border shrink-0', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'bg-indigo-50 border-indigo-100' : 'bg-amber-50 border-amber-200')}>
-                <Building className={cn('w-5 h-5', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'text-indigo-500' : 'text-amber-500')} />
+              <div className="p-3 rounded-[var(--radius-card)] border shrink-0 bg-amber-50 border-amber-200">
+                <Building className="w-5 h-5 text-amber-500" />
               </div>
-              <div className={cn('flex items-center gap-1 text-[13px] font-semibold transition-colors shrink-0 mt-0.5', (!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'text-indigo-600 group-hover:text-indigo-700' : 'text-amber-600 group-hover:text-amber-700')}>
+              <div className="flex items-center gap-1 text-[13px] font-semibold transition-colors shrink-0 mt-0.5 text-amber-600 group-hover:text-amber-700">
                 {(!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? 'Edit' : 'Set Up Now'}
                 <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </div>
@@ -254,15 +238,13 @@ export default function ProfilePage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="text-[15px] font-semibold text-text-primary">Company Profile</h3>
-                {(!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-2.5 h-2.5" /> Configured
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full animate-pulse">
-                    Action Needed
-                  </span>
-                )}
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  {(!!sellerProfile?.setupComplete || !!(sellerProfile?.companyName && sellerProfile?.primaryOffer)) ? (
+                    <><CheckCircle2 className="w-2.5 h-2.5" /> Configured</>
+                  ) : (
+                    <span className="animate-pulse">Action Needed</span>
+                  )}
+                </span>
               </div>
               <p className="text-[13px] text-text-secondary leading-relaxed">
                 Company details, offer, ICP, and AI outreach preferences. Used by AI in every score, outreach, and analysis.

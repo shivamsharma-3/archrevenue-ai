@@ -376,13 +376,21 @@ Return ONLY this JSON, no markdown:
     throw new Error('Invalid recommended action returned');
 
   // ── Step 6: Normalize outreach (defensive key handling) ──────────────────
-  let raw = (outreachResult && typeof outreachResult === 'object') ? outreachResult : {};
-  if (raw.outreach && typeof raw.outreach === 'object') {
-    raw = raw.outreach;
-  } else if (raw.followUp && typeof raw.followUp === 'object') {
-    raw = raw.followUp;
-  } else if (raw.follow_up && typeof raw.follow_up === 'object') {
-    raw = raw.follow_up;
+  let raw = {};
+  try {
+    raw = JSON.parse(outreachRaw);
+  } catch (e) {
+    console.error('[AI] Failed to parse outreach JSON:', e, outreachRaw);
+  }
+
+  // Handle nested wrappers like {"Outreach": {...}} or {"followUp": {...}}
+  const wrapperKey = Object.keys(raw).find(k => 
+    k.toLowerCase() === 'outreach' || 
+    k.toLowerCase() === 'followup' || 
+    k.toLowerCase() === 'follow_up'
+  );
+  if (wrapperKey && typeof (raw as any)[wrapperKey] === 'object' && (raw as any)[wrapperKey] !== null) {
+    raw = (raw as any)[wrapperKey];
   }
   
   if (typeof raw !== 'object' || raw === null) {
@@ -395,10 +403,22 @@ Return ONLY this JSON, no markdown:
   const linkedinKey = Object.keys(raw).find(k => k.toLowerCase().includes('linkedin'));
   const callKey = Object.keys(raw).find(k => k.toLowerCase().includes('call'));
 
+  function extractText(val: any): string {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') {
+      // If the AI returned a nested object (e.g. { subject: '...', body: '...' })
+      return Object.values(val)
+        .filter(v => typeof v === 'string')
+        .join('\n\n');
+    }
+    return String(val);
+  }
+
   const followUp = {
-    email: emailKey && typeof raw[emailKey] === 'string' ? raw[emailKey] : '',
-    linkedin: linkedinKey && typeof raw[linkedinKey] === 'string' ? raw[linkedinKey] : '',
-    callScript: callKey && typeof raw[callKey] === 'string' ? raw[callKey] : '',
+    email: emailKey ? extractText((raw as any)[emailKey]) : '',
+    linkedin: linkedinKey ? extractText((raw as any)[linkedinKey]) : '',
+    callScript: callKey ? extractText((raw as any)[callKey]) : '',
   };
   console.log('[AI] NORMALIZED FOLLOWUP:', followUp);
 
@@ -438,13 +458,20 @@ export async function regenerateOutreach(lead: Lead, userId: string, profile?: S
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
   const outreachRaw = await callGroq(outreachPrompt, userId, 0.4);
-  let raw = (JSON.parse(outreachRaw) && typeof JSON.parse(outreachRaw) === 'object') ? JSON.parse(outreachRaw) : {};
-  if (raw.outreach && typeof raw.outreach === 'object') {
-    raw = raw.outreach;
-  } else if (raw.followUp && typeof raw.followUp === 'object') {
-    raw = raw.followUp;
-  } else if (raw.follow_up && typeof raw.follow_up === 'object') {
-    raw = raw.follow_up;
+  let raw = {};
+  try {
+    raw = JSON.parse(outreachRaw);
+  } catch (e) {
+    console.error('[AI] Failed to parse outreach JSON:', e, outreachRaw);
+  }
+
+  const wrapperKey = Object.keys(raw).find(k => 
+    k.toLowerCase() === 'outreach' || 
+    k.toLowerCase() === 'followup' || 
+    k.toLowerCase() === 'follow_up'
+  );
+  if (wrapperKey && typeof (raw as any)[wrapperKey] === 'object' && (raw as any)[wrapperKey] !== null) {
+    raw = (raw as any)[wrapperKey];
   }
   
   if (typeof raw !== 'object' || raw === null) {
@@ -456,10 +483,21 @@ export async function regenerateOutreach(lead: Lead, userId: string, profile?: S
   const linkedinKey = Object.keys(raw).find(k => k.toLowerCase().includes('linkedin'));
   const callKey = Object.keys(raw).find(k => k.toLowerCase().includes('call'));
 
+  function extractText(val: any): string {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object') {
+      return Object.values(val)
+        .filter(v => typeof v === 'string')
+        .join('\n\n');
+    }
+    return String(val);
+  }
+
   const followUp = {
-    email: emailKey && typeof raw[emailKey] === 'string' ? raw[emailKey] : '',
-    linkedin: linkedinKey && typeof raw[linkedinKey] === 'string' ? raw[linkedinKey] : '',
-    callScript: callKey && typeof raw[callKey] === 'string' ? raw[callKey] : '',
+    email: emailKey ? extractText((raw as any)[emailKey]) : '',
+    linkedin: linkedinKey ? extractText((raw as any)[linkedinKey]) : '',
+    callScript: callKey ? extractText((raw as any)[callKey]) : '',
   };
   console.log('[AI REGENERATE] NORMALIZED FOLLOWUP:', followUp);
   return followUp;
