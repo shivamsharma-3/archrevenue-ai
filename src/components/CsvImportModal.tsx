@@ -15,9 +15,11 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   sellerProfile: SellerProfile | null;
+  isFreePlan?: boolean;
+  currentLeadsCount?: number;
 }
 
-export default function CsvImportModal({ isOpen, onClose, sellerProfile }: Props) {
+export default function CsvImportModal({ isOpen, onClose, sellerProfile, isFreePlan, currentLeadsCount = 0 }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [progress, setProgress] = useState<BulkImportProgress | null>(null);
@@ -78,6 +80,13 @@ export default function CsvImportModal({ isOpen, onClose, sellerProfile }: Props
 
   const handleStartImport = () => {
     if (!file) return;
+
+    const MAX_FREE_LEADS = 50;
+    if (isFreePlan && currentLeadsCount >= MAX_FREE_LEADS) {
+      toast.error(`Free plan is limited to ${MAX_FREE_LEADS} leads. Please upgrade to Pro to add unlimited leads.`);
+      return;
+    }
+
     startBulkImport(file, sellerProfile, (prog) => {
       setProgress(prog);
       if (prog.status === 'completed') {

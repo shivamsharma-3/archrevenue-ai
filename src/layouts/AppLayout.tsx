@@ -115,6 +115,7 @@ export default function AppLayout() {
 
   // Multi-select for bulk operations
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [usage, setUsage] = useState<any>(null);
 
   const directoryMenuRef = useRef<HTMLDivElement>(null);
 
@@ -139,6 +140,17 @@ export default function AppLayout() {
 
     useEffect(() => {
       if (!auth.currentUser) return;
+      const usageRef = doc(db, 'users', auth.currentUser.uid, 'usage', 'tokens');
+      const unsubscribe = onSnapshot(usageRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setUsage(docSnap.data());
+        }
+      });
+      return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+      if (!auth.currentUser) return;
       const q = query(collection(db, 'leads'), where('userId', '==', auth.currentUser.uid), orderBy('createdAt', 'desc'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const leadsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Lead[];
@@ -154,11 +166,17 @@ export default function AppLayout() {
 
   const handleAddOrEditLead = async (leadData: Partial<Lead>) => {
     try {
+      const isFreePlan = (usage?.limit || 50000) <= 50000;
+      const MAX_FREE_LEADS = 50;
+
       if (editingLead && editingLead.id) {
         const leadRef = doc(db, 'leads', editingLead.id);
         await updateDoc(leadRef, { ...leadData, updatedAt: serverTimestamp() });
         showToast('Lead updated successfully', 'success');
         } else {
+          if (isFreePlan && leads.length >= MAX_FREE_LEADS) {
+            throw new Error(`Free plan is limited to ${MAX_FREE_LEADS} leads. Please upgrade to Pro to add unlimited leads.`);
+          }
           await addDoc(collection(db, 'leads'), { ...leadData, userId: auth.currentUser!.uid, userEmail: auth.currentUser!.email!, createdAt: serverTimestamp(), status: 'new', activities: [] });
           showToast('Lead created successfully', 'success');
         }
@@ -474,6 +492,8 @@ export default function AppLayout() {
              isOpen={isImportModalOpen}
              onClose={() => setIsImportModalOpen(false)}
              sellerProfile={sellerProfile}
+             isFreePlan={(usage?.limit || 50000) <= 50000}
+             currentLeadsCount={leads.length}
            />
         )}
         {isDetailsPanelOpen && selectedLead && (
