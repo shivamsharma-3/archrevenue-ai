@@ -329,53 +329,65 @@ export default function SettingsPage() {
         isOpen={confirmModal.isOpen} 
         onClose={() => !deletingData && setConfirmModal({ isOpen: false, type: null })}
         maxWidth="sm"
+        noPadding
       >
-        <div className="flex flex-col items-center text-center pt-4 pb-2">
-          <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mb-4 border border-rose-200">
-            <AlertTriangle className="w-6 h-6 text-rose-600" />
-          </div>
-          <h3 className="text-lg font-bold text-text-primary mb-2">
-            {confirmModal.type === 'leads' ? 'Delete All Leads?' : 'Delete Account?'}
-          </h3>
-          <p className="text-sm text-text-secondary mb-8 leading-relaxed">
-            {confirmModal.type === 'leads' 
-              ? `Are you sure you want to delete ALL ${leads?.length || 0} leads from your workspace? This action cannot be undone and will permanently remove all associated intelligence data.`
-              : 'Are you absolutely sure you want to delete your entire account? This will permanently delete your user profile, all leads, and remove your login access. This action CANNOT be undone.'}
-          </p>
+        <div className="relative overflow-hidden">
+          {/* Danger gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-rose-50 to-surface-card pointer-events-none" />
+          
+          <div className="relative p-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-5 shadow-sm border border-rose-100 relative">
+                <div className="absolute inset-0 rounded-full bg-rose-100 animate-ping opacity-20" />
+                <AlertTriangle className="w-8 h-8 text-rose-500" />
+              </div>
+              
+              <h3 className="text-[20px] font-bold text-text-primary mb-2 tracking-tight">
+                {confirmModal.type === 'leads' ? 'Delete All Leads' : 'Delete Account'}
+              </h3>
+              
+              <p className="text-[14px] text-text-secondary mb-6 leading-relaxed max-w-[300px]">
+                {confirmModal.type === 'leads' 
+                  ? `You are about to permanently delete all ${leads?.length || 0} leads. All intelligence data and history will be lost. This cannot be undone.`
+                  : 'You are about to permanently delete your entire account. All leads, data, and access will be completely wiped. This cannot be undone.'}
+              </p>
 
-          {confirmModal.type === 'account' && (
-            <div className="w-full mb-8 text-left">
-              <label className="block text-[13px] font-medium text-text-primary mb-2">
-                Type <span className="font-bold text-rose-600 select-all">DELETE</span> to confirm
-              </label>
-              <input 
-                type="text" 
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="DELETE"
-                className="w-full bg-surface-background border border-border-default rounded-[var(--radius-card)] px-4 py-2.5 text-[14px] text-text-primary outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all placeholder:text-text-tertiary"
-              />
+              {confirmModal.type === 'account' && (
+                <div className="w-full mb-6 text-left bg-white p-4 rounded-xl border border-rose-100 shadow-sm">
+                  <label className="block text-[13px] font-semibold text-text-primary mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                    Type <span className="font-bold text-rose-600 font-mono tracking-wider select-all px-1.5 py-0.5 bg-rose-50 rounded">DELETE</span> to confirm
+                  </label>
+                  <input 
+                    type="text" 
+                    value={confirmText}
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    placeholder="DELETE"
+                    className="w-full bg-surface-background border border-border-default rounded-[var(--radius-card)] px-4 py-2.5 text-[14px] text-text-primary outline-none focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 transition-all font-mono tracking-widest uppercase placeholder:normal-case placeholder:tracking-normal placeholder:text-text-tertiary"
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 w-full mt-2">
+                <AppButton 
+                  className="flex-1"
+                  variant="ghost"
+                  onClick={() => setConfirmModal({ isOpen: false, type: null })}
+                  disabled={deletingData}
+                >
+                  Cancel
+                </AppButton>
+                <AppButton 
+                  className="flex-1 shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all"
+                  variant="danger"
+                  onClick={confirmModal.type === 'leads' ? executeDeleteAllLeads : executeDeleteAccount}
+                  isLoading={deletingData}
+                  disabled={confirmModal.type === 'account' && confirmText !== 'DELETE'}
+                >
+                  {confirmModal.type === 'leads' ? 'Delete Leads' : 'Delete Account'}
+                </AppButton>
+              </div>
             </div>
-          )}
-
-          <div className="flex items-center gap-3 w-full">
-            <AppButton 
-              className="flex-1"
-              variant="secondary"
-              onClick={() => setConfirmModal({ isOpen: false, type: null })}
-              disabled={deletingData}
-            >
-              Cancel
-            </AppButton>
-            <AppButton 
-              className="flex-1"
-              variant="danger"
-              onClick={confirmModal.type === 'leads' ? executeDeleteAllLeads : executeDeleteAccount}
-              isLoading={deletingData}
-              disabled={confirmModal.type === 'account' && confirmText !== 'DELETE'}
-            >
-              {confirmModal.type === 'leads' ? 'Delete All Leads' : 'Delete Account'}
-            </AppButton>
           </div>
         </div>
       </AppModal>

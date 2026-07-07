@@ -66,7 +66,10 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
     setProfile(prev => ({ ...prev, [field]: value }));
 
   const handleSave = async () => {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser) {
+      toast.error('Authentication error. Please refresh the page and try again.');
+      return;
+    }
     if (!profile.companyName?.trim() && !profile.primaryOffer?.trim()) { 
       toast.error('Please provide at least a Company Name or Primary Offer to save.'); 
       return; 

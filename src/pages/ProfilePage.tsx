@@ -397,15 +397,6 @@ export default function ProfilePage() {
         </div>
       </div>
       </PageContent>
-      {/* Company Profile Wizard */}
-      {showProfileWizard && (
-        <CompanyProfileWizard
-          isOpen={showProfileWizard}
-          onComplete={(profile: any) => { setSellerProfile(profile); setShowProfileWizard(false); }}
-          onSkip={() => setShowProfileWizard(false)}
-          initialData={sellerProfile}
-        />
-      )}
     </Page>
   );
 }
