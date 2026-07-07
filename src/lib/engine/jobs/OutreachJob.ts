@@ -21,18 +21,11 @@ export class OutreachJob implements IntelligenceJob {
       generateSingleOutreach('callScript', lead, profile).catch(e => { console.error('Call failed:', e); return ''; })
     ]);
 
-    let parsedEmail = '';
-    let parsedLinkedin = '';
-    let parsedCall = '';
-
-    try { parsedEmail = JSON.parse(email).email; } catch(e) {}
-    try { parsedLinkedin = JSON.parse(linkedin).linkedin; } catch(e) {}
-    try { parsedCall = JSON.parse(callScript).callScript; } catch(e) {}
-
+    // `generateSingleOutreach` already returns the raw string, so we don't need to parse JSON here.
     const followUp: AIFollowUp = {
-      email: parsedEmail,
-      linkedin: parsedLinkedin,
-      callScript: parsedCall,
+      email: email || '',
+      linkedin: linkedin || '',
+      callScript: callScript || '',
       objective: lead.dealCoach?.bestCta || 'Establish contact',
       messagingAngle: lead.dealCoach?.bestAngle || 'Value proposition',
       painPoints: lead.dealCoach?.objections || []

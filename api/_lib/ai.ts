@@ -765,10 +765,24 @@ ${typePrompt}
 
   const resContent = await callGroq(prompt, userId, 0.35);
   try {
-    const raw = JSON.parse(resContent);
-    if (type === 'email') return raw.email || '';
-    if (type === 'linkedin') return raw.linkedin || '';
-    return raw.callScript || '';
+    let raw = JSON.parse(resContent);
+
+    // Some LLMs might wrap the result in another key like {"email": {"body": "..."}}
+    // Try to extract the actual text directly using our robust extraction
+    function extractString(val: any): string {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (typeof val === 'object') {
+        return Object.values(val)
+          .filter(v => typeof v === 'string')
+          .join('\n\n');
+      }
+      return String(val);
+    }
+
+    if (type === 'email') return extractString(raw.email) || '';
+    if (type === 'linkedin') return extractString(raw.linkedin) || '';
+    return extractString(raw.callScript) || '';
   } catch (err) {
     console.error('Failed to parse single outreach JSON:', err);
     throw new Error('AI returned an unexpected response. Please try again.');
