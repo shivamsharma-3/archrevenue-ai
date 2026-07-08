@@ -387,7 +387,7 @@ export default function AppLayout() {
   const filteredLeads = leads.filter(lead => {
     if (search && !lead.fullName?.toLowerCase().includes(search.toLowerCase()) && !lead.company?.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterHotOnly && lead.aiAnalysis?.category !== 'Hot') return false;
-    if (filterUnanalyzed && lead.aiAnalysis?.score) return false;
+    if (filterUnanalyzed && lead.aiAnalysis) return false;
     if (filterAnalyzed && !lead.aiAnalysis?.score) return false;
     if (filterNew && lead.status !== 'new') return false;
     if (filterOverdue) {

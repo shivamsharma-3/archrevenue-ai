@@ -103,7 +103,7 @@ export default function PipelinePage() {
                 'bg-gradient-to-b from-surface-secondary/50 to-transparent'
               )} />
               <h3 className="relative z-10 text-text-primary text-sm font-semibold uppercase tracking-wider mb-5 flex items-center justify-between">
-                <span>{status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                <span>{status === 'new' ? 'New Lead' : status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                 <span className="text-text-secondary bg-surface-background border border-border-default px-2.5 py-0.5 rounded-full text-xs font-semibold">
                   {leads.filter((l: Lead) => l.status === status).length}
                 </span>

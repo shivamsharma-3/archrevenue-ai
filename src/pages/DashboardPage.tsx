@@ -161,8 +161,8 @@ export default function DashboardPage() {
         {/* DAILY ACTION QUEUE — always first */}
         <DailyActionQueue
           leads={leads}
-          onLeadClick={openDetailsPanel}
-          onScoreLead={(lead) => { openDetailsPanel(lead); }}
+          onLeadClick={(lead) => navigate('/lead/' + lead.id)}
+          onScoreLead={(lead) => navigate('/lead/' + lead.id)}
         />
 
         {/* SECTION 1: Executive Overview */}
@@ -198,7 +198,7 @@ export default function DashboardPage() {
           <MissionBriefing 
             leads={leads}
             sellerProfile={sellerProfile}
-            onLeadClick={openDetailsPanel}
+            onLeadClick={(lead) => navigate('/lead/' + lead.id)}
             overdueCount={overdueCount}
             dueTodayCount={dueTodayCount}
           />
@@ -210,7 +210,7 @@ export default function DashboardPage() {
             <PageSection title="Critical Opportunities" description="Highest scoring accounts that need immediate attention.">
               <div className="flex flex-col gap-3">
                 {hotLeads.slice(0, 5).map((lead) => (
-                  <AppCard key={lead.id} hoverable level={2} className="p-4 lg:p-5 flex items-center justify-between cursor-pointer" onClick={() => openDetailsPanel(lead)}>
+                  <AppCard key={lead.id} hoverable level={2} className="p-4 lg:p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/lead/' + lead.id)}>
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-[14px]">
                         {lead.aiAnalysis?.score ?? 0}
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                       {getFollowUpStatus(lead) === 'overdue' && (
                         <AppBadge variant="danger">Overdue</AppBadge>
                       )}
-                      <AppButton variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); openDetailsPanel(lead); }}>View Deal</AppButton>
+                      <AppButton variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate('/lead/' + lead.id); }}>View Deal</AppButton>
                     </div>
                   </AppCard>
                 ))}
@@ -248,7 +248,11 @@ export default function DashboardPage() {
                       <p className="text-[10px] text-text-tertiary mt-0.5">{activity.timestamp.toLocaleDateString()} {activity.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                   )) : (
-                    <div className="pl-6 text-sm text-text-tertiary">No recent activity found.</div>
+                    <EmptyState
+                      title="No recent activity"
+                      description="Your timeline is empty. Add leads or interact with them to generate activity."
+                      icon={<Activity className="w-6 h-6 text-text-tertiary" />}
+                    />
                   )}
                 </div>
               </AppCard>
@@ -259,21 +263,29 @@ export default function DashboardPage() {
             {/* SECTION 3: Revenue Pipeline */}
             <PageSection title="Pipeline Health">
               <AppCard className="flex flex-col gap-5">
-                {['new', 'contacted', 'qualified', 'meeting_booked', 'proposal'].map(status => {
-                  const count = leads.filter((l: Lead) => l.status === status).length;
-                  const pct = activePipeline > 0 ? Math.round((count / activePipeline) * 100) : 0;
-                  return (
-                    <div key={status}>
-                      <div className="flex justify-between items-baseline mb-1">
-                        <span className="text-[12px] text-text-secondary font-medium capitalize">{status.replace('_', ' ')}</span>
-                        <span className="text-[14px] font-semibold text-text-primary">{count}</span>
+                {activePipeline === 0 ? (
+                  <EmptyState
+                    title="Pipeline is empty"
+                    description="You don't have any active deals yet."
+                    icon={<Target className="w-6 h-6 text-text-tertiary" />}
+                  />
+                ) : (
+                  ['new', 'contacted', 'qualified', 'meeting_booked', 'proposal'].map(status => {
+                    const count = leads.filter((l: Lead) => l.status === status).length;
+                    const pct = activePipeline > 0 ? Math.round((count / activePipeline) * 100) : 0;
+                    return (
+                      <div key={status}>
+                        <div className="flex justify-between items-baseline mb-1">
+                          <span className="text-[12px] text-text-secondary font-medium capitalize">{status.replace('_', ' ')}</span>
+                          <span className="text-[14px] font-semibold text-text-primary">{count}</span>
+                        </div>
+                        <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
                       </div>
-                      <div className="h-2 bg-surface-secondary rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${pct}%` }} />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </AppCard>
             </PageSection>
 

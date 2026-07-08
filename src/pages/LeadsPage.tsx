@@ -15,6 +15,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 export default function LeadsPage() {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [emailLoadingId, setEmailLoadingId] = useState<string | null>(null);
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
     action: (() => void) | null;
@@ -356,7 +357,7 @@ export default function LeadsPage() {
                               "hover:opacity-80"
                             )}
                           >
-                            <option value="new">New</option>
+                            <option value="new">New Lead</option>
                             <option value="contacted">Contacted</option>
                             <option value="qualified">Qualified</option>
                             <option value="meeting_booked">Meeting Booked</option>
@@ -421,11 +422,18 @@ export default function LeadsPage() {
                               {aiScoringLoading[lead.id!] ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                             </button>
                             <button
-                              onClick={(e) => { e.stopPropagation(); setEmailingLead(lead); }}
-                              className="p-1.5 text-text-tertiary hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all"
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setEmailLoadingId(lead.id!);
+                                setTimeout(() => {
+                                  setEmailingLead(lead); 
+                                  setEmailLoadingId(null);
+                                }, 10);
+                              }}
+                              className="p-1.5 text-text-tertiary hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-all flex items-center justify-center w-7 h-7"
                               title="Send Email"
                             >
-                              <Mail className="w-4 h-4" />
+                              {emailLoadingId === lead.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                             </button>
                             <div className="w-px h-4 bg-surface-200 mx-1" />
                             <button

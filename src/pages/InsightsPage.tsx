@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { Lead, CompanyIntelligenceRecord } from '../lib/types';
 import { TrendingUp, DollarSign, Target, Mail, Zap, Clock, ShieldCheck, Sparkles, BarChart3, ArrowUpRight, ArrowDownRight, Upload, Flame, ExternalLink, Users, Rss } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -9,6 +9,7 @@ import { AppButton } from '../components/ui/AppButton';
 
 export default function InsightsPage() {
   const { leads = [], loading, handleExportCsv, openDetailsPanel } = useOutletContext<any>();
+  const navigate = useNavigate();
 
   // Use useMemo to prevent recalculating on every re-render
   const metrics = useMemo(() => {
@@ -179,27 +180,23 @@ export default function InsightsPage() {
                       <span className="text-[10px] text-text-tertiary font-medium shrink-0">{item.timeAgo}</span>
                     </div>
                     <p className="text-[12px] text-text-secondary mb-2">{item.signal}</p>
-                    <p className="text-[11px] text-indigo-600 font-medium bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1 w-fit">{item.opportunity}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openDetailsPanel && openDetailsPanel(item.lead)}
-                      className="px-3 py-1.5 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                    >
-                      Open Deal
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (item.lead.aiAnalysis?.followUp?.email) {
-                          openDetailsPanel && openDetailsPanel(item.lead);
-                        } else {
-                          openDetailsPanel && openDetailsPanel(item.lead);
-                        }
-                      }}
-                      className="px-3 py-1.5 text-[11px] font-bold bg-surface-secondary hover:bg-surface-hover text-text-secondary border border-border-default rounded-lg transition-colors"
-                    >
-                      Generate Message
-                    </button>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[11px] text-indigo-600 font-medium bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1 w-fit">{item.opportunity}</p>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => navigate('/lead/' + item.lead.id)}
+                          className="px-3 py-1.5 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                        >
+                          Open Deal
+                        </button>
+                        <button
+                          onClick={() => navigate('/lead/' + item.lead.id + '#playbook')}
+                          className="px-3 py-1.5 text-[11px] font-bold bg-surface-secondary hover:bg-surface-hover text-text-secondary border border-border-default rounded-lg transition-colors"
+                        >
+                          Generate Message
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               ))}
