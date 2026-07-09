@@ -29,7 +29,7 @@ const FAQS = [
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [activeFaqs, setActiveFaqs] = useState<Set<number>>(new Set());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const parallaxRef = useRef<HTMLDivElement>(null);
 
@@ -165,12 +165,6 @@ export default function LandingPage() {
                   className="btn-luxury px-8 py-4 text-[13px] uppercase tracking-widest font-medium text-surface-background bg-text-primary border border-text-primary transition-all text-center"
                 >
                   Start 14-Day Free Trial
-                </Link>
-                <Link
-                  to="/demo"
-                  className="btn-luxury px-8 py-4 text-[13px] uppercase tracking-widest font-medium text-text-primary bg-transparent border border-border-default hover:border-text-primary transition-all text-center"
-                >
-                  View Demonstration
                 </Link>
               </div>
             </div>
@@ -347,15 +341,20 @@ export default function LandingPage() {
             {FAQS.map((faq, i) => (
               <div key={i} className="border-b border-border-default">
                 <button
-                  onClick={() => setActiveFaq(activeFaq === i ? null : i)}
+                  onClick={() => {
+                    const newFaqs = new Set(activeFaqs);
+                    if (newFaqs.has(i)) newFaqs.delete(i);
+                    else newFaqs.add(i);
+                    setActiveFaqs(newFaqs);
+                  }}
                   className="w-full text-left py-8 flex items-center justify-between focus:outline-none group"
-                  aria-expanded={activeFaq === i}
+                  aria-expanded={activeFaqs.has(i)}
                 >
                   <span className="text-[16px] font-display font-medium text-text-primary pr-8 group-hover:text-text-secondary transition-colors">{faq.question}</span>
-                  <ChevronDown className={cn("w-5 h-5 text-text-secondary shrink-0 transition-transform duration-300", activeFaq === i && "rotate-180")} />
+                  <ChevronDown className={cn("w-5 h-5 text-text-secondary shrink-0 transition-transform duration-300", activeFaqs.has(i) && "rotate-180")} />
                 </button>
                 <div 
-                  className={cn("faq-accordion-content", activeFaq === i ? "max-h-96 opacity-100" : "max-h-0 opacity-0")}
+                  className={cn("faq-accordion-content", activeFaqs.has(i) ? "max-h-96 opacity-100" : "max-h-0 opacity-0")}
                 >
                   <p className="pb-8 text-[15px] text-text-secondary leading-[1.8] font-light">
                     {faq.answer}

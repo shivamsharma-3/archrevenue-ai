@@ -77,8 +77,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
-        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login onLoginSuccess={() => {}} />} />
-        <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Login initialIsRegistering={true} onLoginSuccess={() => {}} />} />
+        <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Login initialIsRegistering={true} />} />
         
         {/* Protected layout routes */}
         <Route element={user ? <AppLayout /> : <Navigate to="/login" />}>
@@ -105,7 +105,7 @@ export default function App() {
         <Route path="/security" element={<SecurityTrust />} />
         
         {/* Internal Design System Playground */}
-        <Route path="/design-system" element={<DesignSystemPage />} />
+        {import.meta.env.DEV && <Route path="/design-system" element={<DesignSystemPage />} />}
 
       </Routes>
       <Toaster 

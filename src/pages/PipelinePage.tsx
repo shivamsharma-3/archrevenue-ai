@@ -11,8 +11,24 @@ import { AppButton } from '../components/ui/AppButton';
 
 export default function PipelinePage() {
   const {
-    leads, loading, openDetailsPanel, handleScoreLead, aiScoringLoading, setIsModalOpen, setIsImportModalOpen, setEditingLead
+    leads, loading, openDetailsPanel, handleScoreLead, aiScoringLoading, setIsModalOpen, setIsImportModalOpen, setEditingLead, handleKanbanStatusChange
   } = useOutletContext<any>();
+
+  const handleDragStart = (e: React.DragEvent, leadId: string) => {
+    e.dataTransfer.setData('text/plain', leadId);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, status: string) => {
+    e.preventDefault();
+    const leadId = e.dataTransfer.getData('text/plain');
+    if (leadId) {
+      handleKanbanStatusChange(leadId, status);
+    }
+  };
 
   if (loading) {
     return (
@@ -82,7 +98,10 @@ export default function PipelinePage() {
       <div className="flex-1 min-h-0 rounded-[var(--radius-card)] border border-border-default shadow-sm bg-surface-card overflow-hidden flex flex-col relative mt-2">
         <div className="flex-1 flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-2 w-full hide-scrollbar">
           {['new', 'contacted', 'qualified', 'meeting_booked', 'proposal', 'lost', 'won'].map((status, index) => (
-            <div key={status} className={cn(
+            <div key={status}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, status)}
+              className={cn(
               "w-[85vw] sm:w-auto sm:flex-1 shrink-0 min-w-[260px] p-4 h-full flex flex-col snap-center relative overflow-hidden",
               index !== 6 && "border-r border-border-default",
               status === 'won' ? 'bg-emerald-50/30' :
@@ -110,7 +129,10 @@ export default function PipelinePage() {
               </h3>
               <div className="relative z-10 space-y-3 flex-1 overflow-y-auto pr-1 pb-2 hide-scrollbar">
                 {leads.filter((l: Lead) => l.status === status).map((lead: Lead) => (
-                  <div key={lead.id} onClick={() => openDetailsPanel(lead)} className="bg-surface-card shadow-sm border border-border-default rounded-[var(--radius-button)] p-4 cursor-pointer hover:border-border-hover hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+                  <div key={lead.id} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, lead.id!)}
+                    onClick={() => openDetailsPanel(lead)} className="bg-surface-card shadow-sm border border-border-default rounded-[var(--radius-button)] p-4 cursor-pointer hover:border-border-hover hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 group relative overflow-hidden">
                     <div className="font-semibold text-text-primary mb-1.5 tracking-wide flex items-center justify-between">
                       <span className="truncate pr-2">{lead.fullName || 'Unknown'}</span>
                       {(() => {

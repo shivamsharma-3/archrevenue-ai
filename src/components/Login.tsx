@@ -6,13 +6,12 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 
 interface LoginProps {
-  onLoginSuccess: () => void;
   initialIsRegistering?: boolean;
 }
 
 import BrandLogo from './BrandLogo';
 
-export default function Login({ onLoginSuccess, initialIsRegistering = false }: LoginProps) {
+export default function Login({ initialIsRegistering = false }: LoginProps) {
   const [isRegistering, setIsRegistering] = useState(initialIsRegistering);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +32,6 @@ export default function Login({ onLoginSuccess, initialIsRegistering = false }: 
       } else {
         await loginWithEmail(email, password);
       }
-      onLoginSuccess();
     } catch (err: any) {
       setError(err.message || 'Authentication failed.');
       setIsLoading(false);
@@ -44,13 +42,9 @@ export default function Login({ onLoginSuccess, initialIsRegistering = false }: 
     setIsLoading(true);
     setError(null);
     try {
-      const result = await loginWithGoogle();
+      await loginWithGoogle();
       // result is null when redirect flow was triggered (popup was blocked)
       // In that case the page will reload automatically — no action needed
-      if (result) {
-        onLoginSuccess();
-      }
-      // If result is null, redirect is in progress — keep loading state
     } catch (err: any) {
       const code = err?.code || '';
       if (code === 'auth/popup-closed-by-user') {
