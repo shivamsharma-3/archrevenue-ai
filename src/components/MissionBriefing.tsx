@@ -142,7 +142,8 @@ export default function MissionBriefing({
       </AppCard>
 
       {/* 2. Today's Priorities */}
-      <AppCard className="flex flex-col">
+      <AppCard className="flex flex-col relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-5 h-5 text-amber-500" />
           <h2 className="text-[16px] font-semibold text-text-primary">Today's Priorities</h2>
