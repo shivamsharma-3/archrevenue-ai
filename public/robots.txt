@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /billing/
+
+# Explicitly allow AI crawlers (AISEO / LLMO)
+User-agent: ChatGPT-User
+Allow: /
+User-agent: GPTBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Anthropic-ai
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+
+Sitemap: https://archrevenue.ai/sitemap.xml

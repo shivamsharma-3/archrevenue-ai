@@ -396,6 +396,7 @@ export default function LandingPage() {
           <div className="flex items-center space-x-8 text-[11px] uppercase tracking-widest text-text-secondary font-medium">
             <Link to="/privacy" className="hover:text-text-primary transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-text-primary transition-colors">Terms</Link>
+            <Link to="/security" className="hover:text-text-primary transition-colors">Security</Link>
             <a href="mailto:contact@archrevenue.com" className="hover:text-text-primary transition-colors">Contact</a>
           </div>
         </div>
