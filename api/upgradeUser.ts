@@ -11,10 +11,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!uid) return;
 
   try {
-    const { targetUserId } = req.body;
+    const targetId = req.body.targetUserId || req.body.targetUid;
+    const newRole = req.body.role || 'pro'; // Default to pro for backwards compatibility
     
-    if (!targetUserId || typeof targetUserId !== 'string') {
-      return res.status(400).json({ error: 'targetUserId is required' });
+    if (!targetId || typeof targetId !== 'string') {
+      return res.status(400).json({ error: 'targetUserId or targetUid is required' });
     }
 
     // Check if the caller is an admin
@@ -23,14 +24,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(403).json({ error: 'Forbidden: You must be an admin to perform this action' });
     }
 
-    // Upgrade the target user
-    const usageRef = db.collection('users').doc(targetUserId).collection('usage').doc('tokens');
+    // Update the role in the user document
+    await db.collection('users').doc(targetId).set({
+      role: newRole
+    }, { merge: true });
+
+    // Update the tokens limit based on the role
+    const tokenLimit = newRole === 'pro' ? 100000000 : (newRole === 'starter' ? 1000000 : 50000);
+    const usageRef = db.collection('users').doc(targetId).collection('usage').doc('tokens');
     await usageRef.set({
-      limit: 100000000, // 100M tokens (Pro)
+      limit: tokenLimit,
       tokensUsed: 0,
     }, { merge: true });
 
-    return res.status(200).json({ success: true, message: `Successfully upgraded user ${targetUserId} to Pro` });
+    return res.status(200).json({ success: true, message: `Successfully changed user ${targetId} role to ${newRole}` });
   } catch (error: any) {
     console.error('Error in upgradeUser:', error);
     return res.status(500).json({ error: error.message || 'Failed to upgrade user' });
