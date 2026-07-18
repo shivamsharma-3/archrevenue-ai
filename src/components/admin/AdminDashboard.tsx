@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LogOut, Shield, Users as UsersIcon, Database, Activity, Settings, List, Zap, Search, Eye, RefreshCw, Check, Clock, AlertTriangle } from 'lucide-react';
+import { LogOut, Shield, Users as UsersIcon, Database, Activity, Settings, List, Zap, Search, Eye, RefreshCw, Check, Clock, AlertTriangle, Trash2 } from 'lucide-react';
 import { auth, db } from '../../lib/firebase';
 import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
@@ -137,6 +137,46 @@ export default function AdminDashboard() {
       console.error(e);
       toast.error(e.message || 'Upgrade failed.', { id: loadingToast });
       await logSystemEvent('Upgrade Failed', 'error', targetUid);
+    }
+  };
+
+  const handleDeleteAllNonAdmins = async () => {
+    if (!window.confirm("Are you absolutely sure you want to delete all non-admin users? This cannot be undone.")) return;
+    
+    const loadingToast = toast.loading('Deleting non-admin users...');
+    try {
+      let deletedCount = 0;
+      for (const user of users) {
+        if (user.role !== 'admin') {
+          await deleteDoc(doc(db, 'users', user.id));
+          deletedCount++;
+        }
+      }
+      
+      toast.success(`Successfully deleted ${deletedCount} non-admin users!`, { id: loadingToast });
+      setUsers(users.filter(u => u.role === 'admin'));
+      
+      await logSystemEvent(`Deleted ${deletedCount} non-admin users`, 'warn', 'system');
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || 'Deletion failed.', { id: loadingToast });
+      await logSystemEvent('Batch Deletion Failed', 'error', 'system');
+    }
+  };
+
+  const handleDeleteUser = async (targetUid: string, email: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete user ${email || targetUid}?`)) return;
+    
+    const loadingToast = toast.loading('Deleting user...');
+    try {
+      await deleteDoc(doc(db, 'users', targetUid));
+      toast.success('Successfully deleted user!', { id: loadingToast });
+      setUsers(users.filter(u => u.id !== targetUid));
+      await logSystemEvent(`Deleted user ${targetUid}`, 'warn', 'system');
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e.message || 'Deletion failed.', { id: loadingToast });
+      await logSystemEvent(`Failed to delete user ${targetUid}`, 'error', 'system');
     }
   };
 
@@ -325,15 +365,23 @@ export default function AdminDashboard() {
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">User Directory</h1>
                     <p className="text-[14px] text-gray-500 mt-1">Manage platform access and billing tiers.</p>
                   </div>
-                  <div className="relative w-full md:w-72">
-                    <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input 
-                      type="text" 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search users by ID or email..." 
-                      className="w-full bg-white border border-gray-300 rounded-xl pl-11 pr-4 py-2.5 text-[14px] text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    />
+                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full md:w-auto">
+                    <button
+                      onClick={handleDeleteAllNonAdmins}
+                      className="inline-flex items-center px-4 py-2 text-[13px] font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-colors whitespace-nowrap"
+                    >
+                      Delete All Non-Admins
+                    </button>
+                    <div className="relative w-full sm:w-72">
+                      <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input 
+                        type="text" 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search users by ID or email..." 
+                        className="w-full bg-white border border-gray-300 rounded-xl pl-11 pr-4 py-2.5 text-[14px] text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -402,6 +450,13 @@ export default function AdminDashboard() {
                                         Make Pro
                                       </button>
                                     )}
+                                    <button
+                                      onClick={() => handleDeleteUser(user.id, user.email)}
+                                      className="inline-flex items-center justify-center w-8 h-8 text-red-500 bg-white border border-gray-300 hover:bg-red-50 hover:border-red-200 hover:text-red-600 rounded-lg shadow-sm transition-colors ml-1"
+                                      title="Permanently Delete User"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
                                   </div>
                                 )}
                               </td>

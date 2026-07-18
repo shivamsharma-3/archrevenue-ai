@@ -71,7 +71,7 @@ service cloud.firestore {
     // Only the user themselves can read or write their own profile.
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      allow delete: if request.auth != null && request.auth.uid == userId;
+      allow delete: if request.auth != null && (request.auth.uid == userId || isAdmin());
       allow create: if request.auth != null
                    && request.auth.uid == userId
                    && (!request.resource.data.keys().hasAny(['role']) || isAdmin());

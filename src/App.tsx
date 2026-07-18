@@ -7,7 +7,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, handleRedirectResult } from './lib/firebase';
+import { getDoc, doc, setDoc } from 'firebase/firestore';
+import { auth, handleRedirectResult, db } from './lib/firebase';
 import * as Sentry from '@sentry/react';
 import posthog from 'posthog-js';
 import { Analytics } from "@vercel/analytics/react";
@@ -50,6 +51,16 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (user) {
+        // Self-heal: ensure user document exists in Firestore (since admin dash relies on it)
+        getDoc(doc(db, 'users', user.uid)).then((snap) => {
+          if (!snap.exists()) {
+            setDoc(doc(db, 'users', user.uid), {
+              email: user.email,
+              role: 'free'
+            }).catch(console.error);
+          }
+        }).catch(console.error);
+
         Sentry.setUser({ id: user.uid, email: user.email || undefined });
         
         // Only capture login event if this is a fresh login, not just page reload

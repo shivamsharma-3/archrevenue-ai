@@ -280,16 +280,16 @@ export default function CsvImportModal({ isOpen, onClose, sellerProfile, isFreeP
                 </div>
 
                 {progress.status !== 'parsing' && progress.status !== 'failed' && (
-                  <div className="flex flex-wrap justify-center gap-3 sm:gap-4 w-full max-w-lg mt-6">
-                    <div className="flex-1 min-w-[90px] bg-surface-card border border-border-default rounded-[var(--radius-card)] p-3 sm:p-4 flex flex-col items-center shadow-sm">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-lg mt-6">
+                    <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-3 sm:p-4 flex flex-col items-center shadow-sm">
                       <span className="text-xl sm:text-2xl font-bold text-text-primary">{progress.completed}</span>
                       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-text-secondary font-semibold mt-1">Completed</span>
                     </div>
-                    <div className="flex-1 min-w-[90px] bg-surface-card border border-border-default rounded-[var(--radius-card)] p-3 sm:p-4 flex flex-col items-center shadow-sm">
+                    <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-3 sm:p-4 flex flex-col items-center shadow-sm">
                       <span className="text-xl sm:text-2xl font-bold text-blue-500">{remaining}</span>
                       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-blue-500/70 font-semibold mt-1">Remaining</span>
                     </div>
-                    <div className="flex-1 min-w-[90px] bg-surface-card border border-border-default rounded-[var(--radius-card)] p-3 sm:p-4 flex flex-col items-center shadow-sm">
+                    <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-3 sm:p-4 flex flex-col items-center shadow-sm">
                       <span className="text-xl sm:text-2xl font-bold text-text-tertiary">{progress.duplicatesSkipped}</span>
                       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-text-tertiary font-semibold mt-1">Skipped</span>
                     </div>
