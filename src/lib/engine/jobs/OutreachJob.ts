@@ -10,6 +10,13 @@ export class OutreachJob implements IntelligenceJob {
   description = 'Writing personalized email, LinkedIn, and call scripts';
 
   shouldSkip(lead: Lead): boolean {
+    const analysis = lead.aiAnalysis;
+    if (analysis) {
+      const score = typeof analysis.score === 'string' ? parseInt(analysis.score, 10) : analysis.score;
+      if (typeof score === 'number' && score < 40) return true;
+      if (['Dead', 'Low'].includes(analysis.priority || '')) return true;
+      if (['Cold', 'Dead'].includes(analysis.category || '')) return true;
+    }
     return !!lead.aiAnalysis?.followUp?.email && !!lead.aiAnalysis?.followUp?.linkedin;
   }
 

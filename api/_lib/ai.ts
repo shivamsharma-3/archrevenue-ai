@@ -701,6 +701,19 @@ export async function generateSingleOutreach(
   userId: string,
   profile?: SellerProfile | null
 ): Promise<string> {
+  const analysis = lead.aiAnalysis;
+  if (analysis) {
+    const score = typeof analysis.score === 'string' ? parseInt(analysis.score, 10) : analysis.score;
+    if (
+      (typeof score === 'number' && score < 40) ||
+      ['Dead', 'Low'].includes(analysis.priority || '') ||
+      ['Cold', 'Dead'].includes(analysis.category || '')
+    ) {
+      console.log(`[AI SINGLE OUTREACH] Skipping ${type} generation for lead score < 40 or low priority`);
+      return '';
+    }
+  }
+
   const research = lead.research ?? null;
   const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
   const leadCtx    = buildLeadContext(lead);
