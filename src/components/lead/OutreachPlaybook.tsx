@@ -110,11 +110,19 @@ export const OutreachPlaybook = memo(({
     );
   }
 
+  const { objective, messagingAngle, painPoints, email, linkedin, callScript } = followUp;
+  const { subject: emailSubject } = email ? extractSubjectAndBody(email) : { subject: '' };
+
+  // All content fields are empty — AI ran but returned empty strings
+  const allContentEmpty = !email && !linkedin && !callScript;
+
   // Check for low score hard-gate
   const score = lead.aiAnalysis?.score ?? 0;
   const isLowScore = score > 0 && score < 40;
   const isDead = lead.aiAnalysis?.category === 'Dead' || lead.aiAnalysis?.category === 'Cold' || lead.aiAnalysis?.priority === 'Low' || lead.aiAnalysis?.priority === 'Dead';
-  const shouldBlockOutreach = isLowScore || isDead;
+  
+  // If they forced generation, it won't be empty anymore, so we remove the lock
+  const shouldBlockOutreach = (isLowScore || isDead) && allContentEmpty;
 
   if (shouldBlockOutreach) {
     return (
@@ -130,20 +138,28 @@ export const OutreachPlaybook = memo(({
           <span className="text-xl shrink-0">🛑</span>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-red-800 mb-1">Insufficient Data — Do Not Contact</p>
-            <p className="text-[12px] text-red-700 leading-relaxed">
+            <p className="text-[12px] text-red-700 leading-relaxed mb-4">
               This lead scored below the minimum threshold for engagement (Score: {score}/100). The AI Engine strongly recommends against contacting this lead due to insufficient data or poor ICP fit. Outreach generation is disabled.
             </p>
+            {onGenerate && (
+              <button
+                onClick={() => {
+                  if (window.confirm("WARNING: The AI has very little factual data about this lead. Generating outreach now may result in hallucinations, fabricated claims, or a generic, ineffective pitch. Are you absolutely sure you want to force generate a playbook for this lead?")) {
+                    onGenerate();
+                  }
+                }}
+                disabled={isGenerating}
+                className="px-4 py-2 text-[12px] font-bold rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5 w-fit"
+              >
+                {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                {isGenerating ? 'Generating...' : 'Force Generate Anyway'}
+              </button>
+            )}
           </div>
         </div>
       </AppCard>
     );
   }
-
-  const { objective, messagingAngle, painPoints, email, linkedin, callScript } = followUp;
-  const { subject: emailSubject } = email ? extractSubjectAndBody(email) : { subject: '' };
-
-  // All content fields are empty — AI ran but returned empty strings
-  const allContentEmpty = !email && !linkedin && !callScript;
 
   const renderScriptSection = (
     type: 'email' | 'linkedin' | 'callScript',

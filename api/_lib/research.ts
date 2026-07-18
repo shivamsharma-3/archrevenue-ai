@@ -145,6 +145,7 @@ ${confidenceNote}
 ${fetchSucceeded ? `Website content for ${targetUrl}:\n"""\n${scrapedContext}\n"""` : `Company URL: ${targetUrl}`}
 
 RULES:
+- HONESTY FIRST (NO HALLUCINATIONS): If the website content is missing, thin, or you do not have enough specific data to determine what the company does, DO NOT invent an industry, target segment, or summary. You must output "Unknown" for industry and "Insufficient data to classify" for the summary. Do not guess based merely on the company name.
 - opportunityScore must reflect ACTUAL evidence: real growth signals, buying intent indicators, company maturity. Do NOT score high on hope.
 - hiringSignals: look for career pages, "We're hiring", job titles mentioned, team growth language. Empty array [] if none found.
 - businessMaturity: judge from language, team size, product sophistication, funding language, customer references.
