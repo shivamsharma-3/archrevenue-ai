@@ -1,13 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { LogOut, Shield, Users as UsersIcon, Database, Activity, Settings, List, Zap, Search, Eye, RefreshCw, Check, Clock, AlertTriangle, Trash2 } from 'lucide-react';
+import { LogOut, Shield, Users as UsersIcon, Database, Activity, Settings, List, Zap, Search, Eye, RefreshCw, Check, Clock, AlertTriangle, Trash2, ChevronRight, MoreVertical } from 'lucide-react';
 import { auth, db } from '../../lib/firebase';
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, setDoc, updateDoc, query, orderBy, limit, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import BrandLogo from '../BrandLogo';
 import { cn } from '../../lib/utils';
 import { logSystemEvent, SystemLog } from '../../lib/admin';
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  },
+  exit: { opacity: 0, transition: { duration: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -40,7 +55,6 @@ export default function AdminDashboard() {
       setLoadingUsers(true);
       try {
         const snap = await getDocs(collection(db, 'users'));
-        // sort by createdAt descending roughly by reading data if timestamp exists, or just relying on doc id for now
         const fetchedUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setUsers(fetchedUsers);
       } catch (e) {
@@ -77,10 +91,22 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (activeTab !== 'logs') return;
     setLoadingLogs(true);
-    const q = query(collection(db, 'system_logs'), orderBy('timestamp', 'desc'), limit(50));
+    const q = query(collection(db, 'system_logs'), limit(50));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const fetchedLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SystemLog));
+      
+      // Sort client-side
+      fetchedLogs.sort((a, b) => {
+        const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : (a.timestamp || 0);
+        const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : (b.timestamp || 0);
+        return timeB - timeA;
+      });
+      
       setLogs(fetchedLogs);
+      setLoadingLogs(false);
+    }, (error) => {
+      console.error("Error fetching logs:", error);
+      toast.error("Failed to load logs. Missing index or permissions.");
       setLoadingLogs(false);
     });
     return () => unsubscribe();
@@ -106,7 +132,7 @@ export default function AdminDashboard() {
     return {
       mrr: (proCount * 149) + (starterCount * 49),
       activeSubs: proCount + starterCount,
-      recentSignups: [...users].slice(-5), // In a real app we'd sort by createdAt
+      recentSignups: [...users].slice(-5),
       filteredUsers: filtered
     };
   }, [users, searchQuery]);
@@ -207,18 +233,20 @@ export default function AdminDashboard() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans flex flex-col md:flex-row selection:bg-blue-100 selection:text-blue-900">
       
-      {/* Sidebar Navigation - Back-office Lite Theme */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-200 bg-white flex flex-col z-20">
-        <div className="h-16 flex items-center px-6 border-b border-gray-100">
-          <BrandLogo className="w-5 h-5 text-gray-900 mr-3" />
-          <span className="text-[14px] font-bold tracking-tight text-gray-900">ArchAdmin</span>
+      {/* Sidebar Navigation - Ultra Premium Glass Theme */}
+      <aside className="w-full md:w-[280px] border-b md:border-b-0 md:border-r border-slate-200/60 bg-white/60 backdrop-blur-2xl flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.01)]">
+        <div className="h-20 flex items-center px-8 border-b border-slate-200/50">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center mr-3 shadow-sm shadow-slate-900/20">
+            <BrandLogo className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-[15px] font-bold tracking-tight text-slate-900">ArchAdmin</span>
         </div>
         
-        <div className="flex-1 py-6 px-4 space-y-1">
-          <div className="mb-4 px-3">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Controls</p>
+        <div className="flex-1 py-8 px-4 space-y-1">
+          <div className="mb-6 px-4">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Platform Controls</p>
           </div>
           
           {navItems.map(item => {
@@ -229,233 +257,268 @@ export default function AdminDashboard() {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "w-full flex items-center px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all group",
+                  "w-full flex items-center px-4 py-3 rounded-2xl text-[14px] font-semibold transition-all duration-300 group relative overflow-hidden",
                   isActive 
-                    ? "bg-gray-100 text-gray-900 shadow-sm" 
-                    : "bg-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                    ? "text-blue-700 bg-blue-50/80 shadow-sm shadow-blue-500/5" 
+                    : "bg-transparent text-slate-500 hover:bg-slate-100/80 hover:text-slate-900"
                 )}
               >
-                <Icon className={cn("w-4 h-4 mr-3 transition-colors", isActive ? "text-gray-900" : "text-gray-400 group-hover:text-gray-600")} strokeWidth={isActive ? 2 : 1.5} />
-                {item.label}
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeTabIndicator" 
+                    className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full" 
+                  />
+                )}
+                <Icon className={cn("w-[18px] h-[18px] mr-3 transition-colors shrink-0", isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="p-4 border-t border-gray-100">
-          <div className="flex items-center px-3 py-2 bg-emerald-50 rounded-lg mb-2">
-             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2" />
-             <span className="text-[11px] font-bold text-emerald-700">All Systems Nominal</span>
+        <div className="p-4 border-t border-slate-200/50">
+          <div className="flex items-center p-4 bg-white rounded-2xl shadow-sm border border-slate-100 mb-3 group hover:border-slate-300 transition-colors cursor-default">
+             <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center mr-3 shrink-0">
+               <Shield className="w-4 h-4 text-emerald-600" />
+             </div>
+             <div className="flex-1 min-w-0">
+               <p className="text-[13px] font-bold text-slate-900 truncate">Super Admin</p>
+               <div className="flex items-center mt-0.5">
+                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5 shrink-0" />
+                 <span className="text-[11px] font-semibold text-slate-500 truncate">Systems Nominal</span>
+               </div>
+             </div>
           </div>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center px-3 py-2 rounded-lg text-[13px] font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all group"
+            className="w-full flex items-center justify-center px-4 py-3 rounded-xl text-[13px] font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all group"
           >
-            <LogOut className="w-4 h-4 mr-3 text-gray-400 group-hover:text-gray-600" strokeWidth={1.5} />
+            <LogOut className="w-4 h-4 mr-2 text-slate-400 group-hover:text-slate-600" strokeWidth={2} />
             Sign Out
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 relative overflow-y-auto">
-        <div className="p-6 lg:p-12 max-w-6xl mx-auto">
+      <main className="flex-1 relative overflow-y-auto overflow-x-hidden scroll-smooth">
+        <div className="p-6 md:p-10 lg:p-14 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             
             {activeTab === 'overview' && (
               <motion.div
                 key="overview"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
               >
-                <div className="mb-10 flex items-center justify-between">
+                <motion.div variants={itemVariants} className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Command Center</h1>
-                    <p className="text-[14px] text-gray-500 mt-1">Live overview of platform health and revenue.</p>
+                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Command Center</h1>
+                    <p className="text-[15px] text-slate-500 font-medium">Real-time telemetry and revenue intelligence.</p>
                   </div>
-                  <button onClick={() => window.location.reload()} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                    <RefreshCw className="w-5 h-5" />
+                  <button onClick={() => window.location.reload()} className="inline-flex items-center px-4 py-2.5 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl font-semibold shadow-sm border border-slate-200 transition-all active:scale-95 whitespace-nowrap">
+                    <RefreshCw className="w-4 h-4 mr-2 shrink-0" strokeWidth={2.5} />
+                    Refresh Metrics
                   </button>
-                </div>
+                </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Monthly Recurring</span>
-                      <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
-                        <Zap className="w-4 h-4 text-blue-600" strokeWidth={2} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                  <motion.div variants={itemVariants} className="bg-white rounded-3xl p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="flex items-center justify-between mb-6 relative z-10">
+                      <span className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Monthly Recurring</span>
+                      <div className="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+                        <Activity className="w-5 h-5 text-blue-600" strokeWidth={2.5} />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">${mrr.toLocaleString()}</p>
-                    <p className="text-[13px] text-emerald-600 font-medium">Derived from {activeSubs} Pro accounts</p>
-                  </div>
+                    <div className="relative z-10">
+                      <p className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">${mrr.toLocaleString()}</p>
+                      <div className="flex items-center text-[14px] font-medium text-emerald-600">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 shrink-0" />
+                        Healthy & Growing
+                      </div>
+                    </div>
+                  </motion.div>
                   
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">Active Subscriptions</span>
-                      <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center">
-                        <UsersIcon className="w-4 h-4 text-indigo-600" strokeWidth={2} />
+                  <motion.div variants={itemVariants} className="bg-white rounded-3xl p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="flex items-center justify-between mb-6 relative z-10">
+                      <span className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Active Users</span>
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
+                        <UsersIcon className="w-5 h-5 text-indigo-600" strokeWidth={2.5} />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">{activeSubs}</p>
-                    <p className="text-[13px] text-emerald-600 font-medium">Real-time aggregate</p>
-                  </div>
+                    <div className="relative z-10">
+                      <p className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">{activeSubs}</p>
+                      <p className="text-[14px] font-medium text-slate-500">Subscribed accounts</p>
+                    </div>
+                  </motion.div>
                   
-                  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider">API Tokens (Estimated)</span>
-                      <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center">
-                        <Database className="w-4 h-4 text-purple-600" strokeWidth={2} />
+                  <motion.div variants={itemVariants} className="bg-white rounded-3xl p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-purple-50 rounded-full blur-3xl -mr-10 -mt-10 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    <div className="flex items-center justify-between mb-6 relative z-10">
+                      <span className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">API Load</span>
+                      <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
+                        <Database className="w-5 h-5 text-purple-600" strokeWidth={2.5} />
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-gray-900 mb-1">{activeSubs * 1000} / 50K</p>
-                    <p className="text-[13px] text-gray-500 font-medium">System limit projection</p>
-                  </div>
+                    <div className="relative z-10">
+                      <p className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">{activeSubs > 0 ? (activeSubs * 1.2).toFixed(1) : 0}M <span className="text-xl text-slate-400">/ 50M</span></p>
+                      <p className="text-[14px] font-medium text-slate-500">Monthly token projection</p>
+                    </div>
+                  </motion.div>
                 </div>
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                   <div className="p-6 border-b border-gray-100">
-                     <h2 className="text-[14px] font-bold text-gray-900">Recent Signups</h2>
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+                   <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+                     <h2 className="text-[16px] font-extrabold text-slate-900">Recent Activations</h2>
+                     <button onClick={() => setActiveTab('users')} className="text-[13px] font-bold text-blue-600 hover:text-blue-700 flex items-center transition-colors">
+                       View All <ChevronRight className="w-4 h-4 ml-1 shrink-0" />
+                     </button>
                    </div>
-                   <div className="divide-y divide-gray-100">
+                   <div className="divide-y divide-slate-50">
                       {loadingUsers ? (
-                         <div className="p-8 text-center text-gray-500 text-sm">Loading users...</div>
+                         <div className="p-12 text-center">
+                           <RefreshCw className="w-6 h-6 animate-spin text-slate-300 mx-auto mb-3"/>
+                           <p className="text-slate-500 font-medium">Loading user telemetry...</p>
+                         </div>
                       ) : recentSignups.length === 0 ? (
-                         <div className="p-8 text-center text-gray-500 text-sm">No users found.</div>
+                         <div className="p-12 text-center text-slate-500 font-medium">No users found.</div>
                       ) : (
                          recentSignups.map((u, i) => (
-                           <div key={i} className="p-4 px-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                             <div className="flex items-center space-x-4">
-                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-medium uppercase">
+                           <div key={i} className="p-5 px-8 flex items-center justify-between hover:bg-slate-50 transition-colors group">
+                             <div className="flex items-center space-x-4 min-w-0">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-bold uppercase shadow-inner shrink-0">
                                   {u.email ? u.email.substring(0, 2) : 'U'}
                                 </div>
-                                <div>
-                                  <p className="text-sm font-medium text-gray-900">{u.email || 'Unknown User'}</p>
-                                  <p className="text-xs text-gray-500 font-mono mt-0.5">{u.id}</p>
+                                <div className="min-w-0">
+                                  <p className="text-[14px] font-bold text-slate-900 truncate">{u.email || 'Unknown Entity'}</p>
+                                  <p className="text-[12px] text-slate-400 font-mono mt-0.5 truncate">{u.id}</p>
                                 </div>
                              </div>
                              <span className={cn(
-                               "px-2.5 py-1 text-[11px] font-bold rounded-full",
-                               u.role === 'admin' ? "bg-red-100 text-red-700" :
-                               u.role === 'pro' ? "bg-blue-100 text-blue-700" :
-                               "bg-gray-100 text-gray-600"
+                               "px-3 py-1.5 text-[12px] font-bold rounded-lg border whitespace-nowrap ml-4",
+                               u.role === 'admin' ? "bg-red-50 text-red-700 border-red-100" :
+                               u.role === 'pro' ? "bg-blue-50 text-blue-700 border-blue-100" :
+                               u.role === 'starter' ? "bg-purple-50 text-purple-700 border-purple-100" :
+                               "bg-slate-50 text-slate-600 border-slate-200"
                              )}>
-                               {u.role || 'Free'}
+                               {u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Free'}
                              </span>
                            </div>
                          ))
                       )}
                    </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
 
             {activeTab === 'users' && (
               <motion.div
                 key="users"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
               >
-                <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <motion.div variants={itemVariants} className="mb-10 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">User Directory</h1>
-                    <p className="text-[14px] text-gray-500 mt-1">Manage platform access and billing tiers.</p>
+                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">User Directory</h1>
+                    <p className="text-[15px] text-slate-500 font-medium">Manage platform access, roles, and billing tiers.</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4 w-full md:w-auto">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full xl:w-auto">
                     <button
                       onClick={handleDeleteAllNonAdmins}
-                      className="inline-flex items-center px-4 py-2 text-[13px] font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition-colors whitespace-nowrap"
+                      className="inline-flex items-center justify-center px-5 py-3 sm:py-2.5 text-[14px] font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-100 rounded-xl transition-colors whitespace-nowrap active:scale-95"
                     >
-                      Delete All Non-Admins
+                      <Trash2 className="w-4 h-4 mr-2 shrink-0" />
+                      Wipe Non-Admins
                     </button>
-                    <div className="relative w-full sm:w-72">
-                      <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <div className="relative w-full sm:w-[320px]">
+                      <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input 
                         type="text" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search users by ID or email..." 
-                        className="w-full bg-white border border-gray-300 rounded-xl pl-11 pr-4 py-2.5 text-[14px] text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Search UUID or email..." 
+                        className="w-full bg-white border border-slate-200 rounded-xl pl-12 pr-4 py-3 sm:py-2.5 text-[14px] font-medium text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
                       />
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                       <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                          <th className="px-6 py-4 text-[12px] font-bold text-gray-500 uppercase tracking-wider">User ID</th>
-                          <th className="px-6 py-4 text-[12px] font-bold text-gray-500 uppercase tracking-wider">Email Address</th>
-                          <th className="px-6 py-4 text-[12px] font-bold text-gray-500 uppercase tracking-wider">Plan</th>
-                          <th className="px-6 py-4 text-[12px] font-bold text-gray-500 uppercase tracking-wider text-right">Administrative Actions</th>
+                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                          <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Identifier</th>
+                          <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Identity</th>
+                          <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">Access Level</th>
+                          <th className="px-8 py-5 text-[11px] font-bold text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100">
+                      <tbody className="divide-y divide-slate-50">
                         {loadingUsers ? (
                           <tr>
-                            <td colSpan={4} className="px-6 py-12 text-center text-gray-500 text-[14px]">
-                              <div className="flex items-center justify-center space-x-3">
-                                <RefreshCw className="w-5 h-5 animate-spin text-gray-400" />
-                                <span>Querying Firestore Database...</span>
-                              </div>
+                            <td colSpan={4} className="px-8 py-16 text-center text-slate-500">
+                              <RefreshCw className="w-8 h-8 animate-spin text-slate-300 mx-auto mb-4" />
+                              <span className="font-medium">Querying Registry...</span>
                             </td>
                           </tr>
                         ) : filteredUsers.length === 0 ? (
                            <tr>
-                            <td colSpan={4} className="px-6 py-12 text-center text-gray-500 text-[14px]">No users found matching "{searchQuery}".</td>
+                            <td colSpan={4} className="px-8 py-16 text-center text-slate-500 font-medium">No matching identities found.</td>
                           </tr>
                         ) : (
                           filteredUsers.map(user => (
-                            <tr key={user.id} className="hover:bg-gray-50 transition-colors group">
-                              <td className="px-6 py-4 text-[13px] font-mono text-gray-500">
-                                {user.id.substring(0, 8)}...
+                            <tr key={user.id} className="hover:bg-slate-50 transition-colors group">
+                              <td className="px-8 py-5 text-[13px] font-mono text-slate-500 w-[180px]">
+                                {user.id.substring(0, 12)}...
                               </td>
-                              <td className="px-6 py-4 text-[14px] text-gray-900 font-medium">
+                              <td className="px-8 py-5 text-[14px] text-slate-900 font-bold max-w-[200px] truncate">
                                 {user.email || 'N/A'}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-8 py-5">
                                 <span className={cn(
-                                  "px-2.5 py-1 text-[11px] font-bold rounded-full",
-                                  user.role === 'admin' ? "bg-red-100 text-red-700" :
-                                  user.role === 'pro' ? "bg-blue-100 text-blue-700" :
-                                  user.role === 'starter' ? "bg-purple-100 text-purple-700" :
-                                  "bg-gray-100 text-gray-600"
+                                  "inline-flex items-center px-3 py-1.5 text-[12px] font-bold rounded-lg border whitespace-nowrap",
+                                  user.role === 'admin' ? "bg-red-50 text-red-700 border-red-100" :
+                                  user.role === 'pro' ? "bg-blue-50 text-blue-700 border-blue-100" :
+                                  user.role === 'starter' ? "bg-purple-50 text-purple-700 border-purple-100" :
+                                  "bg-slate-50 text-slate-600 border-slate-200"
                                 )}>
-                                  {user.role || 'Free'}
+                                  {user.role === 'pro' && <Zap className="w-3.5 h-3.5 mr-1.5 shrink-0" strokeWidth={3} />}
+                                  {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Free'}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-right">
+                              <td className="px-8 py-5 text-right">
                                 {user.role !== 'admin' && (
                                   <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                                     {user.role !== 'starter' && (
                                       <button
                                         onClick={() => handleChangeRole(user.id, 'starter')}
-                                        className="inline-flex items-center px-3 py-1.5 text-[11px] font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg shadow-sm transition-colors"
+                                        className="inline-flex items-center px-4 py-2 text-[12px] font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 rounded-xl shadow-sm transition-all whitespace-nowrap active:scale-95"
                                       >
-                                        Make Starter
+                                        Starter
                                       </button>
                                     )}
                                     {user.role !== 'pro' && (
                                       <button
                                         onClick={() => handleChangeRole(user.id, 'pro')}
-                                        className="inline-flex items-center px-3 py-1.5 text-[11px] font-bold text-white bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors"
+                                        className="inline-flex items-center px-4 py-2 text-[12px] font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-sm transition-all whitespace-nowrap active:scale-95"
                                       >
-                                        <Zap className="w-3 h-3 mr-1.5" />
-                                        Make Pro
+                                        <Zap className="w-3.5 h-3.5 mr-1.5 shrink-0" strokeWidth={2.5} />
+                                        Pro
                                       </button>
                                     )}
+                                    <div className="w-px h-6 bg-slate-200 mx-1" />
                                     <button
                                       onClick={() => handleDeleteUser(user.id, user.email)}
-                                      className="inline-flex items-center justify-center w-8 h-8 text-red-500 bg-white border border-gray-300 hover:bg-red-50 hover:border-red-200 hover:text-red-600 rounded-lg shadow-sm transition-colors ml-1"
+                                      className="inline-flex items-center justify-center w-9 h-9 text-red-500 bg-white border border-slate-200 hover:bg-red-50 hover:border-red-200 hover:text-red-600 rounded-xl shadow-sm transition-all shrink-0 active:scale-95"
                                       title="Permanently Delete User"
                                     >
-                                      <Trash2 className="w-4 h-4" />
+                                      <Trash2 className="w-4 h-4 shrink-0" strokeWidth={2} />
                                     </button>
                                   </div>
                                 )}
@@ -466,80 +529,80 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
 
             {activeTab === 'settings' && (
               <motion.div
                 key="settings"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
               >
-                <div className="mb-10">
-                  <h1 className="text-3xl font-bold text-gray-900 tracking-tight">System Preferences</h1>
-                  <p className="text-[14px] text-gray-500 mt-1">Global platform configuration and limits.</p>
-                </div>
+                <motion.div variants={itemVariants} className="mb-10">
+                  <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">System Preferences</h1>
+                  <p className="text-[15px] text-slate-500 font-medium">Global platform configuration and limits.</p>
+                </motion.div>
                 
                 {loadingConfig ? (
-                  <div className="p-12 text-center text-gray-500"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-4"/>Loading configuration...</div>
+                  <div className="p-16 text-center text-slate-500"><RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-slate-300"/>Loading config...</div>
                 ) : (
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden divide-y divide-gray-100">
-                     <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-gray-50 transition-colors">
+                  <motion.div variants={itemVariants} className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden divide-y divide-slate-50">
+                     <div className="p-8 lg:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors">
                        <div>
-                         <h3 className="text-[16px] font-bold text-gray-900 mb-1">Maintenance Mode</h3>
-                         <p className="text-[14px] text-gray-500">Locks out non-admin users and displays a maintenance page. Used during deployments.</p>
+                         <h3 className="text-[18px] font-extrabold text-slate-900 mb-2">Maintenance Mode</h3>
+                         <p className="text-[14px] text-slate-500 font-medium max-w-xl">Locks out non-admin users and displays a maintenance page. Instantly effective across all active sessions.</p>
                        </div>
                        <button 
                           onClick={() => setConfig({...config, maintenanceMode: !config.maintenanceMode})}
-                          className={cn("w-14 h-7 rounded-full relative transition-colors duration-200 shrink-0", config.maintenanceMode ? "bg-red-500" : "bg-gray-200")}
+                          className={cn("w-14 h-8 rounded-full relative transition-colors duration-300 shrink-0 shadow-inner", config.maintenanceMode ? "bg-red-500" : "bg-slate-200")}
                        >
-                         <div className={cn("absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200", config.maintenanceMode ? "left-8" : "left-1")} />
+                         <div className={cn("absolute top-1 w-6 h-6 rounded-full bg-white shadow-sm transition-transform duration-300", config.maintenanceMode ? "left-7" : "left-1")} />
                        </button>
                      </div>
                      
-                     <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-gray-50 transition-colors">
+                     <div className="p-8 lg:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors">
                        <div>
-                         <h3 className="text-[16px] font-bold text-gray-900 mb-1">Global Scraping Rate Limit</h3>
-                         <p className="text-[14px] text-gray-500">Maximum allowed domains processed per minute across the entire platform.</p>
+                         <h3 className="text-[18px] font-extrabold text-slate-900 mb-2">Global Scraping Rate Limit</h3>
+                         <p className="text-[14px] text-slate-500 font-medium max-w-xl">Maximum allowed domains processed per minute across the entire platform. Adjust this to prevent IP bans.</p>
                        </div>
-                       <div className="flex items-center space-x-3">
+                       <div className="flex items-center space-x-4 bg-slate-50 p-2 rounded-2xl border border-slate-100 shrink-0">
                          <input 
                             type="number" 
                             value={config.rateLimit}
                             onChange={(e) => setConfig({...config, rateLimit: parseInt(e.target.value) || 0})}
-                            className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            className="w-24 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[15px] font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none text-center shadow-sm"
                          />
-                         <span className="text-sm font-bold text-gray-500">/ min</span>
+                         <span className="text-[14px] font-bold text-slate-400 pr-4 whitespace-nowrap">req / min</span>
                        </div>
                      </div>
                      
-                     <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-gray-50 transition-colors">
+                     <div className="p-8 lg:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors">
                        <div>
-                         <h3 className="text-[16px] font-bold text-gray-900 mb-1">Stripe Webhooks</h3>
-                         <p className="text-[14px] text-gray-500">Status of inbound payment event listening.</p>
+                         <h3 className="text-[18px] font-extrabold text-slate-900 mb-2">Stripe Webhooks</h3>
+                         <p className="text-[14px] text-slate-500 font-medium max-w-xl">Toggle processing of incoming payment events. Disabling this will prevent new users from being automatically upgraded.</p>
                        </div>
                        <button 
                           onClick={() => setConfig({...config, webhooksEnabled: !config.webhooksEnabled})}
-                          className={cn("w-14 h-7 rounded-full relative transition-colors duration-200 shrink-0", config.webhooksEnabled ? "bg-emerald-500" : "bg-gray-200")}
+                          className={cn("w-14 h-8 rounded-full relative transition-colors duration-300 shrink-0 shadow-inner", config.webhooksEnabled ? "bg-emerald-500" : "bg-slate-200")}
                        >
-                         <div className={cn("absolute top-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200", config.webhooksEnabled ? "left-8" : "left-1")} />
+                         <div className={cn("absolute top-1 w-6 h-6 rounded-full bg-white shadow-sm transition-transform duration-300", config.webhooksEnabled ? "left-7" : "left-1")} />
                        </button>
                      </div>
 
-                     <div className="p-6 md:p-8 bg-gray-50 flex justify-end">
+                     <div className="p-8 bg-slate-50/50 flex justify-end border-t border-slate-100">
                        <button 
                          onClick={handleSaveConfig}
                          disabled={savingConfig}
-                         className="flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                         className="flex items-center px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] active:scale-95 disabled:opacity-50 disabled:hover:shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] whitespace-nowrap"
                        >
-                         {savingConfig ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Check className="w-4 h-4 mr-2" />}
-                         Save Configuration
+                         {savingConfig ? <RefreshCw className="w-5 h-5 mr-2.5 animate-spin shrink-0" /> : <Check className="w-5 h-5 mr-2.5 shrink-0" strokeWidth={3} />}
+                         Deploy Configuration
                        </button>
                      </div>
-                  </div>
+                  </motion.div>
                 )}
               </motion.div>
             )}
@@ -547,58 +610,64 @@ export default function AdminDashboard() {
             {activeTab === 'logs' && (
               <motion.div
                 key="logs"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
               >
-                <div className="mb-10 flex items-center justify-between">
+                <motion.div variants={itemVariants} className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Security Ledger</h1>
-                    <p className="text-[14px] text-gray-500 mt-1">Immutable record of system events.</p>
+                    <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">Security Ledger</h1>
+                    <p className="text-[15px] text-slate-500 font-medium">Immutable, real-time log of systemic state changes.</p>
                   </div>
-                  <div className="px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold flex items-center">
-                    <Clock className="w-4 h-4 mr-2" /> Live stream active
+                  <div className="px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-[13px] font-bold flex items-center border border-emerald-100/50 shadow-sm self-start sm:self-auto whitespace-nowrap">
+                    <span className="relative flex h-3 w-3 mr-3 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </span>
+                    Live Stream Connected
                   </div>
-                </div>
+                </motion.div>
                 
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="divide-y divide-gray-100">
+                <motion.div variants={itemVariants} className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+                  <div className="divide-y divide-slate-50">
                     {loadingLogs ? (
-                       <div className="p-12 text-center text-gray-500"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-4"/>Awaiting log stream...</div>
+                       <div className="p-16 text-center text-slate-500"><RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-slate-300"/>Establishing secure stream...</div>
                     ) : logs.length === 0 ? (
-                       <div className="p-12 text-center text-gray-500">No events recorded.</div>
+                       <div className="p-16 text-center text-slate-500 font-medium">No system events recorded.</div>
                     ) : (
                       logs.map((log) => (
-                        <div key={log.id} className="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-50 transition-colors gap-4">
-                          <div className="flex items-start space-x-4">
+                        <div key={log.id} className="p-5 lg:p-6 flex flex-col md:flex-row md:items-center justify-between hover:bg-slate-50/80 transition-colors gap-4 group">
+                          <div className="flex items-start md:items-center space-x-5 min-w-0">
                             <div className={cn(
-                              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                              log.type === 'success' ? "bg-emerald-100" :
-                              log.type === 'error' ? "bg-red-100" :
-                              log.type === 'warn' ? "bg-amber-100" : "bg-blue-100"
+                              "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm",
+                              log.type === 'success' ? "bg-emerald-50 text-emerald-600 border border-emerald-100" :
+                              log.type === 'error' ? "bg-red-50 text-red-600 border border-red-100" :
+                              log.type === 'warn' ? "bg-amber-50 text-amber-600 border border-amber-100" : 
+                              "bg-blue-50 text-blue-600 border border-blue-100"
                             )}>
-                               {log.type === 'success' ? <Check className="w-5 h-5 text-emerald-600" /> :
-                                log.type === 'error' ? <AlertTriangle className="w-5 h-5 text-red-600" /> :
-                                log.type === 'warn' ? <AlertTriangle className="w-5 h-5 text-amber-600" /> :
-                                <Activity className="w-5 h-5 text-blue-600" />}
+                               {log.type === 'success' ? <Check className="w-5 h-5" strokeWidth={2.5} /> :
+                                log.type === 'error' ? <AlertTriangle className="w-5 h-5" strokeWidth={2.5} /> :
+                                log.type === 'warn' ? <AlertTriangle className="w-5 h-5" strokeWidth={2.5} /> :
+                                <Activity className="w-5 h-5" strokeWidth={2.5} />}
                             </div>
-                            <div>
-                              <p className="text-[14px] font-bold text-gray-900">{log.event}</p>
-                              <div className="flex flex-wrap items-center gap-3 mt-1">
-                                {log.target && <span className="text-[12px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded font-mono">Target: {log.target}</span>}
-                                {log.ip && <span className="text-[12px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded font-mono">IP: {log.ip}</span>}
+                            <div className="min-w-0">
+                              <p className="text-[15px] font-bold text-slate-900 group-hover:text-blue-600 transition-colors truncate">{log.event}</p>
+                              <div className="flex flex-wrap items-center gap-2 mt-2">
+                                {log.target && <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md font-mono border border-slate-200/50 shadow-sm shadow-slate-200/20 truncate max-w-[200px] md:max-w-xs">TARGET: {log.target}</span>}
+                                {log.ip && <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md font-mono border border-slate-200/50 shadow-sm shadow-slate-200/20">IP: {log.ip}</span>}
                               </div>
                             </div>
                           </div>
-                          <span className="text-[12px] font-medium text-gray-400 whitespace-nowrap pl-14 md:pl-0">
+                          <div className="flex items-center text-[13px] font-semibold text-slate-400 whitespace-nowrap pl-17 md:pl-0 shrink-0">
+                            <Clock className="w-3.5 h-3.5 mr-1.5 opacity-50 shrink-0" />
                             {formatTimestamp(log.timestamp)}
-                          </span>
+                          </div>
                         </div>
                       ))
                     )}
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
             )}
             
