@@ -110,6 +110,35 @@ export const OutreachPlaybook = memo(({
     );
   }
 
+  // Check for low score hard-gate
+  const score = lead.aiAnalysis?.score ?? 0;
+  const isLowScore = score > 0 && score < 40;
+  const isDead = lead.aiAnalysis?.category === 'Dead' || lead.aiAnalysis?.category === 'Cold' || lead.aiAnalysis?.priority === 'Low' || lead.aiAnalysis?.priority === 'Dead';
+  const shouldBlockOutreach = isLowScore || isDead;
+
+  if (shouldBlockOutreach) {
+    return (
+      <AppCard level={1} className="flex flex-col gap-6">
+        <div className="flex items-center justify-between border-b border-border-default pb-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-indigo-500" />
+            <h2 className="text-[16px] font-semibold text-text-primary">Outreach Playbook</h2>
+          </div>
+        </div>
+        
+        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
+          <span className="text-xl shrink-0">🛑</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-semibold text-red-800 mb-1">Insufficient Data — Do Not Contact</p>
+            <p className="text-[12px] text-red-700 leading-relaxed">
+              This lead scored below the minimum threshold for engagement (Score: {score}/100). The AI Engine strongly recommends against contacting this lead due to insufficient data or poor ICP fit. Outreach generation is disabled.
+            </p>
+          </div>
+        </div>
+      </AppCard>
+    );
+  }
+
   const { objective, messagingAngle, painPoints, email, linkedin, callScript } = followUp;
   const { subject: emailSubject } = email ? extractSubjectAndBody(email) : { subject: '' };
 

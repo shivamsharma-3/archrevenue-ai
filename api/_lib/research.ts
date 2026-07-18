@@ -67,24 +67,69 @@ export async function researchCompany(url: string, userId: string): Promise<Comp
   let targetUrl = url.trim();
   if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
 
-  // ── Step 1: Fetch via CORS proxy ────────────────────────────────────────
+  // ── Step 1: Fetch website (Jina Reader + Fallback) ─────────────────────
   let scrapedContext = '';
   let fetchSucceeded = false;
 
   try {
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-    const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    
+    try {
+      // Primary Method: Jina Reader API (Executes JS, returns Markdown + HTML)
+      const jinaResponse = await fetch(`https://r.jina.ai/${targetUrl}`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Return-Format': 'markdown,html',
+        },
+        signal: controller.signal
+      });
 
-    if (res.ok) {
-      const html = await res.text();
-      if (html && html.length > 200) {
-        const { title, metaDesc, text } = scrapeHtml(html);
-        scrapedContext = `Page Title: ${title}\nMeta Description: ${metaDesc}\nPage Content:\n${text}`;
-        fetchSucceeded = true;
+      if (!jinaResponse.ok) {
+        throw new Error(`Jina Reader returned status ${jinaResponse.status}`);
+      }
+
+      const jinaData = await jinaResponse.json();
+      const result = jinaData.data;
+
+      if (!result || !result.content) {
+        throw new Error('Invalid Jina Reader response format');
+      }
+      
+      const title = result.title || '';
+      const text = result.content;
+      scrapedContext = `Page Title: ${title}\nPage Content:\n${text.substring(0, 8000)}`;
+      fetchSucceeded = true;
+      
+    } catch (jinaError: any) {
+      console.warn(`Jina API failed for ${targetUrl}, falling back to standard fetch:`, jinaError.message);
+      
+      // Fallback Method: Standard Fetch
+      const fallbackResponse = await fetch(targetUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        signal: controller.signal
+      });
+
+      if (fallbackResponse.ok) {
+        const contentType = fallbackResponse.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          const html = await fallbackResponse.text();
+          if (html && html.length > 200) {
+            const { title, metaDesc, text } = scrapeHtml(html);
+            scrapedContext = `Page Title: ${title}\nMeta Description: ${metaDesc}\nPage Content:\n${text}`;
+            fetchSucceeded = true;
+          }
+        }
       }
     }
+    
+    clearTimeout(timeoutId);
   } catch (fetchErr) {
-    console.warn('Website fetch failed, falling back to form data:', fetchErr);
+    console.warn('Website fetch completely failed, falling back to form data:', fetchErr);
   }
 
   // ── Step 2: Build analysis prompt ───────────────────────────────────────

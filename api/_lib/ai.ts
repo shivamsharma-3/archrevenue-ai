@@ -96,12 +96,13 @@ OUTREACH TASK: Act like a top-performing SDR. Write three pieces of outreach fro
 
 MANDATORY RULES:
 1. WE are ${profile?.companyName ?? 'Arch Revenues'}. THEY are the prospect. Never pitch their own services back to them.
-2. NO HALLUCINATIONS: Never generate statistics, percentages, ROI estimates, revenue projections, or performance improvements unless explicitly in the source data.
-3. FORBIDDEN phrases (instantly fails): ${forbiddenPhrases}. No corporate jargon. No AI buzzwords. No generic sales language.
-4. Focus on ONE specific pain point and ONE clear outcome.
-5. Simple English. Short paragraphs. Maximum 120-150 words total for the email.
-6. Our offer: ${profile?.primaryOffer ?? 'revenue intelligence and AI-powered lead scoring'}. ${profile?.offerDescription ?? ''}
-7. Email format MUST strictly follow this template, with blank lines between EVERY section:
+2. NO HALLUCINATIONS AND NO HEDGING: If website data is thin or "Unknown", DO NOT invent their company type, business model, or mission. DO NOT use hedging language ("seems", "likely", "might be", "appears to"). If you lack specific data, use confident but broader problem statements instead of guessing incorrectly.
+3. ADAPT TO THEIR BUSINESS MODEL: Condition your pitch on the LEAD'S actual company type (e.g., SaaS, IT Services, Agency). If our Offer Description uses static examples like "agencies", DO NOT blindly copy-paste that if the prospect is a different business type. Adapt the language so it makes sense for THIS specific prospect.
+4. FORBIDDEN phrases (instantly fails): ${forbiddenPhrases}. No corporate jargon. No AI buzzwords. No generic sales language.
+5. Focus on ONE specific pain point and ONE clear outcome.
+6. Simple English. Short paragraphs. Maximum 120-150 words total for the email.
+7. Our offer: ${profile?.primaryOffer ?? 'revenue intelligence and AI-powered lead scoring'}. ${profile?.offerDescription ?? ''}
+8. Email format MUST strictly follow this template, with blank lines between EVERY section:
    Subject: [short, casual subject]
 
    Hi [First Name],
@@ -116,9 +117,9 @@ MANDATORY RULES:
 
    Best,
    [Your Name]
-8. LinkedIn: Under 290 characters. References one specific thing about their company. Ends with a direct question.
-9. Call script: OPENER / VALUE PROP / CTA. Opener references company context. No invented numbers in VALUE PROP.
-10. Tone: ${profile?.tone ?? 'Professional but highly conversational and human'}. CTA style: ${profile?.ctaStyle ?? 'Request a 15-minute discovery call'}.
+9. LinkedIn: Under 290 characters. References one specific thing about their company. Ends with a direct question.
+10. Call script: OPENER / VALUE PROP / CTA. Opener references company context. No invented numbers in VALUE PROP.
+11. Tone: ${profile?.tone ?? 'Professional but highly conversational and human'}. CTA style: ${profile?.ctaStyle ?? 'Request a 15-minute discovery call'}.
 ${hasRealResearch ? `
 SPECIFIC INTEL TO REFERENCE:
 - Customer segment: ${research!.customerSegment ?? 'Unknown'}
@@ -311,23 +312,11 @@ Return ONLY this JSON, no markdown:
   // ── Step 3: Outreach prompt — seller-aware, no generic language ───────────
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
-  // ── Step 4: Fire calls in parallel (skip outreach for Internal/Test) ──────
-  const groqPromises: Promise<string>[] = [callGroq(scorePrompt, userId, 0.1)];
-
-  if (lead.companyType === 'Internal/Test') {
-    console.log('[AI] Internal/Test — skipping outreach generation.');
-    groqPromises.push(Promise.resolve(JSON.stringify({ email: '', linkedin: '', callScript: '' })));
-  } else {
-    groqPromises.push(callGroq(outreachPrompt, userId, 0.35));
-  }
-
-  const [scoreRaw, outreachRaw] = await Promise.all(groqPromises);
-
-  const scoreResult   = JSON.parse(scoreRaw);
-  const outreachResult = JSON.parse(outreachRaw);
+  // ── Step 4: Fire Score call first ──────
+  const scoreRaw = await callGroq(scorePrompt, userId, 0.1);
+  const scoreResult = JSON.parse(scoreRaw);
 
   console.log('[AI] Score result:', scoreResult);
-  console.log('[AI] Outreach result keys:', Object.keys(outreachResult));
 
   // ── Step 5: Validate score result ────────────────────────────────────────
   const scoreResultKeys = Object.keys(scoreResult);
@@ -375,7 +364,23 @@ Return ONLY this JSON, no markdown:
   if (!normalizedScoreResult.recommendedAction || normalizedScoreResult.recommendedAction.length === 0)
     throw new Error('Invalid recommended action returned');
 
-  // ── Step 6: Normalize outreach (defensive key handling) ──────────────────
+  // ── Step 6: Generate Outreach (conditionally) ──────────────────────────
+  let outreachRaw = JSON.stringify({ email: '', linkedin: '', callScript: '' });
+
+  if (lead.companyType === 'Internal/Test') {
+    console.log('[AI] Internal/Test — skipping outreach generation.');
+  } else if (normalizedScoreResult.score < 40 || ['Dead', 'Low'].includes(normalizedScoreResult.priority) || ['Cold', 'Dead'].includes(normalizedScoreResult.category)) {
+    console.log('[AI] Lead score is too low (<40) or priority is Low/Dead. Skipping outreach generation.');
+  } else {
+    outreachRaw = await callGroq(outreachPrompt, userId, 0.35);
+  }
+
+  const outreachResult = JSON.parse(outreachRaw);
+  console.log('[AI] Outreach result keys:', Object.keys(outreachResult));
+
+  // Validation logic moved above.
+
+  // ── Step 7: Normalize outreach (defensive key handling) ──────────────────
   let raw = {};
   try {
     raw = JSON.parse(outreachRaw);
@@ -741,7 +746,7 @@ RULES:
 OUTREACH TASK: Write a cold call script for calling ${lead.fullName || 'the prospect'} on behalf of ${profile?.companyName ?? 'Arch Revenues'}.
 RULES:
 1. Include Opener, Value Prop (ties their pain to our offer), and a low-friction CTA.
-2. No fake stats.
+2. NO HALLUCINATIONS: Do not invent their business model, do not hedge, do not copy-paste 'agencies' if they aren't one.
 3. Return ONLY a JSON object: { "callScript": "<OPENER: [opener]\\n\\nVALUE PROP: [value prop]\\n\\nCTA: [cta], escape newlines as \\n>" }
     `.trim();
   }
@@ -759,6 +764,10 @@ INTEL:
 - Pain Points: ${(research!.painPoints ?? []).slice(0, 2).join('; ')}
 - Pitch Angle: ${research!.recommendedPitch ?? ''}
 ` : ''}
+
+GENERAL RULES:
+1. NO HALLUCINATIONS AND NO HEDGING: If website data is thin or "Unknown", DO NOT invent their company type, business model, or mission. DO NOT use hedging language ("seems", "likely", "might be", "appears to").
+2. ADAPT TO THEIR BUSINESS MODEL: Condition your pitch on the LEAD'S actual company type. If our Offer Description uses static examples like "agencies", adapt it so it makes sense for THIS specific prospect. NEVER blindly copy-paste "agencies" if they are not one.
 
 ${typePrompt}
   `.trim();
