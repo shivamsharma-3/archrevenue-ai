@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Shield, Sparkles, Zap, Check, ArrowRight, User, Mail, Database, ArrowLeft } from 'lucide-react';
+import { Shield, Sparkles, Zap, Check, ArrowRight, User, Mail, Database, ArrowLeft, Loader2, Crown } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
 import Shell from './Shell';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
 import { cn } from '../lib/utils';
 import { useTokenUsage } from '../hooks/useTokenUsage';
 import { Link } from 'react-router-dom';
@@ -10,6 +11,46 @@ import { Link } from 'react-router-dom';
 export default function ProfileBilling() {
   const user = auth.currentUser;
   const { tokensUsed, limit, isLoading } = useTokenUsage();
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminTargetId, setAdminTargetId] = useState('');
+  const [isUpgrading, setIsUpgrading] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    getDoc(doc(db, 'users', user.uid)).then(snap => {
+      if (snap.exists() && snap.data()?.role === 'admin') {
+        setIsAdmin(true);
+      }
+    });
+  }, [user]);
+
+  const handleMakePro = async () => {
+    if (!adminTargetId) return;
+    setIsUpgrading(true);
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch('/api/upgradeUser', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ targetUserId: adminTargetId })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to upgrade user');
+      }
+      alert(`Successfully upgraded ${adminTargetId} to Pro!`);
+      setAdminTargetId('');
+    } catch (e: any) {
+      console.error(e);
+      alert('Error upgrading user: ' + e.message);
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
 
   // Determine current plan based on token limit
   const isStarter = limit <= 5000;
@@ -146,6 +187,40 @@ export default function ProfileBilling() {
                </div>
                <p className="text-xs text-text-tertiary font-medium">Tokens are used for AI scoring, research, and outreach generation. They reset at the beginning of each billing cycle.</p>
             </div>
+
+            {/* Admin Actions Widget */}
+            {isAdmin && (
+              <div className="bg-surface-secondary border border-indigo-500/30 rounded-[24px] p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-indigo-500/5 pointer-events-none" />
+                <div className="relative z-10">
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Crown className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-sm font-bold text-text-primary">Admin Quick Actions</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-xs font-semibold text-text-tertiary mb-1 block">Make User Pro</label>
+                      <input 
+                        type="text" 
+                        placeholder="Target User ID" 
+                        value={adminTargetId}
+                        onChange={(e) => setAdminTargetId(e.target.value)}
+                        className="w-full bg-black/40 border border-border-default rounded-lg px-3 py-2 text-sm text-text-primary focus:outline-none focus:border-indigo-500 transition-colors"
+                      />
+                    </div>
+                    <button 
+                      onClick={handleMakePro}
+                      disabled={isUpgrading || !adminTargetId}
+                      className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg text-sm font-bold transition-colors flex items-center justify-center"
+                    >
+                      {isUpgrading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                      {isUpgrading ? 'Upgrading...' : 'Grant Pro Status'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Pricing Plans Section */}

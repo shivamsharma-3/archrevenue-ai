@@ -1,0 +1,38 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { verifyAuth } from './_lib/auth.js';
+import { db } from './_lib/firebase-admin.js';
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  const uid = await verifyAuth(req, res);
+  if (!uid) return;
+
+  try {
+    const { targetUserId } = req.body;
+    
+    if (!targetUserId || typeof targetUserId !== 'string') {
+      return res.status(400).json({ error: 'targetUserId is required' });
+    }
+
+    // Check if the caller is an admin
+    const callerDoc = await db.collection('users').doc(uid).get();
+    if (!callerDoc.exists || callerDoc.data()?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: You must be an admin to perform this action' });
+    }
+
+    // Upgrade the target user
+    const usageRef = db.collection('users').doc(targetUserId).collection('usage').doc('tokens');
+    await usageRef.set({
+      limit: 100000000, // 100M tokens (Pro)
+      tokensUsed: 0,
+    }, { merge: true });
+
+    return res.status(200).json({ success: true, message: `Successfully upgraded user ${targetUserId} to Pro` });
+  } catch (error: any) {
+    console.error('Error in upgradeUser:', error);
+    return res.status(500).json({ error: error.message || 'Failed to upgrade user' });
+  }
+}
