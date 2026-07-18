@@ -202,6 +202,42 @@ export default function LeadIntelligencePage() {
     showToast('Send email functionality placeholder', 'success');
   };
 
+  const [isGeneratingPlaybook, setIsGeneratingPlaybook] = useState(false);
+
+  const handleRegeneratePlaybook = useCallback(async () => {
+    if (!lead || !lead.id || !sellerProfile) return;
+    setIsGeneratingPlaybook(true);
+    showToast('Generating playbook...', 'success');
+    try {
+      const auth = (await import('../lib/firebase')).auth;
+      const token = await auth.currentUser?.getIdToken();
+      
+      const response = await fetch('/api/regenerateFollowUp', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ lead, profile: sellerProfile })
+      });
+      
+      if (!response.ok) throw new Error('Failed to regenerate playbook');
+      const followUp = await response.json();
+      
+      const docRef = doc(db, 'leads', lead.id);
+      await updateDoc(docRef, {
+        'aiAnalysis.followUp': followUp,
+        updatedAt: serverTimestamp()
+      });
+      showToast('Playbook generated!', 'success');
+    } catch (e: any) {
+      console.error(e);
+      showToast('Failed to generate playbook', 'error');
+    } finally {
+      setIsGeneratingPlaybook(false);
+    }
+  }, [lead, sellerProfile]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-surface-background flex items-center justify-center">
@@ -247,8 +283,8 @@ export default function LeadIntelligencePage() {
             onCopy={handleCopy}
             copiedText={copiedText}
             onSendEmail={handleSendEmail}
-            onGenerate={handleAnalyzeAccount}
-            isGenerating={isAnalyzing}
+            onGenerate={handleRegeneratePlaybook}
+            isGenerating={isGeneratingPlaybook}
           />
 
           <AccountTimeline 
