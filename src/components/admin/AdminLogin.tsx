@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import BrandLogo from '../BrandLogo';
 import '../../styles/landing.css';
 import { cn } from '../../lib/utils';
+import { logSystemEvent } from '../../lib/admin';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -38,10 +39,12 @@ export default function AdminLogin() {
       }
 
       // 3. Success
+      await logSystemEvent('Admin Authentication Success', 'success', user.uid, '127.0.0.1'); // IP is mocked for client-side
       navigate('/admin/dashboard');
     } catch (err: any) {
       setError(err.message || 'Authentication failed.');
       setIsLoading(false);
+      await logSystemEvent('Failed Authentication Attempt', 'error', email, '127.0.0.1');
     }
   };
 

@@ -12,6 +12,17 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
     }
 
+    // ── Global Admin Config & Logs ──────────────────────────────────────────
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    match /system_logs/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+
     // ── Waitlist & Demo Requests ────────────────────────────────────────────
     match /waitlist/{docId} {
       allow create: if true && request.resource.data.keys().hasAll(['email']) && request.resource.data.email is string;
