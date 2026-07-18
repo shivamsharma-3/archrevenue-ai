@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }, { merge: true });
 
     // Update the tokens limit based on the role
-    const tokenLimit = newRole === 'pro' ? 100000000 : (newRole === 'starter' ? 1000000 : 50000);
+    const tokenLimit = newRole === 'pro' ? 15000000 : (newRole === 'starter' ? 5000000 : 500000);
     const usageRef = db.collection('users').doc(targetId).collection('usage').doc('tokens');
     await usageRef.set({
       limit: tokenLimit,
