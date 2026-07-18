@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, ArrowRight, Activity, Shield } from 'lucide-react';
 import { auth, loginWithEmail } from '../../lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
@@ -33,7 +33,15 @@ export default function AdminLogin() {
 
       // 2. Verify Admin Role
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      if (!userDoc.exists() || userDoc.data()?.role !== 'admin') {
+      let isAdmin = userDoc.exists() && userDoc.data()?.role === 'admin';
+      
+      // Auto-upgrade the owner's email to admin if it isn't already
+      if (user.email === 'archrevenues@gmail.com' && !isAdmin) {
+        await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
+        isAdmin = true;
+      }
+
+      if (!isAdmin) {
         await auth.signOut();
         throw new Error('ACCESS DENIED: Insufficient Privileges. This incident has been logged.');
       }
