@@ -7,9 +7,9 @@ export const STRIPE_PRICING = {
   PRO: 'price_placeholder_pro',         // TODO: Replace with actual Stripe Price ID
   ENTERPRISE: 'price_placeholder_ent',  // TODO: Replace with actual Stripe Price ID
   TOKEN_PACK: 'price_placeholder_pack', // Used in TokenUpgradeModal
-  TOKEN_PACK_1M: 'price_placeholder_1m',
-  TOKEN_PACK_5M: 'price_placeholder_5m',
-  TOKEN_PACK_15M: 'price_placeholder_15m',
+  TOKEN_PACK_50K: 'price_placeholder_50k',
+  TOKEN_PACK_200K: 'price_placeholder_200k',
+  TOKEN_PACK_500K: 'price_placeholder_500k',
 };
 
 export const PRICING_CONFIG = {

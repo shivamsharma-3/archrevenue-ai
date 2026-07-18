@@ -18,16 +18,16 @@ export default function BillingPage() {
 
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
   const isNearLimit = usagePercent > 80;
-  const isStarter = limit >= 5000000 && limit < 15000000;
-  const isPro = limit >= 15000000;
-  const isFreeTrial = limit < 5000000;
+  const isStarter = limit >= 100000 && limit < 250000;
+  const isPro = limit >= 250000;
+  const isFreeTrial = limit < 100000;
 
   const plans = [
     {
       name: 'Starter',
       price: '$49',
       period: '/mo',
-      tokens: '5M Tokens/mo',
+      tokens: '100k Tokens/mo',
       features: ['14-Day Free Trial', 'Basic AI Scoring', 'Standard Outreach', 'Email Support'],
       current: isStarter,
       buttonText: isStarter ? 'Current Plan' : 'Upgrade to Starter'
@@ -36,7 +36,7 @@ export default function BillingPage() {
       name: 'Pro',
       price: '$99',
       period: '/mo',
-      tokens: '15M Tokens/mo',
+      tokens: '250k Tokens/mo',
       features: ['Advanced AI Intelligence', 'Automated Workflows', 'Priority Support', 'Custom Outreach Styles'],
       popular: !isPro,
       current: isPro,
@@ -222,9 +222,9 @@ export default function BillingPage() {
           
           <div className="space-y-3 mb-8">
             {[
-              { tokens: '1,000,000', price: '$10', id: STRIPE_PRICING.TOKEN_PACK_1M },
-              { tokens: '5,000,000', price: '$40', popular: true, id: STRIPE_PRICING.TOKEN_PACK_5M },
-              { tokens: '15,000,000', price: '$100', id: STRIPE_PRICING.TOKEN_PACK_15M }
+              { tokens: '50,000', price: '$20', id: STRIPE_PRICING.TOKEN_PACK_50K },
+              { tokens: '200,000', price: '$50', popular: true, id: STRIPE_PRICING.TOKEN_PACK_200K },
+              { tokens: '500,000', price: '$100', id: STRIPE_PRICING.TOKEN_PACK_500K }
             ].map((pack, i) => (
               <div 
                 key={i} 
@@ -276,9 +276,9 @@ export default function BillingPage() {
                   if (!auth.currentUser) throw new Error('Not authenticated');
                   
                   const packs = [
-                    STRIPE_PRICING.TOKEN_PACK_1M,
-                    STRIPE_PRICING.TOKEN_PACK_5M,
-                    STRIPE_PRICING.TOKEN_PACK_15M
+                    STRIPE_PRICING.TOKEN_PACK_50K,
+                    STRIPE_PRICING.TOKEN_PACK_200K,
+                    STRIPE_PRICING.TOKEN_PACK_500K
                   ];
                   const priceId = packs[selectedTokenPackIndex];
                   

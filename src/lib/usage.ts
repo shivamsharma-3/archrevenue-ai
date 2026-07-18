@@ -1,10 +1,10 @@
 import { doc, getDoc, setDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
-export const DEFAULT_TOKEN_LIMIT = 500000;
+export const DEFAULT_TOKEN_LIMIT = 50000;
 
 export function getPlanName(limit: number): string {
-  if (limit >= 15000000) return 'Pro Plan';
-  if (limit >= 5000000) return 'Starter Plan';
+  if (limit >= 250000) return 'Pro Plan';
+  if (limit >= 100000) return 'Starter Plan';
   return 'Free Trial';
 }
 
