@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Lock, ShieldAlert, ArrowRight, Activity } from 'lucide-react';
+import { Lock, ArrowRight, Activity, Shield } from 'lucide-react';
 import { auth, loginWithEmail } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import BrandLogo from '../BrandLogo';
+import '../../styles/landing.css';
+import { cn } from '../../lib/utils';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -44,85 +46,74 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center font-sans selection:bg-red-500/30 p-6 relative overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-red-600/10 blur-[120px] rounded-full" />
+    <div className="landing-page min-h-screen bg-surface-background text-text-primary flex flex-col items-center justify-center font-sans p-6">
+      
+      <div className="mb-12 flex flex-col items-center">
+        <BrandLogo className="w-8 h-8 text-text-primary mb-6" />
+        <h2 className="text-3xl font-display font-medium tracking-tight text-text-primary mb-2">
+          System Admin Portal
+        </h2>
+        <p className="text-[13px] text-text-secondary uppercase tracking-[0.2em] font-medium">
+          Restricted Area
+        </p>
       </div>
 
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-[440px] relative z-10"
+        className="w-full max-w-[420px] product-chrome-outer p-8 relative"
       >
-        <div className="bg-[#0a0a0a] border border-red-500/20 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
-          {/* Top accent line */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-rose-400" />
-          
-          <div className="flex items-center justify-center mb-8">
-             <div className="w-14 h-14 bg-red-500/10 rounded-2xl border border-red-500/20 flex items-center justify-center backdrop-blur-md shadow-[0_0_30px_rgba(239,68,68,0.15)]">
-               <ShieldAlert className="w-7 h-7 text-red-500" />
-             </div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-text-primary" />
+        
+        <form onSubmit={handleAdminAuth} className="space-y-6">
+          {error && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-red-50 border border-red-200 text-red-700 text-[13px] flex items-start">
+              <Shield className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
+              <span className="font-medium">{error}</span>
+            </motion.div>
+          )}
+
+          <div>
+            <label className="block text-[11px] uppercase tracking-widest font-semibold text-text-secondary mb-2 pl-1">Admin Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="block w-full px-4 py-3.5 bg-surface-background border border-border-default rounded-none text-[14px] text-text-primary placeholder-text-tertiary focus:outline-none focus:border-text-primary transition-colors font-mono"
+              placeholder="admin@archrevenue.com"
+              required
+            />
           </div>
 
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold tracking-tight text-white mb-2 font-headline uppercase tracking-widest">
-              System Admin Portal
-            </h2>
-            <p className="text-sm text-red-400/80 font-mono">
-              Restricted Area. Authorized Personnel Only.
-            </p>
+          <div>
+            <label className="block text-[11px] uppercase tracking-widest font-semibold text-text-secondary mb-2 pl-1">Master Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full px-4 py-3.5 bg-surface-background border border-border-default rounded-none text-[14px] text-text-primary placeholder-text-tertiary focus:outline-none focus:border-text-primary transition-colors font-mono tracking-widest"
+              placeholder="••••••••"
+              required
+            />
           </div>
-          
-          <form onSubmit={handleAdminAuth} className="space-y-5">
-            {error && (
-              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-start">
-                <Activity className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
-                <span className="font-mono">{error}</span>
-              </motion.div>
-            )}
 
-            <div>
-              <label className="block text-[11px] uppercase tracking-wider font-semibold text-text-tertiary mb-2 pl-1">Admin Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="block w-full px-4 py-3.5 bg-black/60 border border-white/10 rounded-xl text-sm text-white placeholder-text-tertiary focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all font-mono"
-                placeholder="admin@archrevenue.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-[11px] uppercase tracking-wider font-semibold text-text-tertiary mb-2 pl-1">Master Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="block w-full px-4 py-3.5 bg-black/60 border border-white/10 rounded-xl text-sm text-white placeholder-text-tertiary focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all font-mono tracking-widest"
-                placeholder="••••••••"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex items-center justify-center py-[14px] px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#050505] focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-8 uppercase tracking-widest shadow-[0_0_20px_rgba(239,68,68,0.3)]"
-            >
-              {isLoading ? 'Authenticating...' : 'Authorize Access'}
-              {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
-            </button>
-          </form>
-        </div>
-        <div className="mt-6 text-center">
-          <p className="text-[10px] text-text-tertiary uppercase tracking-widest font-mono">
-            IP Logged • Terminal Secure • V. 2.4.1
-          </p>
-        </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn-luxury w-full flex items-center justify-center py-[14px] px-4 text-[13px] font-medium text-surface-background bg-text-primary border border-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-8 uppercase tracking-widest"
+          >
+            {isLoading ? 'Authenticating...' : 'Authorize Access'}
+            {!isLoading && <ArrowRight className="w-4 h-4 ml-2" />}
+          </button>
+        </form>
       </motion.div>
+
+      <div className="mt-12 text-center">
+        <p className="text-[10px] text-text-tertiary uppercase tracking-[0.2em]">
+          IP Logged • Terminal Secure • V. 2.4.1
+        </p>
+      </div>
     </div>
   );
 }

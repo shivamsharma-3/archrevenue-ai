@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, Shield, Users as UsersIcon, Database, Activity, Settings, List, ChevronRight, Zap, Search, Eye } from 'lucide-react';
 import { auth, db } from '../../lib/firebase';
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import BrandLogo from '../BrandLogo';
 import { cn } from '../../lib/utils';
+import '../../styles/landing.css';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -57,7 +58,6 @@ export default function AdminDashboard() {
 
       toast.success('Successfully upgraded to Pro!', { id: loadingToast });
       
-      // Update local state to reflect pro status (mocking for UI)
       setUsers(users.map(u => u.id === targetUid ? { ...u, role: 'pro' } : u));
     } catch (e: any) {
       console.error(e);
@@ -73,18 +73,17 @@ export default function AdminDashboard() {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-surface-background text-text-primary font-sans selection:bg-[#6366f1]/30 flex flex-col md:flex-row">
+    <div className="landing-page min-h-screen bg-surface-background text-text-primary font-sans flex flex-col md:flex-row">
       
-      {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-border-default bg-[#0a0a0b] flex flex-col z-20">
+      {/* Sidebar Navigation - Landing Page Minimalist Style */}
+      <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r border-border-default bg-surface-card flex flex-col z-20">
         <div className="h-16 flex items-center px-6 border-b border-border-default">
-          <BrandLogo className="w-6 h-6 text-[#7b81ff] mr-3" />
-          <span className="text-lg font-medium tracking-wide text-white font-headline">ArchRevenue</span>
-          <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold bg-[#6366f1]/20 text-[#7b81ff] border border-[#6366f1]/30">ADMIN</span>
+          <BrandLogo className="w-5 h-5 text-text-primary mr-3" />
+          <span className="text-[14px] font-display font-medium tracking-[0.2em] uppercase text-text-primary">ArchRevenue</span>
         </div>
         
-        <div className="flex-1 py-6 px-4 space-y-1">
-          <div className="mb-4 px-2">
+        <div className="flex-1 py-8 px-4 space-y-2">
+          <div className="mb-6 px-3">
             <p className="text-[10px] font-semibold text-text-tertiary uppercase tracking-widest">Platform Controls</p>
           </div>
           
@@ -96,29 +95,29 @@ export default function AdminDashboard() {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all group",
+                  "w-full flex items-center px-3 py-2.5 rounded-none text-[13px] font-medium transition-all group border-l-2",
                   isActive 
-                    ? "bg-[#6366f1]/10 text-white" 
-                    : "text-text-secondary hover:bg-white/[0.04] hover:text-text-primary"
+                    ? "border-text-primary text-text-primary bg-surface-hover" 
+                    : "border-transparent text-text-secondary hover:bg-surface-hover hover:text-text-primary"
                 )}
               >
-                <Icon className={cn("w-4 h-4 mr-3 transition-colors", isActive ? "text-[#7b81ff]" : "text-text-tertiary group-hover:text-text-secondary")} />
+                <Icon className={cn("w-4 h-4 mr-3 transition-colors", isActive ? "text-text-primary" : "text-text-tertiary group-hover:text-text-secondary")} strokeWidth={isActive ? 2 : 1.5} />
                 {item.label}
               </button>
             );
           })}
         </div>
 
-        <div className="p-4 border-t border-border-default">
-          <div className="flex items-center px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl mb-4">
-             <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse mr-2" />
-             <span className="text-[11px] uppercase tracking-widest text-emerald-400 font-semibold">Systems Online</span>
+        <div className="p-6 border-t border-border-default">
+          <div className="flex items-center px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-sm mb-4">
+             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse mr-2" />
+             <span className="text-[10px] uppercase tracking-widest text-emerald-700 font-semibold">Systems Online</span>
           </div>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center px-3 py-2 rounded-xl text-sm font-medium text-text-secondary hover:bg-white/[0.04] hover:text-white transition-all group"
+            className="w-full flex items-center px-3 py-2 text-[13px] font-medium text-text-secondary hover:bg-surface-hover hover:text-text-primary transition-all group"
           >
-            <LogOut className="w-4 h-4 mr-3 text-text-tertiary group-hover:text-white" />
+            <LogOut className="w-4 h-4 mr-3 text-text-tertiary group-hover:text-text-primary" strokeWidth={1.5} />
             Terminate Session
           </button>
         </div>
@@ -126,13 +125,7 @@ export default function AdminDashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 relative overflow-y-auto">
-        {/* Abstract Background Elements matching Landing Page */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-[#7b81ff]/10 to-transparent blur-[120px] rounded-full" />
-          <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-gradient-to-tr from-[#00d2ff]/5 to-transparent blur-[100px] rounded-full" />
-        </div>
-
-        <div className="relative z-10 p-8 lg:p-12 max-w-6xl mx-auto">
+        <div className="p-8 lg:p-16 max-w-6xl mx-auto">
           <AnimatePresence mode="wait">
             
             {activeTab === 'overview' && (
@@ -143,50 +136,46 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="mb-10">
-                  <h1 className="text-3xl font-medium tracking-tight text-white mb-2 font-headline">Command Center</h1>
-                  <p className="text-[15px] text-text-tertiary font-light">Global platform health and revenue metrics.</p>
+                <div className="mb-12">
+                  <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-4 font-medium">
+                    Overview
+                  </div>
+                  <h1 className="text-4xl lg:text-5xl font-display text-text-primary font-medium tracking-tight">Command Center</h1>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 backdrop-blur-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[11px] uppercase tracking-widest text-text-tertiary font-semibold">Monthly Recurring</span>
-                      <div className="w-8 h-8 rounded-full bg-[#7b81ff]/10 flex items-center justify-center border border-[#7b81ff]/20">
-                        <Zap className="w-4 h-4 text-[#7b81ff]" />
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                  <div className="product-chrome-outer p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-[11px] uppercase tracking-widest text-text-secondary font-medium">Monthly Recurring</span>
+                      <Zap className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
                     </div>
-                    <p className="text-[32px] font-medium text-white font-headline tracking-tight">$42,500</p>
-                    <p className="text-[13px] text-emerald-400 mt-2">+12% vs last month</p>
+                    <p className="text-[40px] font-display text-text-primary leading-none mb-3">$42,500</p>
+                    <p className="text-[13px] text-emerald-600 font-medium">+12% vs last month</p>
                   </div>
                   
-                  <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 backdrop-blur-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[11px] uppercase tracking-widest text-text-tertiary font-semibold">Active Subscriptions</span>
-                      <div className="w-8 h-8 rounded-full bg-[#00d2ff]/10 flex items-center justify-center border border-[#00d2ff]/20">
-                        <UsersIcon className="w-4 h-4 text-[#00d2ff]" />
-                      </div>
+                  <div className="product-chrome-outer p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-[11px] uppercase tracking-widest text-text-secondary font-medium">Active Subscriptions</span>
+                      <UsersIcon className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
                     </div>
-                    <p className="text-[32px] font-medium text-white font-headline tracking-tight">142</p>
-                    <p className="text-[13px] text-emerald-400 mt-2">+5 new this week</p>
+                    <p className="text-[40px] font-display text-text-primary leading-none mb-3">142</p>
+                    <p className="text-[13px] text-emerald-600 font-medium">+5 new this week</p>
                   </div>
                   
-                  <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 backdrop-blur-md">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[11px] uppercase tracking-widest text-text-tertiary font-semibold">API Tokens (24h)</span>
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                        <Database className="w-4 h-4 text-emerald-500" />
-                      </div>
+                  <div className="product-chrome-outer p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-[11px] uppercase tracking-widest text-text-secondary font-medium">API Tokens (24h)</span>
+                      <Database className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
                     </div>
-                    <p className="text-[32px] font-medium text-white font-headline tracking-tight">84.2K</p>
-                    <p className="text-[13px] text-text-tertiary mt-2">Peak load: 12%</p>
+                    <p className="text-[40px] font-display text-text-primary leading-none mb-3">84.2K</p>
+                    <p className="text-[13px] text-text-secondary font-medium">Peak load: 12%</p>
                   </div>
                 </div>
                 
-                <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-8 backdrop-blur-md">
-                   <h2 className="text-lg font-medium text-white mb-6 font-headline">Recent Signups</h2>
-                   <div className="flex items-center justify-center h-32 border border-dashed border-white/10 rounded-xl">
-                      <p className="text-text-tertiary text-sm">Revenue chart visualization rendering...</p>
+                <div className="product-chrome-outer p-8">
+                   <h2 className="text-[13px] uppercase tracking-widest text-text-secondary font-medium mb-8">Recent Signups</h2>
+                   <div className="flex items-center justify-center h-48 border border-dashed border-border-default bg-surface-background">
+                      <p className="text-text-tertiary text-sm font-mono">Revenue chart visualization rendering...</p>
                    </div>
                 </div>
               </motion.div>
@@ -200,72 +189,74 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div>
-                    <h1 className="text-3xl font-medium tracking-tight text-white mb-2 font-headline">User Management</h1>
-                    <p className="text-[15px] text-text-tertiary font-light">View and manage platform access.</p>
+                    <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-4 font-medium">
+                      Platform Access
+                    </div>
+                    <h1 className="text-4xl lg:text-5xl font-display text-text-primary font-medium tracking-tight">User Management</h1>
                   </div>
-                  <div className="relative w-full md:w-64">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-tertiary" />
+                  <div className="relative w-full md:w-72">
+                    <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-text-tertiary" strokeWidth={1.5} />
                     <input 
                       type="text" 
                       placeholder="Search users..." 
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#7b81ff]"
+                      className="w-full bg-surface-card border border-border-default rounded-none pl-11 pr-4 py-3 text-[13px] text-text-primary focus:outline-none focus:border-text-primary transition-colors"
                     />
                   </div>
                 </div>
 
-                <div className="bg-black/40 border border-white/[0.06] rounded-2xl backdrop-blur-md overflow-hidden">
+                <div className="product-chrome-outer overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-                          <th className="px-6 py-4 text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">User ID</th>
-                          <th className="px-6 py-4 text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Email</th>
-                          <th className="px-6 py-4 text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Role</th>
-                          <th className="px-6 py-4 text-[11px] font-semibold text-text-tertiary uppercase tracking-wider text-right">Actions</th>
+                        <tr className="border-b border-border-default bg-surface-secondary">
+                          <th className="px-8 py-5 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">User ID</th>
+                          <th className="px-8 py-5 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Email</th>
+                          <th className="px-8 py-5 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">Role</th>
+                          <th className="px-8 py-5 text-[11px] font-semibold text-text-secondary uppercase tracking-wider text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/[0.06]">
+                      <tbody className="divide-y divide-border-default">
                         {loadingUsers ? (
                           <tr>
-                            <td colSpan={4} className="px-6 py-8 text-center text-text-tertiary text-sm">
-                              <div className="flex items-center justify-center space-x-2">
-                                <div className="w-4 h-4 border-2 border-[#7b81ff]/30 border-t-[#7b81ff] rounded-full animate-spin" />
+                            <td colSpan={4} className="px-8 py-12 text-center text-text-tertiary text-[13px]">
+                              <div className="flex items-center justify-center space-x-3">
+                                <div className="w-4 h-4 border-2 border-text-tertiary border-t-text-primary rounded-full animate-spin" />
                                 <span>Loading database records...</span>
                               </div>
                             </td>
                           </tr>
                         ) : users.length === 0 ? (
                            <tr>
-                            <td colSpan={4} className="px-6 py-8 text-center text-text-tertiary text-sm">No users found.</td>
+                            <td colSpan={4} className="px-8 py-12 text-center text-text-tertiary text-[13px]">No users found.</td>
                           </tr>
                         ) : (
                           users.map(user => (
-                            <tr key={user.id} className="hover:bg-white/[0.02] transition-colors">
-                              <td className="px-6 py-4 text-sm font-mono text-text-secondary">
+                            <tr key={user.id} className="hover:bg-surface-hover transition-colors">
+                              <td className="px-8 py-5 text-[13px] font-mono text-text-secondary">
                                 {user.id.substring(0, 8)}...
                               </td>
-                              <td className="px-6 py-4 text-sm text-white font-medium">
+                              <td className="px-8 py-5 text-[14px] text-text-primary font-medium">
                                 {user.email || 'No email provided'}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-8 py-5">
                                 <span className={cn(
-                                  "px-2.5 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold",
-                                  user.role === 'admin' ? "bg-red-500/10 text-red-400 border border-red-500/20" :
-                                  user.role === 'pro' ? "bg-[#7b81ff]/10 text-[#7b81ff] border border-[#7b81ff]/20" :
-                                  "bg-white/[0.05] text-text-tertiary border border-white/10"
+                                  "px-3 py-1 text-[10px] uppercase tracking-wider font-bold border",
+                                  user.role === 'admin' ? "bg-red-50 text-red-700 border-red-200" :
+                                  user.role === 'pro' ? "bg-blue-50 text-blue-700 border-blue-200" :
+                                  "bg-surface-background text-text-secondary border-border-default"
                                 )}>
                                   {user.role || 'Free'}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-right">
+                              <td className="px-8 py-5 text-right">
                                 {user.role !== 'admin' && user.role !== 'pro' && (
                                   <button
                                     onClick={() => handleMakePro(user.id)}
-                                    className="inline-flex items-center px-3 py-1.5 bg-[#6366f1] hover:bg-[#5355e1] text-white text-xs font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                                    className="btn-luxury inline-flex items-center px-4 py-2 text-[11px] uppercase tracking-widest font-medium text-surface-background bg-text-primary border border-text-primary transition-all"
                                   >
-                                    <Zap className="w-3 h-3 mr-1.5" />
+                                    <Zap className="w-3 h-3 mr-2" strokeWidth={2} />
                                     Make Pro
                                   </button>
                                 )}
@@ -288,41 +279,43 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="mb-8">
-                  <h1 className="text-3xl font-medium tracking-tight text-white mb-2 font-headline">System Settings</h1>
-                  <p className="text-[15px] text-text-tertiary font-light">Global platform configuration.</p>
+                <div className="mb-12">
+                  <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-4 font-medium">
+                    Configuration
+                  </div>
+                  <h1 className="text-4xl lg:text-5xl font-display text-text-primary font-medium tracking-tight">System Settings</h1>
                 </div>
                 
                 <div className="space-y-6">
-                   <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 flex items-center justify-between backdrop-blur-md">
+                   <div className="product-chrome-outer p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                      <div>
-                       <h3 className="text-base font-medium text-white mb-1">Maintenance Mode</h3>
-                       <p className="text-sm text-text-tertiary">Locks out non-admin users and displays a maintenance page.</p>
+                       <h3 className="text-[16px] font-medium text-text-primary mb-2">Maintenance Mode</h3>
+                       <p className="text-[14px] text-text-secondary font-light">Locks out non-admin users and displays a maintenance page.</p>
                      </div>
-                     <div className="w-12 h-6 bg-white/[0.06] rounded-full relative cursor-not-allowed opacity-50">
-                       <div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-text-tertiary" />
+                     <div className="w-12 h-6 bg-border-default rounded-full relative cursor-not-allowed">
+                       <div className="absolute left-1 top-1 w-4 h-4 rounded-full bg-white shadow-sm" />
                      </div>
                    </div>
                    
-                   <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 flex items-center justify-between backdrop-blur-md">
+                   <div className="product-chrome-outer p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                      <div>
-                       <h3 className="text-base font-medium text-white mb-1">Global Scraping Rate Limit</h3>
-                       <p className="text-sm text-text-tertiary">Maximum allowed domains processed per minute.</p>
+                       <h3 className="text-[16px] font-medium text-text-primary mb-2">Global Scraping Rate Limit</h3>
+                       <p className="text-[14px] text-text-secondary font-light">Maximum allowed domains processed per minute.</p>
                      </div>
-                     <div className="flex items-center space-x-3">
-                       <span className="text-sm text-white font-medium">120 / min</span>
-                       <button className="px-3 py-1.5 bg-white/[0.06] rounded-lg text-xs font-medium text-text-secondary hover:text-white transition-colors">Edit</button>
+                     <div className="flex items-center space-x-4">
+                       <span className="text-[15px] text-text-primary font-medium">120 / min</span>
+                       <button className="px-4 py-2 border border-border-default hover:border-text-primary text-[12px] font-medium text-text-primary transition-colors">Edit</button>
                      </div>
                    </div>
                    
-                   <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 flex items-center justify-between backdrop-blur-md">
+                   <div className="product-chrome-outer p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                      <div>
-                       <h3 className="text-base font-medium text-white mb-1">Stripe Webhooks</h3>
-                       <p className="text-sm text-text-tertiary">Status of inbound payment event listening.</p>
+                       <h3 className="text-[16px] font-medium text-text-primary mb-2">Stripe Webhooks</h3>
+                       <p className="text-[14px] text-text-secondary font-light">Status of inbound payment event listening.</p>
                      </div>
-                     <div className="flex items-center px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                     <div className="flex items-center px-3 py-1.5 border border-emerald-200 bg-emerald-50">
                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-2" />
-                       <span className="text-[10px] uppercase tracking-wider font-bold text-emerald-400">Listening</span>
+                       <span className="text-[11px] uppercase tracking-wider font-bold text-emerald-700">Listening</span>
                      </div>
                    </div>
                 </div>
@@ -337,35 +330,37 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="mb-8">
-                  <h1 className="text-3xl font-medium tracking-tight text-white mb-2 font-headline">Security Logs</h1>
-                  <p className="text-[15px] text-text-tertiary font-light">Immutable system event ledger.</p>
+                <div className="mb-12">
+                  <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-4 font-medium">
+                    Ledger
+                  </div>
+                  <h1 className="text-4xl lg:text-5xl font-display text-text-primary font-medium tracking-tight">Security Logs</h1>
                 </div>
                 
-                <div className="bg-black/40 border border-white/[0.06] rounded-2xl p-6 backdrop-blur-md">
-                  <div className="space-y-4">
+                <div className="product-chrome-outer p-8">
+                  <div className="space-y-2">
                     {[
                       { event: 'Admin Authentication Success', ip: '192.168.1.181', time: 'Just now', type: 'success' },
                       { event: 'User Upgraded to Pro', target: 'uid_2384...', time: '14 mins ago', type: 'info' },
                       { event: 'Failed Authentication Attempt', ip: '45.33.22.11', time: '1 hour ago', type: 'error' },
                       { event: 'Scraper Rate Limit Exceeded', target: 'engine_v2', time: '3 hours ago', type: 'warn' },
                     ].map((log, i) => (
-                      <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-white/[0.06] last:border-0">
+                      <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b border-border-default last:border-0">
                         <div className="flex items-start sm:items-center space-x-4 mb-2 sm:mb-0">
                           <div className={cn(
                             "w-2 h-2 rounded-full mt-1.5 sm:mt-0 shrink-0",
                             log.type === 'success' ? "bg-emerald-500" :
-                            log.type === 'error' ? "bg-rose-500" :
-                            log.type === 'warn' ? "bg-amber-500" : "bg-[#7b81ff]"
+                            log.type === 'error' ? "bg-red-500" :
+                            log.type === 'warn' ? "bg-amber-500" : "bg-blue-500"
                           )} />
                           <div>
-                            <p className="text-sm font-medium text-white">{log.event}</p>
-                            <p className="text-xs text-text-tertiary font-mono mt-0.5">
+                            <p className="text-[14px] font-medium text-text-primary">{log.event}</p>
+                            <p className="text-[12px] text-text-secondary font-mono mt-1">
                               {log.ip ? `IP: ${log.ip}` : `Target: ${log.target}`}
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs text-text-tertiary font-mono ml-6 sm:ml-0">{log.time}</span>
+                        <span className="text-[12px] text-text-tertiary font-mono ml-6 sm:ml-0">{log.time}</span>
                       </div>
                     ))}
                   </div>
