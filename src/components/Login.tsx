@@ -18,12 +18,30 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const validatePassword = (pass: string) => {
+    if (pass.length < 8) return "Password must be at least 8 characters.";
+    if (!/[A-Z]/.test(pass)) return "Password must contain an uppercase letter.";
+    if (!/[a-z]/.test(pass)) return "Password must contain a lowercase letter.";
+    if (!/[0-9]/.test(pass)) return "Password must contain a number.";
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pass)) return "Password must contain a special character.";
+    return null;
+  };
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setError('Please enter both email and password.');
       return;
     }
+
+    if (isRegistering) {
+      const passErr = validatePassword(password);
+      if (passErr) {
+        setError(passErr);
+        return;
+      }
+    }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -131,8 +149,12 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
           className="w-full max-w-[420px]"
         >
           <div className="mb-10">
+            <div className="inline-flex items-center px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full mb-4">
+              <Lock className="w-3.5 h-3.5 text-emerald-400 mr-2" />
+              <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-widest">End-to-end Encrypted</span>
+            </div>
             <h2 className="text-[32px] font-medium tracking-tight text-white mb-2 font-headline">
-              {isRegistering ? 'Create account' : 'Welcome back'}
+              {isRegistering ? 'Create secure account' : 'Secure Login'}
             </h2>
             <p className="text-[15px] text-[#a1a1aa] font-light">
               {isRegistering ? 'Start your revenue intelligence journey.' : 'Enter your credentials to access your terminal.'}

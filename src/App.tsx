@@ -33,6 +33,9 @@ import ApiDocsPage from './pages/ApiDocsPage';
 import CommunityForumPage from './pages/CommunityForumPage';
 import AdminBetaPage from './pages/AdminBetaPage';
 import DesignSystemPage from './pages/DesignSystemPage';
+import AdminLogin from './components/admin/AdminLogin';
+import AdminDashboard from './components/admin/AdminDashboard';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -80,6 +83,10 @@ export default function App() {
         <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
         <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Login initialIsRegistering={true} />} />
         
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
+
         {/* Protected layout routes */}
         <Route element={user ? <AppLayout /> : <Navigate to="/login" />}>
           <Route path="/dashboard" element={<DashboardPage />} />
