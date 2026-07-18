@@ -551,9 +551,9 @@ export default function AdminDashboard() {
                 ) : (
                   <motion.div variants={itemVariants} className="bg-white rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden divide-y divide-slate-50">
                      <div className="p-8 lg:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors">
-                       <div>
+                       <div className="flex-1 min-w-0">
                          <h3 className="text-[18px] font-extrabold text-slate-900 mb-2">Maintenance Mode</h3>
-                         <p className="text-[14px] text-slate-500 font-medium max-w-xl">Locks out non-admin users and displays a maintenance page. Instantly effective across all active sessions.</p>
+                         <p className="text-[14px] text-slate-500 font-medium">Locks out non-admin users and displays a maintenance page. Instantly effective across all active sessions.</p>
                        </div>
                        <button 
                           onClick={() => setConfig({...config, maintenanceMode: !config.maintenanceMode})}
@@ -564,9 +564,9 @@ export default function AdminDashboard() {
                      </div>
                      
                      <div className="p-8 lg:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors">
-                       <div>
+                       <div className="flex-1 min-w-0">
                          <h3 className="text-[18px] font-extrabold text-slate-900 mb-2">Global Scraping Rate Limit</h3>
-                         <p className="text-[14px] text-slate-500 font-medium max-w-xl">Maximum allowed domains processed per minute across the entire platform. Adjust this to prevent IP bans.</p>
+                         <p className="text-[14px] text-slate-500 font-medium">Maximum allowed domains processed per minute across the entire platform. Adjust this to prevent IP bans.</p>
                        </div>
                        <div className="flex items-center space-x-4 bg-slate-50 p-2 rounded-2xl border border-slate-100 shrink-0">
                          <input 
@@ -580,9 +580,9 @@ export default function AdminDashboard() {
                      </div>
                      
                      <div className="p-8 lg:p-10 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-50/50 transition-colors">
-                       <div>
+                       <div className="flex-1 min-w-0">
                          <h3 className="text-[18px] font-extrabold text-slate-900 mb-2">Stripe Webhooks</h3>
-                         <p className="text-[14px] text-slate-500 font-medium max-w-xl">Toggle processing of incoming payment events. Disabling this will prevent new users from being automatically upgraded.</p>
+                         <p className="text-[14px] text-slate-500 font-medium">Toggle processing of incoming payment events. Disabling this will prevent new users from being automatically upgraded.</p>
                        </div>
                        <button 
                           onClick={() => setConfig({...config, webhooksEnabled: !config.webhooksEnabled})}
