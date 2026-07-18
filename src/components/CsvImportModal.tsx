@@ -245,8 +245,7 @@ export default function CsvImportModal({ isOpen, onClose, sellerProfile, isFreeP
                   transition={{ ease: "linear" }}
                 />
               </div>
-
-              <div className="flex flex-col items-center justify-center text-center space-y-4 relative z-10">
+              <div className="flex flex-col items-center justify-center text-center space-y-4 relative z-10 w-full">
                 {progress.status === 'processing' && (
                   <div className="w-16 h-16 relative flex items-center justify-center mb-2">
                     <div className="absolute inset-0 border-4 border-blue-100 rounded-full" />
