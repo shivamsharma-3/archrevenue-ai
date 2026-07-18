@@ -249,10 +249,15 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
         </motion.div>
 
         {/* Footer Links */}
-        <div className="absolute bottom-8 w-full left-0 flex justify-center space-x-6 text-[11px] font-medium text-text-tertiary">
+        <div className="absolute bottom-8 w-full left-0 flex justify-center space-x-6 text-[11px] font-medium text-text-tertiary items-center">
           <Link to="/privacy" className="hover:text-text-secondary transition-colors">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-text-secondary transition-colors">Terms of Service</Link>
           <Link to="/security" className="hover:text-text-secondary transition-colors">Security & Trust</Link>
+          <span className="w-1 h-1 rounded-full bg-white/[0.06]" />
+          <Link to="/admin" className="hover:text-red-400 transition-colors flex items-center group">
+            <Lock className="w-3 h-3 mr-1 opacity-50 group-hover:opacity-100" />
+            <span className="opacity-0 group-hover:opacity-100 transition-opacity">Admin</span>
+          </Link>
         </div>
       </div>
     </div>
