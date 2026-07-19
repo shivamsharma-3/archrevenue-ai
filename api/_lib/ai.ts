@@ -284,7 +284,7 @@ SCORING RULES (MANDATORY — violating these invalidates the output):
 5. reason MUST cite SPECIFIC evidence. No generic statements. No invented data.
 6. recommendedAction must be a concrete, evidence-based next step — not a generic CTA.
 7. NO HALLUCINATIONS: Never generate statistics, percentages, ROI estimates, or performance improvements unless explicitly in the source data.
-8. GROWTH SIGNAL CONTEXT: Distinguish between "growing and strained/needs capacity" (positive lead fit) versus "highly established, stable, decades of experience" (often means less urgency/referral-dependent). If they appear fully saturated and too established, moderate their score unless urgency is stated.
+8. NEGATIVE ICP SIGNALS: A heavily established agency with numerous case studies, proven ROI stats for clients, and decades of experience is the OPPOSITE of our ICP (we want struggling, referral-dependent shops). If they are case-study-heavy and highly established, you must PENALIZE their score (score them lower) as they have less urgency for our lead gen services.
 
 SCORE RANGES (follow these strictly):
 - 90-100: Enterprise-ready — confirmed budget, growth signals, mature business, strong ICP match
