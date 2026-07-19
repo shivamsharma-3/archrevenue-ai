@@ -151,7 +151,7 @@ RULES:
 - businessMaturity: judge from language, team size, product sophistication, funding language, customer references.
 - confidenceLevel: "High" only if you extracted rich content. "Medium" if partial. "Low" if barely anything.
 - Be specific. Do NOT use generic phrases like "they may need help with X" without evidence.
-- painPoints must be inferred from what their business actually does and common friction in that niche — not invented.
+- painPoints must be inferred from what their business actually does and common friction in that niche. CRITICAL: Do NOT classify the company's own listed services as their pain points. Pain points must come from language expressing struggle, complaint, or gap, not from a services/offerings section.
 
 Return ONLY this JSON, no markdown, no code blocks:
 {
