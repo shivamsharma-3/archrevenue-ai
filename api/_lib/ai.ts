@@ -342,21 +342,21 @@ Return ONLY this JSON, no markdown:
   }
   
   if (!['Hot', 'Warm', 'Cold', 'Dead'].includes(normalizedScoreResult.category)) {
-    const cat = normalizedScoreResult.category?.toString().toLowerCase();
+    const cat = normalizedScoreResult.category?.toString().trim().toLowerCase();
     if (cat === 'hot') normalizedScoreResult.category = 'Hot';
     else if (cat === 'warm') normalizedScoreResult.category = 'Warm';
     else if (cat === 'cold') normalizedScoreResult.category = 'Cold';
     else if (cat === 'dead') normalizedScoreResult.category = 'Dead';
-    else throw new Error('Invalid category returned');
+    else throw new Error(`Invalid category returned: ${normalizedScoreResult.category}`);
   }
 
   if (!['Critical', 'High', 'Medium', 'Low'].includes(normalizedScoreResult.priority)) {
-    const pri = normalizedScoreResult.priority?.toString().toLowerCase();
+    const pri = normalizedScoreResult.priority?.toString().trim().toLowerCase();
     if (pri === 'critical') normalizedScoreResult.priority = 'Critical';
     else if (pri === 'high') normalizedScoreResult.priority = 'High';
     else if (pri === 'medium') normalizedScoreResult.priority = 'Medium';
     else if (pri === 'low') normalizedScoreResult.priority = 'Low';
-    else throw new Error('Invalid priority returned');
+    else throw new Error(`Invalid priority returned: ${normalizedScoreResult.priority}`);
   }
 
   if (!normalizedScoreResult.reason || normalizedScoreResult.reason.length === 0)
