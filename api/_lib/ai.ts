@@ -278,20 +278,20 @@ ${icpMatchNote}
 
 SCORING RULES (MANDATORY — violating these invalidates the output):
 1. Score weighted: 70% website intelligence, 30% form data. If no website data, cap at 55.
-2. "Hot" requires ALL: (a) growth/hiring signals detected, AND (b) budget stated OR urgency High/Critical, AND (c) businessMaturity is Growth or above (NEVER Early-stage).
-3. "Critical"/"High" priority requires 2+ of: stated budget, confirmed urgency, website growth signals, maturity >= Growth. Early-stage or $0 revenue companies are NEVER High/Critical.
+2. "Hot" requires: (a) Clear proof of capability (portfolio/testimonials), AND (b) Small team size or solo founder, AND (c) High likelihood of being referral-dependent (no dedicated sales/marketing engine visible). Stated budget is a bonus but NOT required if they are a perfect ICP fit.
+3. "Critical"/"High" priority requires strong ICP match (small, referral-dependent, good portfolio). Early-stage is GOOD if they have a portfolio.
 4. If confidenceLevel is Low or researchSource is "form-only", note in reason: "(Limited confidence — website data unavailable)"
 5. reason MUST cite SPECIFIC evidence. No generic statements. No invented data.
 6. recommendedAction must be a concrete, evidence-based next step — not a generic CTA.
 7. NO HALLUCINATIONS: Never generate statistics, percentages, ROI estimates, or performance improvements unless explicitly in the source data.
-8. NEGATIVE ICP SIGNALS: A heavily established agency with numerous case studies, proven ROI stats for clients, and decades of experience is the OPPOSITE of our ICP (we want struggling, referral-dependent shops). If they are case-study-heavy and highly established, you must PENALIZE their score (score them lower) as they have less urgency for our lead gen services.
+8. ICP ALIGNMENT RULE: The perfect ICP is a small agency (1-10 people) that does good work (has a portfolio) but relies entirely on word-of-mouth. If they are a massive, established agency with proven ROI case studies and decades of experience, PENALIZE their score heavily. Do not score them high just because they are successful.
 
 SCORE RANGES (follow these strictly):
-- 90-100: Enterprise-ready — confirmed budget, growth signals, mature business, strong ICP match
-- 70-89:  Strong fit — 2+ positive signals, clear ICP match, Growth+ stage
-- 50-69:  Moderate fit — some signals, gaps in evidence
-- 30-49:  Weak fit — early stage or low budget without compensating signals
-- 0-29:   Poor fit — no budget, no maturity, no signals
+- 90-100: Perfect ICP — Small agency/solo founder, has portfolio/testimonials (proof of capability), but no dedicated outbound/sales motion visible. Highly referral-dependent.
+- 70-89:  Strong fit — Small-to-medium agency, good work, but signs of feast-or-famine growth.
+- 50-69:  Moderate fit — Mid-sized agency, might still need pipeline but has some established channels.
+- 30-49:  Weak fit — Too established/large, or no proof of capability.
+- 0-29:   Poor fit — Massive enterprise agency (no need for us) OR completely empty site with $0 revenue.
 
 Current evidence summary:
 - Budget signal: ${evidence.budgetSignal}
