@@ -1,7 +1,8 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { Lead } from '../../lib/types';
 import { AppCard } from '../ui/AppCard';
 import { AppButton } from '../ui/AppButton';
+import { ConfirmModal } from '../ui/ConfirmModal';
 import { AIActionBar, AIAction } from '../ui/AIActionBar';
 import { MessageSquare, Mail, Linkedin, PhoneCall, Loader2, Sparkles, Copy, ExternalLink, Phone, CheckSquare, Calendar } from 'lucide-react';
 import { doc, updateDoc, serverTimestamp, arrayUnion } from 'firebase/firestore';
@@ -53,6 +54,7 @@ export const OutreachPlaybook = memo(({
   onGenerate,
   isGenerating = false,
 }: OutreachPlaybookProps) => {
+  const [isForceGenerateModalOpen, setIsForceGenerateModalOpen] = useState(false);
   const followUp = lead.aiAnalysis?.followUp;
 
   // ── Open Gmail deep link ──────────────────────────────────────────────────
@@ -118,7 +120,7 @@ export const OutreachPlaybook = memo(({
 
   // Check for low score hard-gate
   const score = lead.aiAnalysis?.score ?? 0;
-  const isLowScore = score > 0 && score < 40;
+  const isLowScore = score > 0 && score <= 40;
   const isDead = lead.aiAnalysis?.category === 'Dead' || lead.aiAnalysis?.category === 'Cold' || lead.aiAnalysis?.priority === 'Low' || lead.aiAnalysis?.priority === 'Dead';
   
   // If they forced generation, it won't be empty anymore, so we remove the lock
@@ -139,15 +141,11 @@ export const OutreachPlaybook = memo(({
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-red-800 mb-1">Insufficient Data — Do Not Contact</p>
             <p className="text-[12px] text-red-700 leading-relaxed mb-4">
-              This lead scored below the minimum threshold for engagement (Score: {score}/100). The AI Engine strongly recommends against contacting this lead due to insufficient data or poor ICP fit. Outreach generation is disabled.
+              This lead scored at or below the minimum threshold for engagement (Score: {score}/100) or was flagged as Cold/Dead. The AI Engine strongly recommends against contacting this lead due to insufficient data or poor ICP fit. Outreach generation is disabled.
             </p>
             {onGenerate && (
               <button
-                onClick={() => {
-                  if (window.confirm("WARNING: The AI has very little factual data about this lead. Generating outreach now may result in hallucinations, fabricated claims, or a generic, ineffective pitch. Are you absolutely sure you want to force generate a playbook for this lead?")) {
-                    onGenerate();
-                  }
-                }}
+                onClick={() => setIsForceGenerateModalOpen(true)}
                 disabled={isGenerating}
                 className="px-4 py-2 text-[12px] font-bold rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5 w-fit"
               >
@@ -157,6 +155,17 @@ export const OutreachPlaybook = memo(({
             )}
           </div>
         </div>
+        <ConfirmModal
+          isOpen={isForceGenerateModalOpen}
+          onClose={() => setIsForceGenerateModalOpen(false)}
+          title="Force Generate Outreach"
+          message="WARNING: The AI has very little factual data about this lead. Generating outreach now may result in hallucinations, fabricated claims, or a generic, ineffective pitch. Are you absolutely sure you want to force generate a playbook for this lead?"
+          confirmText="Force Generate Anyway"
+          isDestructive={true}
+          onConfirm={() => {
+            if (onGenerate) onGenerate();
+          }}
+        />
       </AppCard>
     );
   }

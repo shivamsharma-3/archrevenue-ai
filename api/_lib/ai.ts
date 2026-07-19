@@ -314,7 +314,7 @@ Return ONLY this JSON, no markdown:
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
   // ── Step 4: Fire Score call first ──────
-  const scoreRaw = await callGroq(scorePrompt, userId, 0.1);
+  const scoreRaw = await callGroq(scorePrompt, userId, 0.0);
   const scoreResult = JSON.parse(scoreRaw);
 
   console.log('[AI] Score result:', scoreResult);
