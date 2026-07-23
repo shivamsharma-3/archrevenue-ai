@@ -120,7 +120,7 @@ export default function BillingPage() {
         </PageActions>
       </PageHeader>
 
-      <PageContent className="max-w-6xl mx-auto w-full space-y-8 pt-4">
+      <PageContent className="w-full space-y-8 pt-4">
 
         {/* Token Usage Summary */}
         <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-8 relative overflow-hidden shadow-sm">

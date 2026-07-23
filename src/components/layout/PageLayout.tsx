@@ -56,7 +56,7 @@ export function PageMetrics({ children, className }: { children: React.ReactNode
 
 export function PageContent({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex-1 px-8 py-8 flex flex-col gap-8 w-full max-w-[1600px] mx-auto", className)}>
+    <div className={cn("flex-1 px-6 md:px-10 py-6 flex flex-col gap-6 w-full max-w-none", className)}>
       {children}
     </div>
   );
