@@ -85,14 +85,32 @@ async function callAI(prompt: string, userId: string, temperature = 0.0): Promis
     try {
       const text = await callGemini(prompt, userId, temperature);
       return { text, provider: 'gemini', modelName: 'Advanced AI Engine' };
-    } catch (err) {
-      console.error('[AI] Gemini engine error for paid user:', err);
-      throw err; // Starter/Pro only use Gemini engine
+    } catch (err: any) {
+      console.warn('[AI] Gemini engine failed/rate-limited for paid user, attempting Groq fallback:', err?.message || err);
+      try {
+        const text = await callGroq(prompt, userId, temperature);
+        return { text, provider: 'groq', modelName: 'Standard AI Engine (Fallback)' };
+      } catch (fallbackErr: any) {
+        console.error('[AI] Both Gemini and Groq engines failed:', fallbackErr);
+        throw new Error('AI Engine rate limit reached. Please wait a moment and click Retry.');
+      }
     }
   }
+
   console.log('[AI] → Standard AI Engine (free user: Groq)');
-  const text = await callGroq(prompt, userId, temperature);
-  return { text, provider: 'groq', modelName: 'Standard AI Engine' };
+  try {
+    const text = await callGroq(prompt, userId, temperature);
+    return { text, provider: 'groq', modelName: 'Standard AI Engine' };
+  } catch (err: any) {
+    console.warn('[AI] Groq failed for free user, attempting Gemini fallback:', err?.message || err);
+    try {
+      const text = await callGemini(prompt, userId, temperature);
+      return { text, provider: 'gemini', modelName: 'Advanced AI Engine (Fallback)' };
+    } catch (fallbackErr: any) {
+      console.error('[AI] Both Groq and Gemini failed:', fallbackErr);
+      throw new Error('AI Engine rate limit reached. Please wait a moment and click Retry.');
+    }
+  }
 }
 
 // ─── Layer 1: Seller Context ─────────────────────────────────────────────────

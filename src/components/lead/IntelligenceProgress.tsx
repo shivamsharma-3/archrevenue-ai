@@ -121,7 +121,11 @@ export const IntelligenceProgress: React.FC<IntelligenceProgressProps> = ({ work
                       {job.name}
                     </h4>
                     {isFailed && job.error && (
-                      <p className="text-[12px] text-red-600 font-medium mt-0.5">{job.error}</p>
+                      <p className="text-[12px] text-red-600 font-medium mt-0.5 max-w-md break-words">
+                        {job.error.includes('429') || job.error.includes('quota') || job.error.includes('RESOURCE_EXHAUSTED') || job.error.startsWith('{')
+                          ? '⚡ AI Rate Limit reached on free key. Click Retry to run fallback.'
+                          : job.error.length > 140 ? job.error.slice(0, 140) + '...' : job.error}
+                      </p>
                     )}
                   </div>
                 </div>
