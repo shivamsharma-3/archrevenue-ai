@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  PieChart, Pie, Legend, CartesianGrid
+} from 'recharts';
+import {
   LogOut, Shield, Users as UsersIcon, Activity, Settings, List, Search,
   RefreshCw, Check, AlertTriangle, Trash2, ChevronRight, X, Zap,
   DollarSign, BarChart2, Cpu, Server, Clock, Eye, TrendingUp, Database
@@ -708,86 +712,163 @@ export default function AdminDashboard() {
         )}
 
         {/* ── TAB 3: REVENUE ──────────────────────────────────────────────── */}
-        {activeTab === 'revenue' && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-[18px] font-semibold text-text-primary">Revenue</h1>
-              <p className="text-[12px] text-text-secondary mt-0.5">Calculated from current plan tier assignments. No historical snapshots — time-series chart omitted.</p>
-            </div>
+        {activeTab === 'revenue' && (() => {
+          const mrrBarData = [
+            { tier: 'Free', mrr: 0, accounts: metrics.free, fill: '#94A3B8' },
+            { tier: 'Starter', mrr: metrics.starter * 49, accounts: metrics.starter, fill: '#3B82F6' },
+            { tier: 'Pro', mrr: metrics.pro * 99, accounts: metrics.pro, fill: '#4F46E5' },
+          ];
+          const accountPieData = [
+            { name: 'Free', value: metrics.free, fill: '#CBD5E1' },
+            { name: 'Starter', value: metrics.starter, fill: '#3B82F6' },
+            { name: 'Pro', value: metrics.pro, fill: '#4F46E5' },
+          ].filter(d => d.value > 0);
 
-            {(loadingUsers || loadingUsage) ? <Spinner /> : (
-              <>
-                {/* MRR by tier */}
-                <div className="bg-surface-card border border-border-default rounded-lg overflow-hidden">
-                  <div className="px-4 py-3 border-b border-border-default">
-                    <p className="text-[13px] font-semibold text-text-primary">Current MRR Breakdown</p>
+          return (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-[18px] font-semibold text-text-primary">Revenue</h1>
+                <p className="text-[12px] text-text-secondary mt-0.5">Calculated from current plan tier assignments. No historical Firestore snapshots — charts show current-state distribution.</p>
+              </div>
+
+              {(loadingUsers || loadingUsage) ? <Spinner /> : (
+                <>
+                  {/* Top stat row */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <StatCell label="Total MRR" value={`$${metrics.mrr.toLocaleString()}`} sub="Starter + Pro" />
+                    <StatCell label="Paid Accounts" value={metrics.paidCount} sub={`of ${users.length} total`} />
+                    <StatCell label="Starter MRR" value={`$${(metrics.starter * 49).toLocaleString()}`} sub={`${metrics.starter} accounts × $49`} />
+                    <StatCell label="Pro MRR" value={`$${(metrics.pro * 99).toLocaleString()}`} sub={`${metrics.pro} accounts × $99`} />
                   </div>
-                  <table className="w-full text-[12px]">
-                    <thead>
-                      <tr className="bg-surface-secondary border-b border-border-default">
-                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Tier</th>
-                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Accounts</th>
-                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Price/mo</th>
-                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">MRR</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-default">
-                      {[
-                        { label: 'Starter', count: metrics.starter, price: 49 },
-                        { label: 'Pro', count: metrics.pro, price: 99 },
-                        { label: 'Free', count: metrics.free, price: 0 },
-                      ].map(row => (
-                        <tr key={row.label}>
-                          <td className="px-4 py-3 font-medium text-text-primary">{row.label}</td>
-                          <td className="px-4 py-3 font-mono text-text-primary">{row.count}</td>
-                          <td className="px-4 py-3 text-text-secondary">{row.price > 0 ? `$${row.price}` : '—'}</td>
-                          <td className="px-4 py-3 font-mono font-semibold text-text-primary">
-                            {row.price > 0 ? `$${(row.count * row.price).toLocaleString()}` : '—'}
-                          </td>
+
+                  {/* Charts row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+                    {/* MRR by tier bar chart */}
+                    <div className="bg-surface-card border border-border-default rounded-lg p-4">
+                      <p className="text-[13px] font-semibold text-text-primary mb-1">MRR by Plan Tier</p>
+                      <p className="text-[11px] text-text-tertiary mb-4">Current monthly revenue contribution per tier</p>
+                      {metrics.mrr === 0 ? (
+                        <div className="h-[200px] flex items-center justify-center text-[12px] text-text-tertiary">No paid accounts yet — chart will populate when you have paying customers.</div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={200}>
+                          <BarChart data={mrrBarData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" vertical={false} />
+                            <XAxis dataKey="tier" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
+                            <Tooltip
+                              contentStyle={{ fontSize: 12, border: '1px solid rgba(15,23,42,0.08)', borderRadius: 8, background: '#F8FAFC', boxShadow: 'none' }}
+                              formatter={(v: any) => [`$${v.toLocaleString()}`, 'MRR']}
+                              cursor={{ fill: 'rgba(15,23,42,0.04)' }}
+                            />
+                            <Bar dataKey="mrr" radius={[4, 4, 0, 0]}>
+                              {mrrBarData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+
+                    {/* Account distribution pie */}
+                    <div className="bg-surface-card border border-border-default rounded-lg p-4">
+                      <p className="text-[13px] font-semibold text-text-primary mb-1">Account Distribution</p>
+                      <p className="text-[11px] text-text-tertiary mb-4">Breakdown of accounts by plan tier</p>
+                      {users.length === 0 ? (
+                        <div className="h-[200px] flex items-center justify-center text-[12px] text-text-tertiary">No accounts yet.</div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie
+                              data={accountPieData}
+                              cx="50%" cy="50%"
+                              innerRadius={55} outerRadius={80}
+                              paddingAngle={2}
+                              dataKey="value"
+                            >
+                              {accountPieData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                            </Pie>
+                            <Tooltip
+                              contentStyle={{ fontSize: 12, border: '1px solid rgba(15,23,42,0.08)', borderRadius: 8, background: '#F8FAFC', boxShadow: 'none' }}
+                              formatter={(v: any, name: any) => [v + ' accounts', name]}
+                            />
+                            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Accounts × Price table */}
+                  <div className="bg-surface-card border border-border-default rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-border-default">
+                      <p className="text-[13px] font-semibold text-text-primary">MRR Breakdown Table</p>
+                    </div>
+                    <table className="w-full text-[12px]">
+                      <thead>
+                        <tr className="bg-surface-secondary border-b border-border-default">
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Tier</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Accounts</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Price/mo</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">MRR</th>
+                          <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">ARR (×12)</th>
                         </tr>
-                      ))}
-                      <tr className="border-t-2 border-border-hover bg-surface-secondary">
-                        <td className="px-4 py-3 font-bold text-text-primary" colSpan={3}>Total MRR</td>
-                        <td className="px-4 py-3 font-bold font-mono text-indigo-600 text-[14px]">${metrics.mrr.toLocaleString()}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y divide-border-default">
+                        {[
+                          { label: 'Starter', count: metrics.starter, price: 49 },
+                          { label: 'Pro', count: metrics.pro, price: 99 },
+                          { label: 'Free', count: metrics.free, price: 0 },
+                        ].map(row => (
+                          <tr key={row.label}>
+                            <td className="px-4 py-3 font-medium text-text-primary">{row.label}</td>
+                            <td className="px-4 py-3 font-mono text-text-primary">{row.count}</td>
+                            <td className="px-4 py-3 text-text-secondary">{row.price > 0 ? `$${row.price}` : '—'}</td>
+                            <td className="px-4 py-3 font-mono font-semibold text-text-primary">
+                              {row.price > 0 ? `$${(row.count * row.price).toLocaleString()}` : '—'}
+                            </td>
+                            <td className="px-4 py-3 font-mono text-text-secondary">
+                              {row.price > 0 ? `$${(row.count * row.price * 12).toLocaleString()}` : '—'}
+                            </td>
+                          </tr>
+                        ))}
+                        <tr className="border-t-2 border-border-hover bg-surface-secondary">
+                          <td className="px-4 py-3 font-bold text-text-primary" colSpan={3}>Total</td>
+                          <td className="px-4 py-3 font-bold font-mono text-indigo-600 text-[14px]">${metrics.mrr.toLocaleString()}</td>
+                          <td className="px-4 py-3 font-bold font-mono text-indigo-600 text-[14px]">${(metrics.mrr * 12).toLocaleString()}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-                {/* Conversion + churn */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="bg-surface-card border border-border-default rounded-lg p-4">
-                    <p className="text-[11px] uppercase tracking-widest font-semibold text-text-tertiary mb-2">Trial → Paid Conversion</p>
-                    {users.length > 0 ? (
-                      <>
-                        <p className="text-[20px] font-bold font-mono text-text-primary">
-                          {((metrics.paidCount / users.length) * 100).toFixed(1)}%
-                        </p>
-                        <p className="text-[11px] text-text-secondary mt-1">{metrics.paidCount} of {users.length} accounts on paid plans</p>
-                      </>
-                    ) : (
-                      <p className="text-[12px] text-text-tertiary">Not enough data yet</p>
-                    )}
+                  {/* Conversion + churn */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="bg-surface-card border border-border-default rounded-lg p-4">
+                      <p className="text-[11px] uppercase tracking-widest font-semibold text-text-tertiary mb-2">Trial → Paid Conversion</p>
+                      {users.length > 0 ? (
+                        <>
+                          <p className="text-[20px] font-bold font-mono text-text-primary">
+                            {((metrics.paidCount / users.length) * 100).toFixed(1)}%
+                          </p>
+                          <p className="text-[11px] text-text-secondary mt-1">{metrics.paidCount} of {users.length} accounts on paid plans</p>
+                        </>
+                      ) : (
+                        <p className="text-[12px] text-text-tertiary">Not enough data yet</p>
+                      )}
+                    </div>
+                    <div className="bg-surface-card border border-border-default rounded-lg p-4">
+                      <p className="text-[11px] uppercase tracking-widest font-semibold text-text-tertiary mb-2">Churn Rate</p>
+                      <p className="text-[12px] text-text-tertiary">Not yet instrumented. Cancellation events not tracked in Firestore.</p>
+                    </div>
+                    <div className="bg-surface-card border border-border-default rounded-lg p-4">
+                      <p className="text-[11px] uppercase tracking-widest font-semibold text-text-tertiary mb-2">Failed Payments</p>
+                      <p className="text-[12px] text-text-tertiary">Not yet instrumented. Stripe webhook events not stored in Firestore.</p>
+                    </div>
                   </div>
-                  <div className="bg-surface-card border border-border-default rounded-lg p-4">
-                    <p className="text-[11px] uppercase tracking-widest font-semibold text-text-tertiary mb-2">Churn Rate</p>
-                    <p className="text-[12px] text-text-tertiary">Not yet instrumented. Cancellation events are not tracked in Firestore.</p>
-                  </div>
-                  <div className="bg-surface-card border border-border-default rounded-lg p-4">
-                    <p className="text-[11px] uppercase tracking-widest font-semibold text-text-tertiary mb-2">Failed Payments</p>
-                    <p className="text-[12px] text-text-tertiary">Not yet instrumented. Stripe webhook events are not stored in Firestore.</p>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-                  <p className="text-[12px] text-amber-800">
-                    <strong>Note:</strong> No MRR trend chart is shown because there is no historical snapshot data in Firestore. Numbers above are derived from current role assignments only.
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+                </>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── TAB 4: USAGE & COSTS ─────────────────────────────────────────── */}
         {activeTab === 'usage' && (
@@ -858,7 +939,40 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {/* Top 10 by usage */}
+                {/* Top 10 token usage bar chart */}
+                {topByUsage.length > 0 && metrics.totalTokensUsed > 0 && (() => {
+                  const chartData = topByUsage.slice(0, 8).map(u => ({
+                    name: u.email ? u.email.split('@')[0].slice(0, 12) : u.id.slice(0, 8),
+                    tokens: u.tokensUsed,
+                    fill: (!u.role || u.role === 'free') ? '#94A3B8' : '#4F46E5',
+                  }));
+                  return (
+                    <div className="bg-surface-card border border-border-default rounded-lg p-4">
+                      <p className="text-[13px] font-semibold text-text-primary mb-1">Top Accounts by Token Usage</p>
+                      <p className="text-[11px] text-text-tertiary mb-4">
+                        <span className="inline-flex items-center gap-1 mr-3"><span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" /> Paid tier</span>
+                        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400 inline-block" /> Free tier</span>
+                      </p>
+                      <ResponsiveContainer width="100%" height={220}>
+                        <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 48, left: 8, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.06)" horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={v => formatTokens(v)} />
+                          <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#475569' }} axisLine={false} tickLine={false} width={80} />
+                          <Tooltip
+                            contentStyle={{ fontSize: 12, border: '1px solid rgba(15,23,42,0.08)', borderRadius: 8, background: '#F8FAFC', boxShadow: 'none' }}
+                            formatter={(v: any) => [formatTokens(v), 'Tokens Used']}
+                            cursor={{ fill: 'rgba(15,23,42,0.04)' }}
+                          />
+                          <Bar dataKey="tokens" radius={[0, 4, 4, 0]}>
+                            {chartData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  );
+                })()}
+
+                {/* Top 10 by usage table */}
                 <div className="bg-surface-card border border-border-default rounded-lg overflow-hidden">
                   <div className="px-4 py-3 border-b border-border-default">
                     <p className="text-[13px] font-semibold text-text-primary">Top 10 Accounts by Token Usage</p>
