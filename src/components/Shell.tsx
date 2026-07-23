@@ -33,8 +33,9 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
 
 
 
-  const handleLogout = () => {
-    auth.signOut();
+  const handleLogout = async () => {
+    await auth.signOut();
+    navigate('/');
   };
 
   const handleNavigation = (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'insights' | 'help' | 'admin/beta' | 'profile') => {

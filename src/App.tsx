@@ -99,7 +99,7 @@ export default function App() {
         <Route path="/admin/dashboard" element={<AdminProtectedRoute><AdminDashboard /></AdminProtectedRoute>} />
 
         {/* Protected layout routes */}
-        <Route element={user ? <AppLayout /> : <Navigate to="/login" />}>
+        <Route element={user ? <AppLayout /> : <Navigate to="/" />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/leads" element={<LeadsPage />} />
           <Route path="/pipeline" element={<PipelinePage />} />
@@ -116,7 +116,7 @@ export default function App() {
           <Route path="/admin/beta" element={<AdminBetaPage />} />
         </Route>
 
-        <Route path="/lead/:id" element={user ? <LeadIntelligencePage /> : <Navigate to="/login" />} />
+        <Route path="/lead/:id" element={user ? <LeadIntelligencePage /> : <Navigate to="/" />} />
 
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
