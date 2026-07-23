@@ -11,7 +11,12 @@ export interface PaymentItem {
   priceInr: number;
 }
 
-export const USD_TO_INR_RATE = 85; // Standard conversion rate
+// Current Market USD to INR Exchange Rate
+export const USD_TO_INR_RATE = 86.8;
+
+export function getInrPrice(usdPrice: number): number {
+  return Math.round(usdPrice * USD_TO_INR_RATE);
+}
 
 export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
   starter_monthly: {
@@ -20,7 +25,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'plan',
     targetRole: 'starter',
     priceUsd: 49,
-    priceInr: 49 * USD_TO_INR_RATE, // ~₹4,165
+    priceInr: Math.round(49 * USD_TO_INR_RATE), // ~₹4,253
   },
   starter_annual: {
     id: 'starter_annual',
@@ -28,7 +33,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'plan',
     targetRole: 'starter',
     priceUsd: 39 * 12, // $468
-    priceInr: 39 * 12 * USD_TO_INR_RATE,
+    priceInr: Math.round(39 * 12 * USD_TO_INR_RATE),
   },
   pro_monthly: {
     id: 'pro_monthly',
@@ -36,7 +41,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'plan',
     targetRole: 'pro',
     priceUsd: 99,
-    priceInr: 99 * USD_TO_INR_RATE, // ~₹8,415
+    priceInr: Math.round(99 * USD_TO_INR_RATE), // ~₹8,593
   },
   pro_annual: {
     id: 'pro_annual',
@@ -44,7 +49,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'plan',
     targetRole: 'pro',
     priceUsd: 79 * 12, // $948
-    priceInr: 79 * 12 * USD_TO_INR_RATE,
+    priceInr: Math.round(79 * 12 * USD_TO_INR_RATE),
   },
   pack_50k: {
     id: 'pack_50k',
@@ -52,7 +57,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'token_pack',
     tokenAmount: 50000,
     priceUsd: 19,
-    priceInr: 19 * USD_TO_INR_RATE, // ~₹1,615
+    priceInr: Math.round(19 * USD_TO_INR_RATE), // ~₹1,649
   },
   pack_200k: {
     id: 'pack_200k',
@@ -60,7 +65,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'token_pack',
     tokenAmount: 200000,
     priceUsd: 49,
-    priceInr: 49 * USD_TO_INR_RATE, // ~₹4,165
+    priceInr: Math.round(49 * USD_TO_INR_RATE), // ~₹4,253
   },
   pack_500k: {
     id: 'pack_500k',
@@ -68,7 +73,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
     type: 'token_pack',
     tokenAmount: 500000,
     priceUsd: 99,
-    priceInr: 99 * USD_TO_INR_RATE, // ~₹8,415
+    priceInr: Math.round(99 * USD_TO_INR_RATE), // ~₹8,593
   },
 };
 

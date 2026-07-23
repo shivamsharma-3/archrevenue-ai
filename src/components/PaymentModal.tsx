@@ -193,35 +193,35 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
         {/* TAB 1: Razorpay Checkout */}
         {activeTab === 'razorpay' && (
           <div className="space-y-4 text-center py-2">
-            <div className="p-5 border border-border-default bg-surface-card rounded-xl space-y-4">
+            <div className="p-6 border border-border-default bg-surface-card rounded-xl space-y-4">
               <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-full flex items-center justify-center mx-auto text-indigo-600">
                 <CreditCard className="w-6 h-6" />
               </div>
-              <div>
+              <div className="space-y-1">
                 <h5 className="text-[15px] font-bold text-text-primary">Instant Gateway Payment</h5>
-                <p className="text-[13px] text-text-secondary mt-1 max-w-sm mx-auto">
+                <p className="text-[13px] text-text-secondary leading-relaxed px-4">
                   Supports Indian & International Credit/Debit Cards, NetBanking, and Razorpay UPI Popup.
                 </p>
               </div>
 
-              <AppButton
-                variant="primary"
+              <button
+                type="button"
                 onClick={handleRazorpayPayment}
                 disabled={isRazorpayLoading}
-                className="w-full py-3 text-[13px] font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white text-[13px] font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 uppercase tracking-wider"
               >
                 {isRazorpayLoading ? (
                   <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-4 h-4 animate-spin shrink-0" />
                     <span>Loading Gateway...</span>
                   </>
                 ) : (
                   <>
                     <span>Pay ₹{item.priceInr.toLocaleString('en-IN')} via Razorpay</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 shrink-0" />
                   </>
                 )}
-              </AppButton>
+              </button>
             </div>
             <p className="text-[11px] text-text-tertiary flex items-center justify-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
@@ -244,7 +244,7 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
               </div>
 
               {/* UPI Details & Copy */}
-              <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex-1 min-w-0 space-y-3 w-full">
                 <div>
                   <span className="text-[11px] font-bold uppercase tracking-wider text-text-tertiary">Official Business VPA</span>
                   <div className="flex items-center gap-2 mt-1">
@@ -281,14 +281,13 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
                 />
               </div>
 
-              <AppButton
-                variant="primary"
+              <button
                 type="submit"
                 disabled={isSubmittingUpi}
-                className="w-full py-2.5 text-[12px] font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white text-[12px] font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 uppercase tracking-wider"
               >
                 {isSubmittingUpi ? 'Submitting...' : 'Submit UPI Reference for Instant Approval'}
-              </AppButton>
+              </button>
             </form>
           </div>
         )}
@@ -300,16 +299,16 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
               <div className="w-12 h-12 bg-blue-50 border border-blue-100 rounded-full flex items-center justify-center mx-auto text-blue-600">
                 <Globe className="w-6 h-6" />
               </div>
-              <div>
+              <div className="space-y-1">
                 <h5 className="text-[15px] font-bold text-text-primary">PayPal International (${item.priceUsd} USD)</h5>
-                <p className="text-[13px] text-text-secondary mt-1 max-w-sm mx-auto">
-                  Pay securely using your PayPal Account or International Cards.
+                <p className="text-[13px] text-text-secondary leading-relaxed px-4">
+                  Pay securely using your PayPal Account or International Credit/Debit Cards.
                 </p>
               </div>
 
-              <div id="paypal-button-container" className="min-h-[50px] flex items-center justify-center">
-                <AppButton
-                  variant="primary"
+              <div id="paypal-button-container" className="min-h-[50px] flex items-center justify-center w-full">
+                <button
+                  type="button"
                   onClick={async () => {
                     setIsPaypalLoading(true);
                     const loaded = await loadPayPalScript(config.paypalClientId);
@@ -358,11 +357,11 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
                     setIsPaypalLoading(false);
                   }}
                   disabled={isPaypalLoading}
-                  className="w-full py-3 text-[13px] font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white text-[13px] font-bold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 uppercase tracking-wider"
                 >
                   {isPaypalLoading ? 'Loading PayPal...' : `Pay $${item.priceUsd} USD via PayPal`}
-                  <ArrowRight className="w-4 h-4" />
-                </AppButton>
+                  <ArrowRight className="w-4 h-4 shrink-0" />
+                </button>
               </div>
             </div>
           </div>
