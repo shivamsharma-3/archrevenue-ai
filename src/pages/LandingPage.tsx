@@ -309,24 +309,100 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Section 8 — Pricing CTA */}
-        <section id="pricing" className="py-24 lg:py-40 px-6">
-          <div className="max-w-[800px] mx-auto text-center border border-border-default bg-surface-card p-12 lg:p-20">
-            <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-8 font-medium">Pricing Architecture</div>
-            <h2 className="text-4xl lg:text-5xl font-display text-text-primary font-medium mb-8 leading-[1.1] tracking-[-0.02em]">
-              Command your pipeline.
+        {/* Section 8 — Pricing Architecture */}
+        <section id="pricing" className="py-24 lg:py-40 px-6 max-w-[1200px] mx-auto">
+          <div className="text-center mb-16">
+            <div className="text-[11px] uppercase tracking-[0.3em] text-text-secondary mb-4 font-medium">Pricing Architecture</div>
+            <h2 className="text-4xl lg:text-5xl font-display text-text-primary font-medium leading-[1.1] tracking-[-0.02em] max-w-[600px] mx-auto">
+              Transparent plans for every stage of growth.
             </h2>
-            <p className="text-[16px] text-text-secondary mb-12 font-light max-w-[400px] mx-auto">
-              A single, comprehensive tier. Full access to the intelligence engine, Mission Briefings, and Revenue Strategy modules.
+            <p className="text-[15px] text-text-secondary mt-4 max-w-[500px] mx-auto font-light">
+              Start 100% free with no credit card required. Upgrade anytime to unlock Gemini 2.5 Flash precision intelligence.
             </p>
-            <div className="text-[32px] font-display text-text-primary mb-12">
-              ${PRICING_CONFIG.STARTER_PRICE} <span className="text-[14px] text-text-secondary font-body uppercase tracking-widest">/ month</span>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-6">
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Free Tier */}
+            <div className="border border-border-default bg-surface-card p-8 flex flex-col justify-between relative">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary px-2.5 py-1 rounded bg-surface-secondary border border-border-default inline-block mb-4">Free Tier</span>
+                <h3 className="text-2xl font-display text-text-primary font-medium">Free Forever</h3>
+                <div className="mt-4 flex items-baseline">
+                  <span className="text-4xl font-display text-text-primary font-bold">$0</span>
+                  <span className="text-[13px] text-text-secondary font-light ml-1">/ forever</span>
+                </div>
+                <p className="text-[12px] font-semibold text-slate-500 mt-2">⚡ Llama 3.3 AI Engine</p>
+                <p className="text-[12px] text-text-tertiary mt-0.5">50,000 AI Tokens / Month</p>
+
+                <ul className="mt-8 space-y-3 border-t border-border-default pt-6 text-[13px] text-text-secondary font-light">
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> No Credit Card Required</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Executive Lead Scoring</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Cold Email Drafts</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Unlimited Lead Imports</li>
+                </ul>
+              </div>
               <Link
                 to="/signup"
-                className="btn-luxury px-8 py-4 text-[13px] uppercase tracking-widest font-medium text-surface-background bg-text-primary border border-text-primary transition-all text-center"
+                className="mt-8 block text-center px-6 py-3.5 text-[12px] uppercase tracking-widest font-medium border border-text-primary text-text-primary hover:bg-text-primary hover:text-surface-background transition-all"
+              >
+                Get Started Free
+              </Link>
+            </div>
+
+            {/* Starter Tier */}
+            <div className="border border-border-default bg-surface-card p-8 flex flex-col justify-between relative">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 px-2.5 py-1 rounded bg-indigo-50 border border-indigo-100 inline-block mb-4">Starter</span>
+                <h3 className="text-2xl font-display text-text-primary font-medium">Starter</h3>
+                <div className="mt-4 flex items-baseline">
+                  <span className="text-4xl font-display text-text-primary font-bold">$49</span>
+                  <span className="text-[13px] text-text-secondary font-light ml-1">/ month</span>
+                </div>
+                <p className="text-[12px] font-semibold text-indigo-600 mt-2">✨ Gemini 2.5 Flash Engine</p>
+                <p className="text-[12px] text-text-tertiary mt-0.5">100,000 AI Tokens / Month</p>
+
+                <ul className="mt-8 space-y-3 border-t border-border-default pt-6 text-[13px] text-text-secondary font-light">
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> ✨ Gemini 2.5 Flash Intelligence</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Multi-Channel Outreach (Email + LinkedIn + Phone)</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> CSV Data Exports & Bulk Imports</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Standard Email Support</li>
+                </ul>
+              </div>
+              <Link
+                to="/signup"
+                className="mt-8 block text-center px-6 py-3.5 text-[12px] uppercase tracking-widest font-medium border border-text-primary text-text-primary hover:bg-text-primary hover:text-surface-background transition-all"
+              >
+                Start 14-Day Free Trial
+              </Link>
+            </div>
+
+            {/* Pro Tier (Popular) */}
+            <div className="border border-indigo-300 bg-surface-secondary p-8 flex flex-col justify-between relative shadow-lg">
+              <div className="absolute -top-3.5 inset-x-0 flex justify-center">
+                <span className="bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md">
+                  Most Popular
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 px-2.5 py-1 rounded bg-purple-50 border border-purple-100 inline-block mb-4 mt-2">Pro Edition</span>
+                <h3 className="text-2xl font-display text-text-primary font-medium">Pro</h3>
+                <div className="mt-4 flex items-baseline">
+                  <span className="text-4xl font-display text-text-primary font-bold">$99</span>
+                  <span className="text-[13px] text-text-secondary font-light ml-1">/ month</span>
+                </div>
+                <p className="text-[12px] font-semibold text-purple-600 mt-2">✨ Gemini 2.5 Flash Engine</p>
+                <p className="text-[12px] text-text-tertiary mt-0.5">250,000 AI Tokens / Month</p>
+
+                <ul className="mt-8 space-y-3 border-t border-border-default pt-6 text-[13px] text-text-secondary font-light">
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> ✨ Gemini 2.5 Flash High Precision</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> AI Deal Coach & Objections Engine</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Unlimited Outreach Regeneration</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> 24/7 Priority Support</li>
+                </ul>
+              </div>
+              <Link
+                to="/signup"
+                className="mt-8 block text-center px-6 py-3.5 text-[12px] uppercase tracking-widest font-medium bg-text-primary text-surface-background border border-text-primary hover:opacity-90 transition-all shadow-sm"
               >
                 Start 14-Day Free Trial
               </Link>

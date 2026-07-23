@@ -16,29 +16,62 @@ export default function BillingPage() {
   const [selectedTokenPackIndex, setSelectedTokenPackIndex] = useState(1);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
   const isNearLimit = usagePercent > 80;
-  const isStarter = limit >= 100000 && limit < 250000;
+  const isFree = limit <= 50000;
+  const isStarter = limit > 50000 && limit < 250000;
   const isPro = limit >= 250000;
-  const isFreeTrial = limit < 100000;
 
   const plans = [
     {
+      name: 'Free',
+      price: '$0',
+      period: '/forever',
+      tokens: '50k Tokens/mo',
+      model: '⚡ Llama 3.3 AI Engine',
+      features: [
+        'No Credit Card Required',
+        'Executive Lead Scoring',
+        'Cold Email Drafts',
+        'Unlimited Lead Uploads',
+        'Community Support'
+      ],
+      current: isFree,
+      buttonText: isFree ? 'Current Plan' : 'Free Tier',
+      free: true,
+    },
+    {
       name: 'Starter',
-      price: '$49',
+      price: billingCycle === 'annual' ? '$39' : '$49',
       period: '/mo',
       tokens: '100k Tokens/mo',
-      features: ['14-Day Free Trial', 'Basic AI Scoring', 'Standard Outreach', 'Email Support'],
+      model: '✨ Gemini 2.5 Flash Engine',
+      features: [
+        '✨ Gemini 2.5 Flash AI Engine',
+        'Multi-Channel Outreach (Email + LinkedIn + Phone)',
+        '100,000 AI Tokens / Month',
+        'CSV Export & Bulk Imports',
+        'Standard Email Support'
+      ],
       current: isStarter,
       buttonText: isStarter ? 'Current Plan' : 'Upgrade to Starter'
     },
     {
       name: 'Pro',
-      price: '$99',
+      price: billingCycle === 'annual' ? '$79' : '$99',
       period: '/mo',
       tokens: '250k Tokens/mo',
-      features: ['Advanced AI Intelligence', 'Automated Workflows', 'Priority Support', 'Custom Outreach Styles'],
-      popular: !isPro,
+      model: '✨ Gemini 2.5 Flash Engine',
+      popular: true,
+      features: [
+        '✨ Gemini 2.5 Flash AI Engine',
+        'AI Deal Coach & Objections Engine',
+        'Unlimited Outreach Regeneration',
+        '250,000 AI Tokens / Month',
+        'Priority 24/7 Support'
+      ],
       current: isPro,
       buttonText: isPro ? 'Current Plan' : 'Upgrade to Pro'
     },
@@ -47,7 +80,14 @@ export default function BillingPage() {
       price: 'Custom',
       period: '',
       tokens: 'Unlimited Tokens',
-      features: ['Dedicated Account Manager', 'Custom AI Models', 'SLA Guarantee', 'White-glove Onboarding'],
+      model: 'Dedicated AI Pipeline',
+      features: [
+        'Dedicated AI Pipeline',
+        'Custom AI Fine-tuning & ICP Prompts',
+        'Dedicated Account Manager',
+        'SLA Guarantee & White-glove Onboarding',
+        'Custom Security Audit'
+      ],
       current: false,
       buttonText: 'Contact Sales'
     }
@@ -57,7 +97,7 @@ export default function BillingPage() {
     <Page>
       <PageHeader 
         title="Billing & Usage" 
-        description="Manage your subscription, tokens, and payment methods."
+        description="Manage your subscription, AI tokens, and enterprise plan options."
       >
         <PageActions>
           <AppButton 
@@ -80,11 +120,11 @@ export default function BillingPage() {
         </PageActions>
       </PageHeader>
 
-      <PageContent className="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+      <PageContent className="max-w-6xl mx-auto w-full space-y-8 pt-4">
 
         {/* Token Usage Summary */}
-        <div className="md:col-span-3 bg-surface-card border border-border-default rounded-[var(--radius-card)] p-8 relative overflow-hidden shadow-sm">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent to-orange-50/20 pointer-events-none" />
+        <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-8 relative overflow-hidden shadow-sm">
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-orange-50/20 pointer-events-none" />
           
           <div className="flex flex-col md:flex-row md:items-center justify-between relative z-10 mb-8">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
@@ -92,15 +132,20 @@ export default function BillingPage() {
                 <Activity className="w-6 h-6 text-orange-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-text-primary tracking-tight">AI Token Quota</h2>
-                <p className="text-[13px] text-text-secondary mt-0.5">Your monthly intelligence budget</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-text-primary tracking-tight">AI Token Quota</h2>
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700">
+                    {isFree ? '⚡ Free Tier (Llama 3.3)' : '✨ Paid Tier (Gemini 2.5 Flash)'}
+                  </span>
+                </div>
+                <p className="text-[13px] text-text-secondary mt-0.5">Your monthly AI intelligence allocation</p>
               </div>
             </div>
             <div className="text-left md:text-right">
               <div className="text-3xl font-bold text-text-primary font-mono tracking-tight">
                 {isLoading ? '...' : tokensUsed.toLocaleString()} <span className="text-lg text-text-tertiary font-sans font-medium">/ {limit.toLocaleString()}</span>
               </div>
-              <p className={cn("text-xs font-semibold mt-1", isNearLimit ? "text-orange-400" : "text-teal-500")}>
+              <p className={cn("text-xs font-semibold mt-1", isNearLimit ? "text-orange-400" : "text-teal-600")}>
                 {isLoading ? 'Loading...' : `${(limit - tokensUsed).toLocaleString()} tokens remaining`}
               </p>
             </div>
@@ -125,91 +170,223 @@ export default function BillingPage() {
             </div>
           </div>
           
-          <div className="mt-8 pt-6 border-t border-border-default flex justify-end relative z-10">
+          <div className="mt-6 pt-6 border-t border-border-default flex items-center justify-between relative z-10">
+            <p className="text-[12px] text-text-secondary">
+              Tokens reset on your monthly billing date. Need extra capacity today?
+            </p>
             <AppButton
               variant="secondary"
               onClick={() => setShowUpgradeModal(true)}
               leftIcon={<Zap className="w-4 h-4 text-orange-400" />}
               className="border-orange-500/20 hover:border-orange-500/40 hover:bg-orange-50 text-orange-600"
             >
-              Buy More Tokens
+              Buy Token Pack
             </AppButton>
           </div>
         </div>
 
-        {/* Subscription Plans */}
-        {plans.map((plan, i) => (
-          <div 
-            key={i} 
-            className={cn(
-              "bg-surface-card border rounded-[var(--radius-card)] p-6 relative flex flex-col transition-all duration-300 shadow-sm",
-              plan.current ? "border-teal-200 shadow-[0_0_30px_rgba(20,184,166,0.15)]" : "border-border-default hover:border-border-hover",
-              plan.popular ? "scale-105 z-10 bg-surface-secondary shadow-lg border-border-active" : "",
-              (plan as any).free ? "border-border-default bg-surface-hover/50" : ""
-            )}
-          >
-            {plan.popular && (
-              <div className="absolute -top-3 inset-x-0 flex justify-center">
-                <span className="bg-teal-500 text-teal-950 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-lg">
-                  Most Popular
-                </span>
-              </div>
-            )}
-            
-            <div className="mb-6">
-              <h3 className="text-lg font-bold text-text-primary">{plan.name}</h3>
-              <div className="mt-3 flex items-baseline">
-                <span className="text-3xl font-bold text-text-primary">{plan.price}</span>
-                <span className="text-[13px] font-medium text-text-secondary ml-1">{plan.period}</span>
-              </div>
-              <p className={cn("text-[13px] font-medium mt-2", (plan as any).free ? "text-text-secondary" : "text-teal-600")}>{plan.tokens}</p>
-            </div>
+        {/* Monthly / Annual Toggle */}
+        <div className="flex flex-col items-center justify-center pt-4">
+          <div className="bg-surface-secondary p-1 rounded-2xl border border-border-default flex items-center gap-1">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={cn(
+                "px-5 py-2 text-[13px] font-bold rounded-xl transition-all",
+                billingCycle === 'monthly' ? "bg-white text-text-primary shadow-xs border border-border-default" : "text-text-secondary hover:text-text-primary"
+              )}
+            >
+              Monthly Billing
+            </button>
+            <button
+              onClick={() => setBillingCycle('annual')}
+              className={cn(
+                "px-5 py-2 text-[13px] font-bold rounded-xl transition-all flex items-center gap-2",
+                billingCycle === 'annual' ? "bg-white text-text-primary shadow-xs border border-border-default" : "text-text-secondary hover:text-text-primary"
+              )}
+            >
+              <span>Annual Billing</span>
+              <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Save 20%</span>
+            </button>
+          </div>
+        </div>
 
-            <div className="flex-1 space-y-4 mb-8">
-              {plan.features.map((feature, j) => (
-                <div key={j} className="flex items-start space-x-3 text-[13px]">
-                  <Check className={cn("w-4 h-4 shrink-0 mt-0.5", feature === '14-Day Free Trial' ? "text-indigo-500" : "text-teal-500")} />
-                  <span className={cn(
-                    "text-text-primary",
-                    feature === '14-Day Free Trial' && "font-bold text-indigo-700 bg-indigo-50/80 px-2 py-0.5 rounded-md -ml-2 shadow-sm border border-indigo-100/50"
-                  )}>{feature}</span>
+        {/* Subscription Plans Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {plans.map((plan, i) => (
+            <div 
+              key={i} 
+              className={cn(
+                "bg-surface-card border rounded-[var(--radius-card)] p-6 relative flex flex-col transition-all duration-300 shadow-xs",
+                plan.current ? "border-teal-500 shadow-[0_0_24px_rgba(20,184,166,0.15)] ring-1 ring-teal-500" : "border-border-default hover:border-border-hover",
+                plan.popular ? "bg-surface-secondary border-indigo-200 shadow-md" : ""
+              )}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 inset-x-0 flex justify-center">
+                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" /> Most Popular
+                  </span>
                 </div>
-              ))}
-            </div>
+              )}
+              
+              <div className="mb-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-text-primary">{plan.name}</h3>
+                  {plan.current && (
+                    <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 bg-teal-100 text-teal-800 rounded-full">Active</span>
+                  )}
+                </div>
 
-            <AppButton 
-              className="w-full"
-              variant={plan.popular ? "primary" : "secondary"}
-              disabled={plan.current}
-              onClick={async () => {
-                if (plan.name === 'Enterprise') {
-                  toast.success('Our sales team will be in touch!');
-                  return;
-                }
-                try {
-                  if (!auth.currentUser) throw new Error('Not authenticated');
-                  
-                  let priceId = '';
-                  if (plan.name === 'Starter') priceId = STRIPE_PRICING.STARTER;
-                  else if (plan.name === 'Pro') priceId = STRIPE_PRICING.PRO;
-                  
-                  if (priceId && priceId.includes('placeholder')) {
-                    toast.error('Please configure real Stripe Price IDs in src/lib/stripe.ts', { duration: 5000 });
+                <div className="mt-3 flex items-baseline">
+                  <span className="text-3xl font-bold text-text-primary">{plan.price}</span>
+                  <span className="text-[13px] font-medium text-text-secondary ml-1">{plan.period}</span>
+                </div>
+
+                <p className="text-[12px] font-semibold mt-2 text-indigo-600">{plan.model}</p>
+                <p className="text-[12px] text-text-tertiary mt-0.5">{plan.tokens}</p>
+              </div>
+
+              <div className="flex-1 space-y-3.5 mb-6 border-t border-border-default pt-4">
+                {plan.features.map((feature, j) => (
+                  <div key={j} className="flex items-start space-x-2.5 text-[12px]">
+                    <Check className={cn("w-4 h-4 shrink-0 mt-0.5", plan.popular ? "text-indigo-600" : "text-teal-500")} />
+                    <span className="text-text-primary font-medium">{feature}</span>
+                  </div>
+                ))}
+              </div>
+
+              <AppButton 
+                className="w-full mt-auto"
+                variant={plan.popular ? "primary" : plan.current ? "secondary" : "secondary"}
+                disabled={plan.current}
+                onClick={async () => {
+                  if (plan.name === 'Enterprise') {
+                    toast.success('Our sales team will be in touch!');
                     return;
                   }
-                  
-                  if (priceId) {
-                    await createCheckoutSession(auth.currentUser.uid, priceId);
+                  if (plan.name === 'Free') {
+                    return;
                   }
-                } catch (err: any) {
-                  toast.error(err.message || 'Failed to start checkout process');
-                }
-              }}
-            >
-              {plan.buttonText}
-            </AppButton>
+                  try {
+                    if (!auth.currentUser) throw new Error('Not authenticated');
+                    
+                    let priceId = '';
+                    if (plan.name === 'Starter') priceId = STRIPE_PRICING.STARTER;
+                    else if (plan.name === 'Pro') priceId = STRIPE_PRICING.PRO;
+                    
+                    if (priceId && priceId.includes('placeholder')) {
+                      toast.error('Please configure real Stripe Price IDs in src/lib/stripe.ts', { duration: 5000 });
+                      return;
+                    }
+                    
+                    if (priceId) {
+                      await createCheckoutSession(auth.currentUser.uid, priceId);
+                    }
+                  } catch (err: any) {
+                    toast.error(err.message || 'Failed to start checkout process');
+                  }
+                }}
+              >
+                {plan.buttonText}
+              </AppButton>
+            </div>
+          ))}
+        </div>
+
+        {/* Trust Badges */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-border-default text-center">
+          <div className="p-4 bg-surface-card rounded-xl border border-border-default">
+            <span className="text-lg block mb-1">💳</span>
+            <p className="text-[12px] font-bold text-text-primary">No Credit Card Required</p>
+            <p className="text-[11px] text-text-secondary mt-0.5">Free tier is forever 100% free</p>
           </div>
-        ))}
+          <div className="p-4 bg-surface-card rounded-xl border border-border-default">
+            <span className="text-lg block mb-1">⚡</span>
+            <p className="text-[12px] font-bold text-text-primary">Instant Activation</p>
+            <p className="text-[11px] text-text-secondary mt-0.5">Upgrade unlocks immediately</p>
+          </div>
+          <div className="p-4 bg-surface-card rounded-xl border border-border-default">
+            <span className="text-lg block mb-1">🔄</span>
+            <p className="text-[12px] font-bold text-text-primary">Cancel Anytime</p>
+            <p className="text-[11px] text-text-secondary mt-0.5">No lock-in or cancellation fees</p>
+          </div>
+          <div className="p-4 bg-surface-card rounded-xl border border-border-default">
+            <span className="text-lg block mb-1">🔒</span>
+            <p className="text-[12px] font-bold text-text-primary">Encrypted & Private</p>
+            <p className="text-[11px] text-text-secondary mt-0.5">Bank-grade data isolation</p>
+          </div>
+        </div>
+
+        {/* Feature Comparison Matrix */}
+        <div className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-8 shadow-xs">
+          <h3 className="text-lg font-bold text-text-primary mb-2">Detailed Feature Matrix</h3>
+          <p className="text-[13px] text-text-secondary mb-6">Full technical comparison across all plan tiers.</p>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[13px] border-collapse">
+              <thead>
+                <tr className="border-b border-border-default text-text-tertiary font-bold uppercase tracking-wider text-[11px]">
+                  <th className="pb-4">Feature</th>
+                  <th className="pb-4">Free ($0)</th>
+                  <th className="pb-4">Starter ($49/mo)</th>
+                  <th className="pb-4 text-indigo-600">Pro ($99/mo)</th>
+                  <th className="pb-4">Enterprise</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-default/60">
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">AI Engine Model</td>
+                  <td className="py-3.5 text-text-secondary">⚡ Llama 3.3 (Groq)</td>
+                  <td className="py-3.5 text-indigo-600 font-medium">✨ Gemini 2.5 Flash</td>
+                  <td className="py-3.5 text-purple-600 font-bold">✨ Gemini 2.5 Flash</td>
+                  <td className="py-3.5 text-text-primary font-semibold">Custom Fine-Tuned</td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">Monthly AI Tokens</td>
+                  <td className="py-3.5 text-text-secondary">50,000</td>
+                  <td className="py-3.5 text-text-primary font-medium">100,000</td>
+                  <td className="py-3.5 text-text-primary font-bold">250,000</td>
+                  <td className="py-3.5 text-text-primary font-semibold">Unlimited</td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">Executive Lead Scoring</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">Cold Email Generation</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">LinkedIn & Phone Scripts</td>
+                  <td className="py-3.5 text-text-tertiary">🔒 Locked</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">AI Revenue Strategy (Deal Coach)</td>
+                  <td className="py-3.5 text-text-tertiary">🔒 Locked</td>
+                  <td className="py-3.5 text-text-tertiary">🔒 Locked</td>
+                  <td className="py-3.5 text-purple-600 font-bold">✓ Full Access</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Included</td>
+                </tr>
+                <tr>
+                  <td className="py-3.5 font-semibold text-text-primary">CSV Export & Bulk Imports</td>
+                  <td className="py-3.5 text-text-tertiary">Limited</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Unlimited</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Unlimited</td>
+                  <td className="py-3.5 text-emerald-600 font-bold">✓ Unlimited</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       <AppModal 
         isOpen={showUpgradeModal} 
         onClose={() => setShowUpgradeModal(false)} 
