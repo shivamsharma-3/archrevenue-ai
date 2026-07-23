@@ -99,29 +99,29 @@ export const IntelligenceProgress: React.FC<IntelligenceProgressProps> = ({ work
               <div 
                 key={jobId} 
                 className={cn(
-                  "flex items-center justify-between p-3 rounded-lg transition-colors",
+                  "flex items-start justify-between gap-4 p-3.5 rounded-xl transition-colors",
                   isRunning ? "bg-surface-card shadow-sm border border-indigo-100" : "border border-transparent",
-                  isFailed ? "bg-red-50 border border-red-100" : ""
+                  isFailed ? "bg-red-50/80 border border-red-200" : ""
                 )}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                     {isCompleted ? (
                       <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                     ) : isRunning ? (
                       <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />
                     ) : isFailed ? (
-                      <AlertCircle className="w-5 h-5 text-red-500" />
+                      <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
                     ) : (
                       <div className="w-2 h-2 rounded-full bg-border-active" />
                     )}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <h4 className={cn("text-[14px] font-semibold", isFailed ? "text-red-900" : isPending ? "text-text-tertiary" : "text-text-primary")}>
                       {job.name}
                     </h4>
                     {isFailed && job.error && (
-                      <p className="text-[12px] text-red-600 font-medium mt-0.5 max-w-md break-words">
+                      <p className="text-[12px] text-red-700 font-medium mt-1 leading-relaxed whitespace-normal break-normal">
                         {job.error.includes('429') || job.error.includes('quota') || job.error.includes('RESOURCE_EXHAUSTED') || job.error.startsWith('{')
                           ? '⚡ AI Rate Limit reached on free key. Click Retry to run fallback.'
                           : job.error.length > 140 ? job.error.slice(0, 140) + '...' : job.error}
@@ -131,15 +131,17 @@ export const IntelligenceProgress: React.FC<IntelligenceProgressProps> = ({ work
                 </div>
 
                 {isFailed && (
-                  <AppButton 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => onRetryJob(jobId)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-100"
-                    leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-                  >
-                    Retry
-                  </AppButton>
+                  <div className="shrink-0">
+                    <AppButton 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => onRetryJob(jobId)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-100 bg-white/60 border border-red-200 shadow-2xs"
+                      leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+                    >
+                      Retry
+                    </AppButton>
+                  </div>
                 )}
               </div>
             );
