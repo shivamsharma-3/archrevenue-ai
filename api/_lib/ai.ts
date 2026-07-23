@@ -1,15 +1,30 @@
 import Groq from 'groq-sdk';
+import { GoogleGenAI } from '@google/genai';
 import { Lead, AIAnalysis, CompanyKnowledge, ScoringEvidence, SellerProfile, Note, AITask, TaskStatus } from './types.js';
-import { FieldValue } from './firebase-admin.js';
+import { FieldValue, db } from './firebase-admin.js';
 import { researchCompany } from './research.js';
 import { checkTokenLimit, incrementTokenUsage } from './usage.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-async function callGroq(prompt: string, userId: string, temperature = 0.2): Promise<string> {
-  if (userId) {
-    await checkTokenLimit(userId);
+/** Determine if a user is on a paid plan based on their token limit in Firestore */
+async function getUserPlanTier(userId: string): Promise<'free' | 'paid'> {
+  if (!userId) return 'free';
+  try {
+    const usageRef = db.collection('users').doc(userId).collection('usage').doc('tokens');
+    const snap = await usageRef.get();
+    if (!snap.exists) return 'free';
+    const limit = snap.data()?.limit ?? 50000;
+    // Starter (100K) and Pro (250K) are paid tiers
+    return limit > 50000 ? 'paid' : 'free';
+  } catch {
+    return 'free'; // safe fallback
   }
+}
+
+/** Groq — free tier model (llama-3.3-70b) */
+async function callGroq(prompt: string, userId: string, temperature = 0.2): Promise<string> {
+  if (userId) await checkTokenLimit(userId);
 
   const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
   const completion = await groq.chat.completions.create({
@@ -18,18 +33,63 @@ async function callGroq(prompt: string, userId: string, temperature = 0.2): Prom
     temperature,
     response_format: { type: 'json_object' },
   });
-  
+
   const content = completion.choices[0]?.message?.content;
-  if (!content) throw new Error('Empty response from AI');
+  if (!content) throw new Error('Empty response from Groq');
 
   const tokensUsed = completion.usage?.total_tokens || 0;
   if (userId && tokensUsed > 0) {
-    await incrementTokenUsage(userId, tokensUsed).catch(err => 
+    await incrementTokenUsage(userId, tokensUsed).catch(err =>
       console.error('[AI] Non-fatal error recording token usage:', err)
     );
   }
-
   return content;
+}
+
+/** Gemini 2.5 Flash — paid tier model */
+async function callGemini(prompt: string, userId: string, temperature = 0.2): Promise<string> {
+  if (userId) await checkTokenLimit(userId);
+
+  const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  const response = await genai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: prompt,
+    config: {
+      temperature,
+      responseMimeType: 'application/json',
+    },
+  });
+
+  const content = response.text;
+  if (!content) throw new Error('Empty response from Gemini');
+
+  const tokensUsed = response.usageMetadata?.totalTokenCount || 0;
+  if (userId && tokensUsed > 0) {
+    await incrementTokenUsage(userId, tokensUsed).catch(err =>
+      console.error('[AI] Non-fatal error recording token usage:', err)
+    );
+  }
+  return content;
+}
+
+/**
+ * Smart AI router:
+ *   Free users  → Groq llama-3.3-70b  (free, rate-limited)
+ *   Paid users  → Gemini 2.5 Flash    (paid, higher quality, no rate limits)
+ */
+async function callAI(prompt: string, userId: string, temperature = 0.2): Promise<string> {
+  const tier = await getUserPlanTier(userId);
+  if (tier === 'paid' && process.env.GEMINI_API_KEY) {
+    console.log('[AI] → Gemini 2.5 Flash (paid user)');
+    try {
+      return await callGemini(prompt, userId, temperature);
+    } catch (err) {
+      console.warn('[AI] Gemini failed, falling back to Groq:', err);
+      return callGroq(prompt, userId, temperature);
+    }
+  }
+  console.log('[AI] → Groq llama-3.3-70b (free user)');
+  return callGroq(prompt, userId, temperature);
 }
 
 // ─── Layer 1: Seller Context ─────────────────────────────────────────────────
@@ -234,8 +294,8 @@ function buildScoringEvidence(lead: Lead, research: CompanyKnowledge | null, pro
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 export async function scoreLead(lead: Lead, userId: string, profile?: SellerProfile | null): Promise<AIAnalysis> {
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('Missing GROQ_API_KEY in environment');
+  if (!process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
+    throw new Error('No AI API key configured. Set GROQ_API_KEY or GEMINI_API_KEY in environment.');
   }
 
   // ── Step 1: Research website if it exists and not already researched ─────
@@ -314,7 +374,7 @@ Return ONLY this JSON, no markdown:
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
   // ── Step 4: Fire Score call first ──────
-  const scoreRaw = await callGroq(scorePrompt, userId, 0.0);
+  const scoreRaw = await callAI(scorePrompt, userId, 0.0);
   const scoreResult = JSON.parse(scoreRaw);
 
   console.log('[AI] Score result:', scoreResult);
@@ -373,7 +433,7 @@ Return ONLY this JSON, no markdown:
   } else if (normalizedScoreResult.score < 40 || ['Dead', 'Low'].includes(normalizedScoreResult.priority) || ['Cold', 'Dead'].includes(normalizedScoreResult.category)) {
     console.log('[AI] Lead score is too low (<40) or priority is Low/Dead. Skipping outreach generation.');
   } else {
-    outreachRaw = await callGroq(outreachPrompt, userId, 0.35);
+    outreachRaw = await callAI(outreachPrompt, userId, 0.35);
   }
 
   const outreachResult = JSON.parse(outreachRaw);
@@ -449,8 +509,8 @@ Return ONLY this JSON, no markdown:
 }
 
 export async function regenerateOutreach(lead: Lead, userId: string, profile?: SellerProfile | null): Promise<AIAnalysis['followUp']> {
-  if (!process.env.GROQ_API_KEY) {
-    throw new Error('Missing GROQ_API_KEY in environment');
+  if (!process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
+    throw new Error('No AI API key configured.');
   }
 
   const research = lead.research ?? null;
@@ -463,7 +523,7 @@ export async function regenerateOutreach(lead: Lead, userId: string, profile?: S
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
-  const outreachRaw = await callGroq(outreachPrompt, userId, 0.4);
+  const outreachRaw = await callAI(outreachPrompt, userId, 0.4);
   let raw = {};
   try {
     raw = JSON.parse(outreachRaw);
@@ -539,7 +599,7 @@ Example response:
 `;
 
   console.log('[AI SUMMARY] Generating summary for notes...');
-  const jsonStr = await callGroq(prompt, userId, 0.1);
+  const jsonStr = await callAI(prompt, userId, 0.1);
   console.log('[AI SUMMARY] Received response:', jsonStr);
 
   try {
@@ -608,7 +668,7 @@ Example:
 `;
 
   console.log('[AI TASKS] Generating tasks for:', lead.fullName);
-  const jsonStr = await callGroq(prompt, userId, 0.3);
+  const jsonStr = await callAI(prompt, userId, 0.3);
   console.log('[AI TASKS] Received response:', jsonStr);
 
   try {
@@ -677,7 +737,7 @@ Return ONLY this JSON:
 `.trim();
 
   console.log('[AI DEAL COACH] Generating for:', lead.fullName);
-  const jsonStr = await callGroq(prompt, userId, 0.2);
+  const jsonStr = await callAI(prompt, userId, 0.2);
 
   try {
     const raw = JSON.parse(jsonStr);
@@ -786,7 +846,7 @@ GENERAL RULES:
 ${typePrompt}
   `.trim();
 
-  const resContent = await callGroq(prompt, userId, 0.35);
+  const resContent = await callAI(prompt, userId, 0.35);
   try {
     let raw = JSON.parse(resContent);
 
