@@ -301,20 +301,69 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
                 <Globe className="w-6 h-6" />
               </div>
               <div>
-                <h5 className="text-[15px] font-bold text-text-primary">PayPal International (USD)</h5>
+                <h5 className="text-[15px] font-bold text-text-primary">PayPal International (${item.priceUsd} USD)</h5>
                 <p className="text-[13px] text-text-secondary mt-1 max-w-sm mx-auto">
-                  Ideal for global customers. Pay securely with your PayPal account or International Credit Cards.
+                  Pay securely using your PayPal Account or International Cards.
                 </p>
               </div>
 
-              <AppButton
-                variant="primary"
-                onClick={handleRazorpayPayment} // Razorpay also processes USD International cards natively!
-                className="w-full py-3 text-[13px] font-bold uppercase tracking-wider flex items-center justify-center gap-2"
-              >
-                <span>Pay ${item.priceUsd} USD</span>
-                <ArrowRight className="w-4 h-4" />
-              </AppButton>
+              <div id="paypal-button-container" className="min-h-[50px] flex items-center justify-center">
+                <AppButton
+                  variant="primary"
+                  onClick={async () => {
+                    setIsPaypalLoading(true);
+                    const loaded = await loadPayPalScript(config.paypalClientId);
+                    if (loaded && (window as any).paypal) {
+                      const container = document.getElementById('paypal-button-container');
+                      if (container) container.innerHTML = '';
+                      (window as any).paypal.Buttons({
+                        createOrder: (_data: any, actions: any) => {
+                          return actions.order.create({
+                            purchase_units: [{
+                              description: item.name,
+                              amount: { currency_code: 'USD', value: item.priceUsd.toString() }
+                            }]
+                          });
+                        },
+                        onApprove: async (_data: any, actions: any) => {
+                          const details = await actions.order.capture();
+                          const toastId = toast.loading('Verifying PayPal payment...');
+                          try {
+                            const user = auth.currentUser;
+                            const token = await user?.getIdToken();
+                            await fetch('/api/verifyPayment', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({
+                                itemId: item.id,
+                                paymentMethod: 'paypal',
+                                paymentId: details.id,
+                                targetRole: item.targetRole,
+                                tokenAmount: item.tokenAmount,
+                                priceUsd: item.priceUsd,
+                              }),
+                            });
+                            toast.success('PayPal payment successful! Account upgraded.', { id: toastId });
+                            onSuccess?.();
+                            onClose();
+                            window.location.reload();
+                          } catch (err: any) {
+                            toast.error('Verification error: ' + err.message, { id: toastId });
+                          }
+                        }
+                      }).render('#paypal-button-container');
+                    } else {
+                      toast.error('PayPal SDK failed to load.');
+                    }
+                    setIsPaypalLoading(false);
+                  }}
+                  disabled={isPaypalLoading}
+                  className="w-full py-3 text-[13px] font-bold uppercase tracking-wider flex items-center justify-center gap-2"
+                >
+                  {isPaypalLoading ? 'Loading PayPal...' : `Pay $${item.priceUsd} USD via PayPal`}
+                  <ArrowRight className="w-4 h-4" />
+                </AppButton>
+              </div>
             </div>
           </div>
         )}
