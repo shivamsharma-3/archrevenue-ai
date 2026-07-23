@@ -91,21 +91,18 @@ export default function DailyActionQueue({ leads, onLeadClick, onScoreLead }: Da
         });
       }
 
-      // P2 — Leads not yet scored
+      // P2 — Warm leads not yet scored
       else if (!lead.aiAnalysis && (lead.status === 'new' || lead.status === 'contacted')) {
-        const descText = lead.company 
-          ? `${lead.company} — awaiting initial AI revenue intelligence run.`
-          : `New contact — run AI scoring to determine priority.`;
         items.push({
           leadId: lead.id!,
           lead,
           priority: 2,
           icon: Sparkles,
-          iconColor: 'text-indigo-500',
-          iconBg: 'bg-indigo-50',
-          borderColor: 'border-indigo-200',
+          iconColor: 'text-violet-500',
+          iconBg: 'bg-violet-50',
+          borderColor: 'border-violet-200',
           label: `Score lead: ${lead.fullName}`,
-          description: descText,
+          description: `${lead.company || ''} hasn't been analyzed yet. Run AI scoring to prioritize correctly.`,
           estimatedValue: 2000,
           actions: [
             { label: 'Run AI Score', variant: 'primary', onClick: () => onScoreLead(lead) },

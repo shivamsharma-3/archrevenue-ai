@@ -58,58 +58,58 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
   return (
     <div className="min-h-screen bg-surface-background text-text-primary font-sans flex selection:bg-indigo-100 relative">
 
-      {/* Minimal Linear/Attio Style Sidebar */}
+      {/* Premium Light Sidebar */}
       {!hideSidebar && !hasModal && (
-        <div className="hidden md:flex flex-col w-[250px] p-3 h-screen sticky top-0 z-30 flex-shrink-0">
-        <aside className="flex-1 w-full rounded-xl border border-slate-200 bg-white flex flex-col overflow-y-auto relative">
+        <div className="hidden md:flex flex-col w-[260px] p-3 h-screen sticky top-0 z-30 flex-shrink-0">
+        <aside className="flex-1 w-full rounded-[var(--radius-card)] border border-border-default bg-surface-sidebar shadow-sm flex flex-col overflow-y-auto relative">
           
-          <div className="h-[64px] flex items-center px-4 cursor-pointer border-b border-slate-100" onClick={() => navigate('/dashboard')}>
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center mr-3">
-              <BrandLogo className="w-4 h-4 text-white" />
+          <div className="h-[72px] flex items-center px-5 cursor-pointer border-b border-border-default" onClick={() => navigate('/dashboard')}>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-3 shadow-md">
+              <BrandLogo className="w-5 h-5 text-white" />
             </div>
-            <span className="text-slate-900 font-semibold tracking-tight text-[15px]">ArchRevenue</span>
+            <span className="text-text-primary font-semibold tracking-wide font-display text-[16px]">ArchRevenue</span>
           </div>
-          <div className="px-2 flex-1 pt-4">
-            <p className="text-[10px] font-bold text-slate-400 tracking-wider px-3 mb-2 uppercase">Menu</p>
+          <div className="px-3 flex-1 pt-4">
+            <p className="text-[10px] font-bold text-text-tertiary tracking-widest px-3 mb-2">MENU</p>
             <div className="space-y-0.5">
               <button 
                 onClick={() => handleNavigation('dashboard')}
-                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'dashboard' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-200 group overflow-hidden", activeMenu === 'dashboard' ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm" : "text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent")}
               >
-                <LayoutDashboard className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'dashboard' ? "text-indigo-600" : "text-slate-400")} />
+                <LayoutDashboard className={cn("w-4 h-4 mr-3 transition-colors", activeMenu === 'dashboard' ? "text-blue-500" : "group-hover:text-text-primary")} />
                 Command Center
               </button>
               <button 
                 onClick={() => handleNavigation('pipeline')}
-                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'pipeline' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-200 group overflow-hidden", activeMenu === 'pipeline' ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm" : "text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent")}
               >
-                <Target className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'pipeline' ? "text-indigo-600" : "text-slate-400")} />
+                <Target className={cn("w-4 h-4 mr-3 transition-colors", activeMenu === 'pipeline' ? "text-blue-500" : "group-hover:text-text-primary")} />
                 Pipeline
               </button>
               <button 
                 onClick={() => handleNavigation('insights')}
-                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'insights' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-200 group overflow-hidden", activeMenu === 'insights' ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm" : "text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent")}
               >
-                <TrendingUp className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'insights' ? "text-indigo-600" : "text-slate-400")} />
+                <TrendingUp className={cn("w-4 h-4 mr-3 transition-colors", activeMenu === 'insights' ? "text-blue-500" : "group-hover:text-text-primary")} />
                 Executive Intelligence
               </button>
               <button 
                 onClick={() => handleNavigation('directory')}
-                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'directory' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-200 group overflow-hidden", activeMenu === 'directory' ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm" : "text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent")}
               >
-                <Users className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'directory' ? "text-indigo-600" : "text-slate-400")} />
+                <Users className={cn("w-4 h-4 mr-3 transition-colors", activeMenu === 'directory' ? "text-blue-500" : "group-hover:text-text-primary")} />
                 Leads
               </button>
             </div>
 
             {isAdmin && (
-              <div className="mt-4 mb-2">
-                <p className="text-[10px] font-bold text-slate-400 tracking-wider px-3 mb-1.5 uppercase">Admin</p>
+              <div className="mt-5 mb-2">
+                <p className="text-[10px] font-bold text-blue-500 tracking-widest px-3 mb-2">ADMIN</p>
                 <button 
                   onClick={() => handleNavigation('admin/beta')}
-                  className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", location.pathname === '/admin/beta' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                  className={cn("relative w-full flex items-center px-3 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-200 group overflow-hidden", location.pathname === '/admin/beta' ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm" : "text-text-secondary hover:text-text-primary hover:bg-surface-hover border border-transparent")}
                 >
-                  <ShieldCheck className={cn("w-4 h-4 mr-2.5 shrink-0", location.pathname === '/admin/beta' ? "text-indigo-600" : "text-slate-400")} />
+                  <ShieldCheck className={cn("w-4 h-4 mr-3 transition-colors", location.pathname === '/admin/beta' ? "text-blue-500" : "group-hover:text-text-primary")} />
                   Beta Analytics
                 </button>
               </div>

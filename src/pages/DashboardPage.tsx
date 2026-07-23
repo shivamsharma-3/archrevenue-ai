@@ -158,24 +158,40 @@ export default function DashboardPage() {
       </PageHeader>
 
       <PageContent>
-        {/* Action Summary Pills */}
-        <div className="flex items-center gap-2 mb-2 flex-wrap">
-          <div className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 flex items-center gap-2 text-[12px] font-semibold text-slate-700">
-            <Clock className="w-3.5 h-3.5 text-slate-500" />
-            <span>{overdueCount + dueTodayCount} Follow-ups Due</span>
-          </div>
-          <div className="px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-200 flex items-center gap-2 text-[12px] font-semibold text-slate-700">
-            <Activity className="w-3.5 h-3.5 text-slate-500" />
-            <span>{hotLeads.length} Hot Deals Needing Action</span>
-          </div>
-        </div>
-
         {/* DAILY ACTION QUEUE — always first */}
         <DailyActionQueue
           leads={leads}
           onLeadClick={(lead) => navigate('/lead/' + lead.id)}
           onScoreLead={(lead) => navigate('/lead/' + lead.id)}
         />
+
+        {/* SECTION 1: Executive Overview */}
+        <PageSection>
+          <PageMetrics className="px-0 pt-0">
+            <MetricCard 
+              title="Expected Revenue" 
+              value={fmtRev(expectedRevenue)} 
+              icon={<DollarSign className="w-4 h-4 text-text-tertiary" />}
+              trend={{ value: 12.5, label: "vs last month" }}
+            />
+            <MetricCard 
+              title="Active Pipeline" 
+              value={activePipeline} 
+              icon={<Activity className="w-4 h-4 text-text-tertiary" />}
+              trend={{ value: 5.2, label: "new this week" }}
+            />
+            <MetricCard 
+              title="Qualified Leads" 
+              value={qualLeads} 
+              icon={<Target className="w-4 h-4 text-text-tertiary" />}
+            />
+            <MetricCard 
+              title="Follow-ups Due" 
+              value={overdueCount + dueTodayCount} 
+              icon={<Clock className="w-4 h-4 text-text-tertiary" />}
+            />
+          </PageMetrics>
+        </PageSection>
 
         {/* SECTION 2: AI Command Center */}
         <PageSection title="AI Command Center">
