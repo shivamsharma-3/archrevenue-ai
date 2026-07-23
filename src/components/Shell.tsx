@@ -12,8 +12,8 @@ import { useAdmin } from '../hooks/useAdmin';
 
 interface ShellProps {
   children: React.ReactNode;
-  activeMenu?: 'workspace' | 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'privacy' | 'terms' | 'security';
-  onMenuChange?: (menu: 'workspace' | 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing') => void;
+  activeMenu?: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'privacy' | 'terms' | 'security';
+  onMenuChange?: (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing') => void;
   hideSidebar?: boolean;
   profileComplete?: boolean;
   hasModal?: boolean;
@@ -24,20 +24,22 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const activeMenu = (location.pathname === '/workspace' || location.pathname === '/dashboard' || location.pathname === '/pipeline' || location.pathname === '/leads') ? 'workspace' : location.pathname === '/settings' ? 'settings' : location.pathname === '/billing' ? 'billing' : location.pathname === '/help' ? 'help' : location.pathname === '/insights' ? 'insights' : '';
+  const activeMenu = location.pathname === '/dashboard' ? 'dashboard' : location.pathname === '/pipeline' ? 'pipeline' : location.pathname === '/leads' ? 'directory' : location.pathname === '/settings' ? 'settings' : location.pathname === '/billing' ? 'billing' : location.pathname === '/help' ? 'help' : location.pathname === '/insights' ? 'insights' : '';
   const { tokensUsed, limit, isLoading } = useTokenUsage();
   const { isAdmin } = useAdmin();
 
   const usagePercent = limit > 0 ? Math.min((tokensUsed / limit) * 100, 100) : 0;
   const isNearingLimit = usagePercent > 85;
 
+
+
   const handleLogout = async () => {
     await auth.signOut();
     navigate('/');
   };
 
-  const handleNavigation = (menu: 'workspace' | 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'insights' | 'help' | 'admin/beta' | 'profile') => {
-    if (onMenuChange && ['workspace', 'dashboard', 'pipeline', 'directory', 'settings', 'billing'].includes(menu)) {
+  const handleNavigation = (menu: 'dashboard' | 'pipeline' | 'directory' | 'settings' | 'billing' | 'insights' | 'help' | 'admin/beta' | 'profile') => {
+    if (onMenuChange && ['dashboard', 'pipeline', 'directory', 'settings', 'billing'].includes(menu)) {
       onMenuChange(menu as any);
     }
     
@@ -71,11 +73,18 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
             <p className="text-[10px] font-bold text-slate-400 tracking-wider px-3 mb-2 uppercase">Menu</p>
             <div className="space-y-0.5">
               <button 
-                onClick={() => handleNavigation('workspace')}
-                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'workspace' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                onClick={() => handleNavigation('dashboard')}
+                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'dashboard' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
               >
-                <LayoutDashboard className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'workspace' ? "text-indigo-600" : "text-slate-400")} />
-                Workspace
+                <LayoutDashboard className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'dashboard' ? "text-indigo-600" : "text-slate-400")} />
+                Command Center
+              </button>
+              <button 
+                onClick={() => handleNavigation('pipeline')}
+                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'pipeline' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+              >
+                <Target className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'pipeline' ? "text-indigo-600" : "text-slate-400")} />
+                Pipeline
               </button>
               <button 
                 onClick={() => handleNavigation('insights')}
@@ -85,11 +94,11 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
                 Executive Intelligence
               </button>
               <button 
-                onClick={() => handleNavigation('billing')}
-                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'billing' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
+                onClick={() => handleNavigation('directory')}
+                className={cn("w-full flex items-center px-3 py-2 rounded-lg font-medium text-[13px] transition-colors", activeMenu === 'directory' ? "text-indigo-900 bg-indigo-50/80 font-semibold" : "text-slate-600 hover:text-slate-900 hover:bg-slate-50")}
               >
-                <CreditCard className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'billing' ? "text-indigo-600" : "text-slate-400")} />
-                Billing
+                <Users className={cn("w-4 h-4 mr-2.5 shrink-0", activeMenu === 'directory' ? "text-indigo-600" : "text-slate-400")} />
+                Leads
               </button>
             </div>
 
@@ -214,23 +223,27 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
 
         {/* Mobile Navigation */}
         {!hideSidebar && !hasModal && (
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 border-t border-slate-200 backdrop-blur-xl pb-safe">
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface-card/90 border-t border-border-default backdrop-blur-xl pb-safe">
           <div className="flex items-center justify-around p-2">
-            <button onClick={() => handleNavigation('workspace')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'workspace' ? "text-indigo-600 font-semibold" : "text-slate-500 hover:text-slate-900")}>
+            <button onClick={() => handleNavigation('dashboard')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'dashboard' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
               <LayoutDashboard className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">Workspace</span>
+              <span className="text-[10px] font-medium">Command Center</span>
             </button>
-            <button onClick={() => handleNavigation('insights')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'insights' ? "text-indigo-600 font-semibold" : "text-slate-500 hover:text-slate-900")}>
+            <button onClick={() => handleNavigation('pipeline')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'pipeline' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
+              <Target className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Pipeline</span>
+            </button>
+            <button onClick={() => handleNavigation('directory')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'directory' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
+              <Users className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Directory</span>
+            </button>
+            <button onClick={() => handleNavigation('insights')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'insights' ? "text-blue-600 bg-blue-50" : "text-text-tertiary hover:text-text-secondary")}>
               <TrendingUp className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">Intelligence</span>
+              <span className="text-[10px] font-medium">Insights</span>
             </button>
-            <button onClick={() => handleNavigation('billing')} className={cn("flex flex-col items-center p-2 rounded-xl transition-all", activeMenu === 'billing' ? "text-indigo-600 font-semibold" : "text-slate-500 hover:text-slate-900")}>
-              <CreditCard className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">Billing</span>
-            </button>
-            <button onClick={() => setShowMobileMenu(true)} className="flex flex-col items-center p-2 rounded-xl transition-all text-slate-500 hover:text-slate-900">
+            <button onClick={() => setShowMobileMenu(true)} className="flex flex-col items-center p-2 rounded-xl transition-all text-text-tertiary hover:text-text-secondary">
               <Menu className="w-5 h-5 mb-1" />
-              <span className="text-[10px]">Menu</span>
+              <span className="text-[10px] font-medium">Menu</span>
             </button>
           </div>
         </div>

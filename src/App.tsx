@@ -15,8 +15,14 @@ import { Analytics } from "@vercel/analytics/react";
 import LandingPage from './pages/LandingPage';
 import Login from './components/Login';
 import AppLayout from './layouts/AppLayout';
-import WorkspacePage from './pages/WorkspacePage';
+import DashboardPage from './pages/DashboardPage';
+import LeadsPage from './pages/LeadsPage';
+import PipelinePage from './pages/PipelinePage';
 import InsightsPage from './pages/InsightsPage';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
+import SecurityTrust from './components/SecurityTrust';
+import LeadIntelligencePage from './components/LeadIntelligencePage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import BillingPage from './pages/BillingPage';
@@ -28,10 +34,6 @@ import ApiDocsPage from './pages/ApiDocsPage';
 import CommunityForumPage from './pages/CommunityForumPage';
 import AdminBetaPage from './pages/AdminBetaPage';
 import DesignSystemPage from './pages/DesignSystemPage';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsOfService from './components/TermsOfService';
-import SecurityTrust from './components/SecurityTrust';
-import LeadIntelligencePage from './components/LeadIntelligencePage';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
@@ -98,10 +100,9 @@ export default function App() {
 
         {/* Protected layout routes */}
         <Route element={user ? <AppLayout /> : <Navigate to="/" />}>
-          <Route path="/workspace" element={<WorkspacePage />} />
-          <Route path="/dashboard" element={<WorkspacePage />} />
-          <Route path="/leads" element={<WorkspacePage />} />
-          <Route path="/pipeline" element={<WorkspacePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/leads" element={<LeadsPage />} />
+          <Route path="/pipeline" element={<PipelinePage />} />
           <Route path="/insights" element={<InsightsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
