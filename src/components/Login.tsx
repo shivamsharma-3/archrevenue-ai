@@ -77,15 +77,16 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
     return () => clearTimeout(t);
   }, [otpResendCooldown]);
 
-  // Reset OTP when switching modes
+  // Sync form mode + reset everything when route changes (/login <-> /signup)
   useEffect(() => {
+    setIsRegistering(initialIsRegistering);
     setStep('form');
     setOtpDigits(['', '', '', '', '', '']);
     setError(null);
     setPassword('');
     setConfirmPassword('');
     setEmail('');
-  }, [isRegistering]);
+  }, [initialIsRegistering]);
 
   const validatePassword = (pass: string) => {
     if (pass.length < 8) return 'Password must be at least 8 characters.';
