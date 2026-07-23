@@ -94,8 +94,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         if (error) {
-          console.error('[Resend error]', error);
-          return res.status(500).json({ error: 'Failed to send OTP email. Please try again.' });
+          console.error('[Resend error]', JSON.stringify(error));
+          const msg = (error as any)?.message || (error as any)?.name || 'Failed to send OTP email.';
+          return res.status(500).json({ error: `Email error: ${msg}` });
         }
 
         return res.status(200).json({ success: true, message: 'OTP sent to your email.' });
