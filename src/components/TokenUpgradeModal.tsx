@@ -66,18 +66,10 @@ export default function TokenUpgradeModal({ isOpen, onClose, errorDetails }: Tok
         <AppButton
           variant="primary"
           className="w-full h-12 text-[14px]"
-          isLoading={isLoading}
           rightIcon={<ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
-          onClick={async () => {
-            try {
-              setIsLoading(true);
-              if (!auth.currentUser) throw new Error('Not authenticated');
-              await createCheckoutSession(auth.currentUser.uid, STRIPE_PRICING.TOKEN_PACK);
-            } catch (err: any) {
-              console.error('Stripe checkout error:', err);
-              toast.error('Failed to start checkout: ' + err.message);
-              setIsLoading(false);
-            }
+          onClick={() => {
+            onClose();
+            window.location.href = '/billing';
           }}
         >
           Upgrade Plan & Add Tokens

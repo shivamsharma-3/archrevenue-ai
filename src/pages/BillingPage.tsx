@@ -7,14 +7,15 @@ import toast from 'react-hot-toast';
 import { Page, PageHeader, PageActions, PageContent } from '../components/layout/PageLayout';
 import { AppButton } from '../components/ui/AppButton';
 import { AppModal } from '../components/ui/AppModal';
-import { createPortalLink, createCheckoutSession, STRIPE_PRICING } from '../lib/stripe';
 import { auth } from '../lib/firebase';
+import { PaymentModal } from '../components/PaymentModal';
+import { PAYMENT_ITEMS, PaymentItem } from '../lib/payments';
 
 export default function BillingPage() {
   const { tokensUsed, limit, isLoading } = useTokenUsage();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [selectedTokenPackIndex, setSelectedTokenPackIndex] = useState(1);
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [selectedPaymentItem, setSelectedPaymentItem] = useState<PaymentItem | null>(null);
 
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
@@ -103,16 +104,8 @@ export default function BillingPage() {
           <AppButton 
             variant="secondary" 
             leftIcon={<CreditCard className="w-4 h-4" />} 
-            onClick={async () => {
-              try {
-                await createPortalLink();
-              } catch (err: any) {
-                if (err.message.includes('not found') || err.message.includes('internal')) {
-                  toast.error('You need an active subscription before you can manage payments.');
-                } else {
-                  toast.error('Failed to open customer portal: ' + err.message);
-                }
-              }
+            onClick={() => {
+              toast('Select a plan or token pack below to manage your subscription.', { icon: '💳' });
             }}
           >
             Manage Payments
@@ -259,7 +252,7 @@ export default function BillingPage() {
                 className="w-full mt-auto"
                 variant={plan.popular ? "primary" : plan.current ? "secondary" : "secondary"}
                 disabled={plan.current}
-                onClick={async () => {
+                onClick={() => {
                   if (plan.name === 'Enterprise') {
                     toast.success('Our sales team will be in touch!');
                     return;
@@ -267,23 +260,10 @@ export default function BillingPage() {
                   if (plan.name === 'Free') {
                     return;
                   }
-                  try {
-                    if (!auth.currentUser) throw new Error('Not authenticated');
-                    
-                    let priceId = '';
-                    if (plan.name === 'Starter') priceId = STRIPE_PRICING.STARTER;
-                    else if (plan.name === 'Pro') priceId = STRIPE_PRICING.PRO;
-                    
-                    if (priceId && priceId.includes('placeholder')) {
-                      toast.error('Please configure real Stripe Price IDs in src/lib/stripe.ts', { duration: 5000 });
-                      return;
-                    }
-                    
-                    if (priceId) {
-                      await createCheckoutSession(auth.currentUser.uid, priceId);
-                    }
-                  } catch (err: any) {
-                    toast.error(err.message || 'Failed to start checkout process');
+                  if (plan.name === 'Starter') {
+                    setSelectedPaymentItem(billingCycle === 'annual' ? PAYMENT_ITEMS.starter_annual : PAYMENT_ITEMS.starter_monthly);
+                  } else if (plan.name === 'Pro') {
+                    setSelectedPaymentItem(billingCycle === 'annual' ? PAYMENT_ITEMS.pro_annual : PAYMENT_ITEMS.pro_monthly);
                   }
                 }}
               >
@@ -399,9 +379,9 @@ export default function BillingPage() {
           
           <div className="space-y-3 mb-8">
             {[
-              { tokens: '50,000', price: '$20', id: STRIPE_PRICING.TOKEN_PACK_50K },
-              { tokens: '200,000', price: '$50', popular: true, id: STRIPE_PRICING.TOKEN_PACK_200K },
-              { tokens: '500,000', price: '$100', id: STRIPE_PRICING.TOKEN_PACK_500K }
+              { tokens: '50,000', price: '$19', id: 'pack_50k' },
+              { tokens: '200,000', price: '$49', popular: true, id: 'pack_200k' },
+              { tokens: '500,000', price: '$99', id: 'pack_500k' }
             ].map((pack, i) => (
               <div 
                 key={i} 
@@ -446,31 +426,11 @@ export default function BillingPage() {
             <AppButton 
               variant="primary"
               className="flex-1"
-              isLoading={isCheckoutLoading}
-              onClick={async () => {
-                try {
-                  setIsCheckoutLoading(true);
-                  if (!auth.currentUser) throw new Error('Not authenticated');
-                  
-                  const packs = [
-                    STRIPE_PRICING.TOKEN_PACK_50K,
-                    STRIPE_PRICING.TOKEN_PACK_200K,
-                    STRIPE_PRICING.TOKEN_PACK_500K
-                  ];
-                  const priceId = packs[selectedTokenPackIndex];
-                  
-                  if (priceId && priceId.includes('placeholder')) {
-                    toast.error('Please configure real Stripe Price IDs in src/lib/stripe.ts', { duration: 5000 });
-                    setIsCheckoutLoading(false);
-                    return;
-                  }
-                  
-                  await createCheckoutSession(auth.currentUser.uid, priceId);
-                } catch (err: any) {
-                  console.error('Stripe checkout error:', err);
-                  toast.error('Failed to start checkout: ' + err.message);
-                  setIsCheckoutLoading(false);
-                }
+              onClick={() => {
+                const tokenPacks = [PAYMENT_ITEMS.pack_50k, PAYMENT_ITEMS.pack_200k, PAYMENT_ITEMS.pack_500k];
+                const packItem = tokenPacks[selectedTokenPackIndex] || PAYMENT_ITEMS.pack_200k;
+                setShowUpgradeModal(false);
+                setSelectedPaymentItem(packItem);
               }}
             >
               Continue to Payment
@@ -478,6 +438,15 @@ export default function BillingPage() {
           </div>
         </div>
       </AppModal>
+
+      {/* Unified Multi-Gateway Payment Modal (Razorpay, UPI QR, PayPal) */}
+      {selectedPaymentItem && (
+        <PaymentModal
+          isOpen={!!selectedPaymentItem}
+          onClose={() => setSelectedPaymentItem(null)}
+          item={selectedPaymentItem}
+        />
+      )}
       </PageContent>
     </Page>
   );

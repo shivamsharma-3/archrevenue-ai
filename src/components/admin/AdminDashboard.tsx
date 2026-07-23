@@ -160,10 +160,23 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [usersWithUsage, setUsersWithUsage] = useState<UserWithUsage[]>([]);
   const [logs, setLogs] = useState<SystemLog[]>([]);
+  const [paymentRequests, setPaymentRequests] = useState<any[]>([]);
   const [config, setConfig] = useState({ maintenanceMode: false, rateLimit: 120, webhooksEnabled: true });
   const [selectedUser, setSelectedUser] = useState<UserWithUsage | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [customerFilter, setCustomerFilter] = useState<'all' | 'paid' | 'free' | 'high_usage' | 'admin'>('all');
+
+  // Listen to pending UPI Payment Requests
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, 'payment_requests'), (snap) => {
+      const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      fetched.sort((a: any, b: any) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+      setPaymentRequests(fetched);
+    }, (err) => {
+      console.warn('Payment requests listener info:', err);
+    });
+    return () => unsub();
+  }, []);
 
   // ── Loading ────────────────────────────────────────────────────────────────
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -1110,6 +1123,88 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+
+            {/* Pending UPI Payment Submissions Queue */}
+            <div className="bg-surface-card border border-border-default rounded-lg overflow-hidden">
+              <div className="px-4 py-3 border-b border-border-default flex items-center justify-between">
+                <div>
+                  <p className="text-[13px] font-semibold text-text-primary">Pending Manual UPI Approvals</p>
+                  <p className="text-[11px] text-text-secondary mt-0.5">Verify 12-digit UTR numbers and approve instant plan upgrades</p>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-mono">
+                  {paymentRequests.filter(p => p.status === 'pending').length} Pending
+                </span>
+              </div>
+              {paymentRequests.length === 0 ? (
+                <div className="px-4 py-8 text-center text-[12px] text-text-tertiary">No pending UPI manual payments needing approval.</div>
+              ) : (
+                <table className="w-full text-[12px]">
+                  <thead>
+                    <tr className="bg-surface-secondary border-b border-border-default">
+                      <th className="px-4 py-2 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">User</th>
+                      <th className="px-4 py-2 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Item / Plan</th>
+                      <th className="px-4 py-2 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">UTR Ref No.</th>
+                      <th className="px-4 py-2 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Amount</th>
+                      <th className="px-4 py-2 text-left text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Status</th>
+                      <th className="px-4 py-2 text-right text-[11px] font-semibold text-text-tertiary uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-default">
+                    {paymentRequests.map((req) => (
+                      <tr key={req.id} className="hover:bg-surface-secondary transition-colors">
+                        <td className="px-4 py-2.5">
+                          <p className="font-medium text-text-primary truncate max-w-[160px]">{req.userEmail || '—'}</p>
+                          <p className="font-mono text-[10px] text-text-tertiary truncate">{req.userId}</p>
+                        </td>
+                        <td className="px-4 py-2.5 font-medium text-text-primary">{req.itemName}</td>
+                        <td className="px-4 py-2.5 font-mono font-bold text-indigo-600 tracking-wider">{req.utrNumber}</td>
+                        <td className="px-4 py-2.5 font-mono font-bold text-text-primary">₹{req.amountInr?.toLocaleString('en-IN')} (${req.amountUsd})</td>
+                        <td className="px-4 py-2.5">
+                          <span className={cn(
+                            "px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border",
+                            req.status === 'approved' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+                            req.status === 'rejected' ? "bg-red-50 text-red-700 border-red-200" :
+                            "bg-amber-50 text-amber-700 border-amber-200"
+                          )}>
+                            {req.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-right space-x-2">
+                          {req.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const role = req.itemId.includes('pro') ? 'pro' : 'starter';
+                                    await handleChangePlan(req.userId, role);
+                                    await updateDoc(doc(db, 'payment_requests', req.id), { status: 'approved' });
+                                    toast.success('Approved payment & upgraded user!');
+                                  } catch (e: any) {
+                                    toast.error(e.message || 'Approval failed');
+                                  }
+                                }}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded transition-colors"
+                              >
+                                Approve & Upgrade
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  await updateDoc(doc(db, 'payment_requests', req.id), { status: 'rejected' });
+                                  toast.success('Payment request marked as rejected');
+                                }}
+                                className="px-2 py-1 bg-surface-secondary hover:bg-red-50 text-red-600 border border-border-default hover:border-red-200 font-bold text-[11px] rounded transition-colors"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
             {/* System logs */}
             <div className="bg-surface-card border border-border-default rounded-lg overflow-hidden">
