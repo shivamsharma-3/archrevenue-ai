@@ -3,7 +3,7 @@ import { Mail, Lock, ArrowRight, Sparkles, BarChart3, Users, ShieldCheck, Refres
 import { loginWithGoogle, auth, registerWithEmail, loginWithEmail } from '../lib/firebase';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 interface LoginProps {
@@ -50,6 +50,7 @@ function OtpDigit({
 }
 
 export default function Login({ initialIsRegistering = false }: LoginProps) {
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(initialIsRegistering);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -509,7 +510,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setIsRegistering(!isRegistering)}
+                    onClick={() => navigate(isRegistering ? '/login' : '/signup')}
                     className="text-[13px] text-[#7b81ff] hover:text-[#9b9fff] font-semibold transition-colors"
                   >
                     {isRegistering ? 'Sign In' : 'Request an account'}
