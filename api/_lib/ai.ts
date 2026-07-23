@@ -324,6 +324,14 @@ export async function scoreLead(lead: Lead, userId: string, profile?: SellerProf
 
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const evidence        = buildScoringEvidence(lead, research, profile ?? null);
+
+  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
+  const leadCtx    = buildLeadContext(lead);
+  const researchCtx = research
+    ? buildResearchContext(research)
+    : 'WEBSITE INTELLIGENCE: Not available. No website provided or research failed.\nScoring must use form data only.';
+  const userPlanTier = await getUserPlanTier(userId);
+
   // ── Step 2: Scoring prompt — evidence-based AI evaluation at temp 0.0 ───────────────
   const scorePrompt = `
 ${sellerCtx}
@@ -471,7 +479,18 @@ Return ONLY this JSON, no markdown:
     return String(val);
   }
 
+  const extractedPainPoints = (research?.painPoints && research.painPoints.length > 0)
+    ? research.painPoints.slice(0, 3)
+    : [
+        'Reliance on word-of-mouth & referrals for client acquisition',
+        'Unpredictable quarterly revenue & lead pipeline velocity',
+        'Lack of dedicated outbound sales infrastructure'
+      ];
+
   const followUp = {
+    objective: `Secure a 15-minute discovery call with the key decision maker at ${lead.company || lead.fullName}.`,
+    messagingAngle: profile?.valueProposition || `Focus on solving word-of-mouth reliance by building a predictable outbound engine.`,
+    painPoints: extractedPainPoints,
     email: emailKey ? extractText((raw as any)[emailKey]) : '',
     linkedin: userPlanTier === 'paid'
       ? (linkedinKey ? extractText((raw as any)[linkedinKey]) : '')
@@ -731,7 +750,7 @@ RULES: Base everything on data above. No invented facts. dealStrength: Strong if
 Return ONLY this JSON:
 {
   "whyItWillClose": "<2 sentences: specific evidence why this deal can close>",
-  "objections": ["<objection 1>", "<objection 2>", "<objection 3>"],
+  "objections": ["<Sales Objection 1: e.g. price/budget barrier for our starting price>", "<Sales Objection 2: e.g. satisfaction with current word-of-mouth referral volume>", "<Sales Objection 3: e.g. skepticism of AI lead quality vs traditional SDRs>"],
   "decisionMaker": "<likely decision maker role based on company size/type>",
   "bestAngle": "<most powerful outreach angle based on their pain points>",
   "bestCta": "<single most effective CTA for this lead>",
