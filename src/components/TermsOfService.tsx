@@ -47,16 +47,26 @@ export default function TermsOfService() {
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
                 <p>The core ArchRevenue CRM is provided on a subscription basis. Our advanced AI features (Lead Intelligence, Deal Coach, Outreach Generation) consume compute resources and are subject to hard API token limits based on your tier.</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="border border-border-default p-6 bg-surface-card">
-                    <h3 className="text-[15px] font-medium text-text-primary mb-3">Starter Tier</h3>
-                    <p className="text-[14px] text-text-primary font-medium mb-3">50,000 Tokens / mo</p>
-                    <p className="text-[13px] text-text-secondary">Designed for individual sales reps. Tokens reset on your monthly billing date.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="border border-border-default p-5 bg-surface-card rounded-lg">
+                    <h3 className="text-[14px] font-semibold text-text-primary mb-1">Free Tier ($0/mo)</h3>
+                    <p className="text-[13px] text-indigo-600 font-bold mb-2">50,000 Tokens / mo</p>
+                    <p className="text-[12px] text-text-secondary">Llama 3.3 AI Engine (Groq). Executive lead scoring & cold email drafts. No credit card required.</p>
                   </div>
-                  <div className="border border-border-default p-6 bg-surface-card">
-                    <h3 className="text-[15px] font-medium text-text-primary mb-3">Pro Tier</h3>
-                    <p className="text-[14px] text-text-primary font-medium mb-3">150,000 Tokens / mo</p>
-                    <p className="text-[13px] text-text-secondary">Designed for power users generating outreach at scale. Tokens reset monthly.</p>
+                  <div className="border border-border-default p-5 bg-surface-card rounded-lg">
+                    <h3 className="text-[14px] font-semibold text-text-primary mb-1">Starter ($49/mo)</h3>
+                    <p className="text-[13px] text-indigo-600 font-bold mb-2">100,000 Tokens / mo</p>
+                    <p className="text-[12px] text-text-secondary">Gemini 2.5 Flash Engine. Multi-channel outreach (Email, LinkedIn & Phone scripts).</p>
+                  </div>
+                  <div className="border border-border-default p-5 bg-surface-card rounded-lg">
+                    <h3 className="text-[14px] font-semibold text-text-primary mb-1">Pro ($99/mo)</h3>
+                    <p className="text-[13px] text-indigo-600 font-bold mb-2">250,000 Tokens / mo</p>
+                    <p className="text-[12px] text-text-secondary">Gemini 2.5 Flash. AI Deal Coach & Objections Engine, unlimited outreach regeneration.</p>
+                  </div>
+                  <div className="border border-border-default p-5 bg-surface-card rounded-lg">
+                    <h3 className="text-[14px] font-semibold text-text-primary mb-1">Enterprise (Custom)</h3>
+                    <p className="text-[13px] text-indigo-600 font-bold mb-2">Unlimited Tokens</p>
+                    <p className="text-[12px] text-text-secondary">Dedicated AI pipeline, custom fine-tuning & ICP prompts, dedicated account manager.</p>
                   </div>
                 </div>
 

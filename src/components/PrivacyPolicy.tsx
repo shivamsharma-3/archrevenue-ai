@@ -72,10 +72,10 @@ export default function PrivacyPolicy() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">AI Processing Boundaries</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>ArchRevenue utilizes advanced Large Language Models via our partnership with OpenAI to provide real-time lead intelligence, scoring, and Revenue Strategy insights.</p>
+                <p>ArchRevenue operates a dual AI engine architecture: Llama 3.3 70B (via Groq ultra-low latency LPUs) powering our Free Tier, and Gemini 2.5 Flash (via Google Cloud Vertex AI / AI Studio) powering our Paid Tiers for real-time lead intelligence, scoring, and Revenue Strategy insights.</p>
                 <div className="border-l-2 border-text-primary pl-6 py-2">
                   <h4 className="text-[15px] font-medium text-text-primary mb-2 flex items-center gap-2"><Lock className="w-4 h-4" strokeWidth={1.5} /> Zero-Training Policy</h4>
-                  <p className="text-[14px]">The data sent to our AI providers via Enterprise APIs is used strictly for immediate inference. Your proprietary data is explicitly opted out and is never used to train any global or public AI models.</p>
+                  <p className="text-[14px]">The data sent to our AI providers (Groq and Google Cloud) via Enterprise APIs is used strictly for immediate inference. Your proprietary lead data and sales context are explicitly opted out and are never stored or used to train public AI models.</p>
                 </div>
               </div>
             </section>

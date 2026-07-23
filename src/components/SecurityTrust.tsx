@@ -61,11 +61,11 @@ export default function SecurityTrust() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">AI Safety & Hallucination Mitigation</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>LLMs are powerful but prone to hallucinations. To ensure the reliability of Lead Intelligence and Deal Coaching:</p>
+                <p>LLMs are powerful but require strict guardrails. To ensure maximum reliability and transparency in Lead Intelligence and Deal Coaching:</p>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li>We enforce strict JSON-schema adherence on all AI outputs using OpenAI's Structured Outputs.</li>
-                  <li>We require the AI to provide evidence arrays explaining why a specific score or insight was generated based on the scraped context.</li>
-                  <li>We utilize a "zero-training" Enterprise API agreement with OpenAI, ensuring your data is never retained for model improvement.</li>
+                  <li>We enforce strict JSON schema validation and zero-temperature deterministic execution across both Groq (Llama 3.3) and Google Vertex AI (Gemini 2.5 Flash).</li>
+                  <li>We require the AI engine to provide verifiable evidence arrays explaining why specific scores or objection strategies were generated based on scraped company context.</li>
+                  <li>We maintain enterprise zero-data-retention agreements with our infrastructure providers (Groq & Google Cloud), ensuring your sales data is never stored or used to train public AI models.</li>
                 </ul>
               </div>
             </section>
