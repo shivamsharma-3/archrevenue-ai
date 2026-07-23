@@ -151,59 +151,6 @@ export default function InsightsPage() {
       </PageHeader>
 
       <PageContent>
-        {/* ── Revenue Feed ────────────────────────────────────── */}
-        {revenueFeedItems.length > 0 && (
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Rss className="w-4 h-4 text-text-secondary" />
-              <h2 className="text-[15px] font-bold text-text-primary">Live Revenue Feed</h2>
-              <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full ml-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {revenueFeedItems.length} signals
-              </span>
-            </div>
-            <div className="space-y-3">
-              {revenueFeedItems.map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.07 }}
-                  className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-4 flex items-start gap-4 hover:border-border-hover transition-all group shadow-sm"
-                >
-                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg border', item.iconBg)}>
-                    {item.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-[13px] font-semibold text-text-primary">{item.company}</p>
-                      <span className="text-[10px] text-text-tertiary font-medium shrink-0">{item.timeAgo}</span>
-                    </div>
-                    <p className="text-[12px] text-text-secondary mb-2">{item.signal}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <p className="text-[11px] text-indigo-600 font-medium bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1 w-fit">{item.opportunity}</p>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => navigate('/lead/' + item.lead.id)}
-                          className="px-3 py-1.5 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                        >
-                          Open Deal
-                        </button>
-                        <button
-                          onClick={() => navigate('/lead/' + item.lead.id + '#playbook')}
-                          className="px-3 py-1.5 text-[11px] font-bold bg-surface-secondary hover:bg-surface-hover text-text-secondary border border-border-default rounded-lg transition-colors"
-                        >
-                          Generate Message
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* Top Row: Core KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
@@ -433,6 +380,59 @@ export default function InsightsPage() {
 
         </div>
       </div>
+
+        {/* ── Revenue Feed (Placed at Bottom) ────────────────────────────────────── */}
+        {revenueFeedItems.length > 0 && (
+          <section className="mt-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Rss className="w-4 h-4 text-text-secondary" />
+              <h2 className="text-[15px] font-bold text-text-primary">Live Revenue Feed</h2>
+              <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full ml-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                {revenueFeedItems.length} signals
+              </span>
+            </div>
+            <div className="space-y-3">
+              {revenueFeedItems.map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  className="bg-surface-card border border-border-default rounded-[var(--radius-card)] p-4 flex items-start gap-4 hover:border-border-hover transition-all group shadow-sm"
+                >
+                  <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-lg border', item.iconBg)}>
+                    {item.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-[13px] font-semibold text-text-primary">{item.company}</p>
+                      <span className="text-[10px] text-text-tertiary font-medium shrink-0">{item.timeAgo}</span>
+                    </div>
+                    <p className="text-[12px] text-text-secondary mb-2">{item.signal}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[11px] text-indigo-600 font-medium bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1 w-fit">{item.opportunity}</p>
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => navigate('/lead/' + item.lead.id)}
+                          className="px-3 py-1.5 text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                        >
+                          Open Deal
+                        </button>
+                        <button
+                          onClick={() => navigate('/lead/' + item.lead.id + '#playbook')}
+                          className="px-3 py-1.5 text-[11px] font-bold bg-surface-secondary hover:bg-surface-hover text-text-secondary border border-border-default rounded-lg transition-colors"
+                        >
+                          Generate Message
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
       </PageContent>
     </Page>
   );
