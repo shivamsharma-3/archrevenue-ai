@@ -72,24 +72,33 @@ async function callGemini(prompt: string, userId: string, temperature = 0.2): Pr
   return content;
 }
 
+export interface AICallResult {
+  text: string;
+  provider: 'gemini' | 'groq';
+  modelName: string;
+}
+
 /**
  * Smart AI router:
  *   Free users  → Groq llama-3.3-70b  (free, rate-limited)
  *   Paid users  → Gemini 2.5 Flash    (paid, higher quality, no rate limits)
  */
-async function callAI(prompt: string, userId: string, temperature = 0.2): Promise<string> {
+async function callAI(prompt: string, userId: string, temperature = 0.0): Promise<AICallResult> {
   const tier = await getUserPlanTier(userId);
   if (tier === 'paid' && process.env.GEMINI_API_KEY) {
     console.log('[AI] → Gemini 2.5 Flash (paid user)');
     try {
-      return await callGemini(prompt, userId, temperature);
+      const text = await callGemini(prompt, userId, temperature);
+      return { text, provider: 'gemini', modelName: 'Gemini 2.5 Flash' };
     } catch (err) {
       console.warn('[AI] Gemini failed, falling back to Groq:', err);
-      return callGroq(prompt, userId, temperature);
+      const text = await callGroq(prompt, userId, temperature);
+      return { text, provider: 'groq', modelName: 'Llama 3.3 70B (Groq)' };
     }
   }
   console.log('[AI] → Groq llama-3.3-70b (free user)');
-  return callGroq(prompt, userId, temperature);
+  const text = await callGroq(prompt, userId, temperature);
+  return { text, provider: 'groq', modelName: 'Llama 3.3 70B (Groq)' };
 }
 
 // ─── Layer 1: Seller Context ─────────────────────────────────────────────────
@@ -291,6 +300,57 @@ function buildScoringEvidence(lead: Lead, research: CompanyKnowledge | null, pro
   };
 }
 
+// ─── Deterministic Score Engine (100% stable scores on re-analysis) ──────────
+
+function computeDeterministicScore(
+  lead: Lead,
+  research: CompanyKnowledge | null,
+  profile: SellerProfile | null
+): { score: number; category: 'Hot' | 'Warm' | 'Cold' | 'Dead'; priority: 'Critical' | 'High' | 'Medium' | 'Low' } {
+  let score = 50; // Neutral baseline
+
+  const hasWebsite = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
+  const hasBudget = !!(lead.estimatedBudget && lead.estimatedBudget !== 'Not stated' && lead.estimatedBudget !== '$0');
+  const hasGrowth = (research?.growthSignals?.length ?? 0) > 0 || (research?.hiringSignals?.length ?? 0) > 0;
+  const isUrgent = lead.urgency === 'High' || lead.urgency === 'Critical';
+
+  // ICP Industry Match
+  const icpMatch = !!(
+    profile?.targetIndustry &&
+    lead.industry &&
+    lead.industry.toLowerCase().includes(profile.targetIndustry.toLowerCase())
+  );
+
+  if (hasWebsite) score += 10;
+  else score -= 15;
+
+  if (icpMatch) score += 15;
+  if (hasBudget) score += 10;
+  if (hasGrowth) score += 10;
+  if (isUrgent) score += 5;
+
+  // Maturity / Size adjustment
+  if (research?.businessMaturity === 'Growth') score += 5;
+  else if (research?.businessMaturity === 'Early-stage' && (research.services?.length ?? 0) > 0) score += 10;
+
+  // Clamp 20 - 90
+  score = Math.max(20, Math.min(90, score));
+
+  let category: 'Hot' | 'Warm' | 'Cold' | 'Dead' = 'Warm';
+  if (score >= 70) category = 'Hot';
+  else if (score >= 50) category = 'Warm';
+  else if (score >= 35) category = 'Cold';
+  else category = 'Dead';
+
+  let priority: 'Critical' | 'High' | 'Medium' | 'Low' = 'Medium';
+  if (score >= 75) priority = 'Critical';
+  else if (score >= 60) priority = 'High';
+  else if (score >= 40) priority = 'Medium';
+  else priority = 'Low';
+
+  return { score, category, priority };
+}
+
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 export async function scoreLead(lead: Lead, userId: string, profile?: SellerProfile | null): Promise<AIAnalysis> {
@@ -313,20 +373,17 @@ export async function scoreLead(lead: Lead, userId: string, profile?: SellerProf
 
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const evidence        = buildScoringEvidence(lead, research, profile ?? null);
+  const detScore        = computeDeterministicScore(lead, research, profile ?? null);
+  const userPlanTier    = await getUserPlanTier(userId);
 
   // Build context layers
   const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
   const leadCtx    = buildLeadContext(lead);
   const researchCtx = research
     ? buildResearchContext(research)
-    : 'WEBSITE INTELLIGENCE: Not available. No website provided or research failed.\nScoring must use form data only. Cap score at 55 unless form data is exceptionally strong.';
+    : 'WEBSITE INTELLIGENCE: Not available. No website provided or research failed.\nScoring must use form data only.';
 
-  // ICP match bonus context
-  const icpMatchNote = profile?.targetIndustry && lead.industry
-    ? `ICP Match check: our target industry is "${profile.targetIndustry}". Lead industry is "${lead.industry}". ${lead.industry.toLowerCase().includes(profile.targetIndustry.toLowerCase()) ? '✓ ICP MATCH — add 5-10 points.' : '✗ No ICP match.'}`
-    : '';
-
-  // ── Step 2: Scoring prompt — evidence-gated ───────────────────────────────
+  // ── Step 2: Scoring prompt — pinned to deterministic score ───────────────
   const scorePrompt = `
 ${sellerCtx}
 
@@ -334,39 +391,22 @@ ${leadCtx}
 
 ${researchCtx}
 
-${icpMatchNote}
+SCORING DETERMINISM INSTRUCTION:
+The calculated deterministic baseline for this lead is ${detScore.score}/100 (Category: "${detScore.category}", Priority: "${detScore.priority}").
+You MUST return:
+- "score": ${detScore.score}
+- "category": "${detScore.category}"
+- "priority": "${detScore.priority}"
 
-SCORING RULES (MANDATORY — violating these invalidates the output):
-1. Score weighted: 70% website intelligence, 30% form data. If no website data, cap at 55.
-2. "Hot" requires: (a) Clear proof of capability (portfolio/testimonials), AND (b) Small team size or solo founder, AND (c) High likelihood of being referral-dependent (no dedicated sales/marketing engine visible). Stated budget is a bonus but NOT required if they are a perfect ICP fit.
-3. "Critical"/"High" priority requires strong ICP match (small, referral-dependent, good portfolio). Early-stage is GOOD if they have a portfolio.
-4. If confidenceLevel is Low or researchSource is "form-only", note in reason: "(Limited confidence — website data unavailable)"
-5. reason MUST cite SPECIFIC evidence. No generic statements. No invented data.
-6. recommendedAction must be a concrete, evidence-based next step — not a generic CTA.
-7. NO HALLUCINATIONS: Never generate statistics, percentages, ROI estimates, or performance improvements unless explicitly in the source data.
-8. ICP ALIGNMENT RULE: The perfect ICP is a small agency (1-10 people) that does good work (has a portfolio) but relies entirely on word-of-mouth. If they are a massive, established agency with proven ROI case studies and decades of experience, PENALIZE their score heavily. Do not score them high just because they are successful.
-
-SCORE RANGES (follow these strictly):
-- 90-100: Perfect ICP — Small agency/solo founder, has portfolio/testimonials (proof of capability), but no dedicated outbound/sales motion visible. Highly referral-dependent.
-- 70-89:  Strong fit — Small-to-medium agency, good work, but signs of feast-or-famine growth.
-- 50-69:  Moderate fit — Mid-sized agency, might still need pipeline but has some established channels.
-- 30-49:  Weak fit — Too established/large, or no proof of capability.
-- 0-29:   Poor fit — Massive enterprise agency (no need for us) OR completely empty site with $0 revenue.
-
-Current evidence summary:
-- Budget signal: ${evidence.budgetSignal}
-- Maturity signal: ${evidence.maturitySignal}
-- Growth signal: ${evidence.growthSignal}
-- Buying likelihood: ${evidence.buyingLikelihood}
-- Limited confidence: ${evidence.limitedConfidence}
+Your primary job is to generate the 2-3 sentence evidence-based "reason" and "recommendedAction" explaining this score.
 
 Return ONLY this JSON, no markdown:
 {
-  "score": <integer 0-100>,
-  "category": <"Hot" | "Warm" | "Cold" | "Dead">,
-  "priority": <"Critical" | "High" | "Medium" | "Low">,
+  "score": ${detScore.score},
+  "category": "${detScore.category}",
+  "priority": "${detScore.priority}",
   "recommendedAction": "<specific, evidence-based next step>",
-  "reason": "<MANDATORY FORMAT: Start with '[Company name] scored [X] because [what positive signals raised the score — cite specific evidence: growth signals, stated budget, urgency, ICP match, hiring signals, etc.]. However, [what reduced it — cite specific gaps: early stage, $0 revenue, no website data, no budget, low confidence, etc.]. [Final sentence: buying likelihood verdict and recommended sales posture.] RULES: Exactly 2-3 sentences. 40-80 words total. Always open with the company name and the numeric score. Never use generic openers. No invented data.>"
+  "reason": "<MANDATORY FORMAT: Start with '[Company name] scored ${detScore.score} because [what positive signals raised the score — cite specific evidence: growth signals, stated budget, urgency, ICP match, hiring signals, etc.]. However, [what reduced it — cite specific gaps: early stage, $0 revenue, no website data, no budget, low confidence, etc.]. [Final sentence: buying likelihood verdict and recommended sales posture.] RULES: Exactly 2-3 sentences. 40-80 words total. Always open with the company name and the numeric score. Never use generic openers. No invented data.>"
 }
 `.trim();
 
@@ -374,10 +414,10 @@ Return ONLY this JSON, no markdown:
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
   // ── Step 4: Fire Score call first ──────
-  const scoreRaw = await callAI(scorePrompt, userId, 0.0);
-  const scoreResult = JSON.parse(scoreRaw);
+  const aiResult = await callAI(scorePrompt, userId, 0.0);
+  const scoreResult = JSON.parse(aiResult.text);
 
-  console.log('[AI] Score result:', scoreResult);
+  console.log('[AI] Score result:', scoreResult, 'Provider:', aiResult.provider);
 
   // ── Step 5: Validate score result ────────────────────────────────────────
   const scoreResultKeys = Object.keys(scoreResult);
@@ -430,10 +470,11 @@ Return ONLY this JSON, no markdown:
 
   if (lead.companyType === 'Internal/Test') {
     console.log('[AI] Internal/Test — skipping outreach generation.');
-  } else if (normalizedScoreResult.score < 40 || ['Dead', 'Low'].includes(normalizedScoreResult.priority) || ['Cold', 'Dead'].includes(normalizedScoreResult.category)) {
-    console.log('[AI] Lead score is too low (<40) or priority is Low/Dead. Skipping outreach generation.');
+  } else if (detScore.score < 30 || ['Dead'].includes(detScore.priority) || ['Dead'].includes(detScore.category)) {
+    console.log('[AI] Lead score is too low (<30). Skipping outreach generation.');
   } else {
-    outreachRaw = await callAI(outreachPrompt, userId, 0.35);
+    const outreachAiRes = await callAI(outreachPrompt, userId, 0.2);
+    outreachRaw = outreachAiRes.text;
   }
 
   const outreachResult = JSON.parse(outreachRaw);
@@ -483,8 +524,12 @@ Return ONLY this JSON, no markdown:
 
   const followUp = {
     email: emailKey ? extractText((raw as any)[emailKey]) : '',
-    linkedin: linkedinKey ? extractText((raw as any)[linkedinKey]) : '',
-    callScript: callKey ? extractText((raw as any)[callKey]) : '',
+    linkedin: userPlanTier === 'paid'
+      ? (linkedinKey ? extractText((raw as any)[linkedinKey]) : '')
+      : '🔒 Multi-channel outreach (LinkedIn & Cold Call Scripts) is exclusive to Starter & Pro plans. Upgrade your plan to unlock.',
+    callScript: userPlanTier === 'paid'
+      ? (callKey ? extractText((raw as any)[callKey]) : '')
+      : '🔒 Multi-channel outreach (LinkedIn & Cold Call Scripts) is exclusive to Starter & Pro plans. Upgrade your plan to unlock.',
   };
   console.log('[AI] NORMALIZED FOLLOWUP:', followUp);
 
@@ -494,15 +539,17 @@ Return ONLY this JSON, no markdown:
   else if (normalizedScoreResult.category === 'Cold') suggestedFollowUpDays = 7;
 
   return {
-    score:             normalizedScoreResult.score,
-    category:          normalizedScoreResult.category,
-    priority:          normalizedScoreResult.priority,
-    recommendedAction: normalizedScoreResult.recommendedAction,
-    reason:            normalizedScoreResult.reason,
+    score:             detScore.score,
+    category:          detScore.category,
+    priority:          detScore.priority,
+    recommendedAction: normalizedScoreResult.recommendedAction || 'Schedule a 15-minute discovery call.',
+    reason:            normalizedScoreResult.reason || `${lead.fullName} scored ${detScore.score}.`,
     followUp,
     evidence,
     suggestedFollowUpDays,
     analyzedAt: FieldValue.serverTimestamp(),
+    aiProvider: aiResult.provider,
+    aiModel: aiResult.modelName,
     // Attach any auto-fetched research so caller can persist it
     ...(research && !lead.research ? { _freshResearch: research } : {}),
   } as AIAnalysis & { _freshResearch?: CompanyKnowledge };
@@ -523,7 +570,8 @@ export async function regenerateOutreach(lead: Lead, userId: string, profile?: S
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
-  const outreachRaw = await callAI(outreachPrompt, userId, 0.4);
+  const outreachAiRes = await callAI(outreachPrompt, userId, 0.2);
+  const outreachRaw = outreachAiRes.text;
   let raw = {};
   try {
     raw = JSON.parse(outreachRaw);
@@ -599,7 +647,8 @@ Example response:
 `;
 
   console.log('[AI SUMMARY] Generating summary for notes...');
-  const jsonStr = await callAI(prompt, userId, 0.1);
+  const aiRes = await callAI(prompt, userId, 0.1);
+  const jsonStr = aiRes.text;
   console.log('[AI SUMMARY] Received response:', jsonStr);
 
   try {
@@ -668,7 +717,8 @@ Example:
 `;
 
   console.log('[AI TASKS] Generating tasks for:', lead.fullName);
-  const jsonStr = await callAI(prompt, userId, 0.3);
+  const aiRes = await callAI(prompt, userId, 0.2);
+  const jsonStr = aiRes.text;
   console.log('[AI TASKS] Received response:', jsonStr);
 
   try {
@@ -702,6 +752,10 @@ export interface DealCoachResult {
 }
 
 export async function generateDealCoach(lead: Lead, userId: string, sellerProfile?: SellerProfile | null): Promise<DealCoachResult> {
+  const userPlanTier = await getUserPlanTier(userId);
+  if (userPlanTier === 'free') {
+    throw new Error('AI Deal Coach is exclusive to Starter & Pro plans. Upgrade to unlock deep deal strategy and objection handling.');
+  }
   const research = lead.research ?? null;
   const analysis = lead.aiAnalysis ?? null;
   const notes = (lead.notes ?? []).slice(-5).map(n => `- [${n.type || 'Note'}] ${n.content}`).join('\n');
@@ -737,7 +791,8 @@ Return ONLY this JSON:
 `.trim();
 
   console.log('[AI DEAL COACH] Generating for:', lead.fullName);
-  const jsonStr = await callAI(prompt, userId, 0.2);
+  const aiRes = await callAI(prompt, userId, 0.2);
+  const jsonStr = aiRes.text;
 
   try {
     const raw = JSON.parse(jsonStr);
@@ -846,7 +901,8 @@ GENERAL RULES:
 ${typePrompt}
   `.trim();
 
-  const resContent = await callAI(prompt, userId, 0.35);
+  const aiRes = await callAI(prompt, userId, 0.2);
+  const resContent = aiRes.text;
   try {
     let raw = JSON.parse(resContent);
 

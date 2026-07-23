@@ -387,6 +387,8 @@ export interface AIAnalysis {
   followUp?: AIFollowUp;
   evidence?: ScoringEvidence;
   suggestedFollowUpDays?: number;
+  aiProvider?: 'gemini' | 'groq';
+  aiModel?: string;            // e.g. "Gemini 2.5 Flash" or "Llama 3.3 (Groq)"
 }
 
 export type CompanyType = 'Prospect' | 'Competitor' | 'Partner' | 'Internal/Test';

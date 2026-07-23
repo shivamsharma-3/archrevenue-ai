@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Lead } from '../../lib/types';
 import { AppCard } from '../ui/AppCard';
 import { AppButton } from '../ui/AppButton';
-import { Brain, Zap, Loader2, ArrowRight } from 'lucide-react';
+import { Brain, Zap, Loader2, ArrowRight, Sparkles } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface ExecutiveBriefingProps {
@@ -33,7 +33,7 @@ export const ExecutiveBriefing = memo(({ lead, isPanel = false, onGenerate, isGe
     );
   }
 
-  const { score, category, reason, recommendedAction, evidence, analyzedAt } = lead.aiAnalysis;
+  const { score, category, reason, recommendedAction, evidence, aiProvider, aiModel } = lead.aiAnalysis;
   const isHighPriority = score >= 75;
 
   return (
@@ -42,6 +42,21 @@ export const ExecutiveBriefing = memo(({ lead, isPanel = false, onGenerate, isGe
         <div className="flex items-center gap-2">
           <Brain className="w-5 h-5 text-violet-600" />
           <h2 className="text-[16px] font-semibold text-text-primary">Executive Briefing</h2>
+        </div>
+        <div className="flex items-center">
+          {aiProvider === 'gemini' ? (
+            <div className="flex items-center gap-1.5 text-purple-700 bg-purple-50 border border-purple-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+              <span>{aiModel || 'Gemini 2.5 Flash'}</span>
+              <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-purple-600 text-white rounded-full ml-0.5">Paid</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-medium">
+              <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span>{aiModel || 'Llama 3.3 (Groq)'}</span>
+              <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded-full ml-0.5">Free</span>
+            </div>
+          )}
         </div>
       </div>
 

@@ -197,6 +197,27 @@ export const OutreachPlaybook = memo(({
         </div>
       );
     }
+    if (content.startsWith('🔒')) {
+      return (
+        <div className="p-6 rounded-xl border border-indigo-100 bg-gradient-to-b from-indigo-50/60 to-purple-50/40 flex flex-col items-center text-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-indigo-100/80 flex items-center justify-center text-indigo-600 shrink-0">
+            <Sparkles className="w-5 h-5 text-indigo-600" />
+          </div>
+          <div className="max-w-[380px]">
+            <h4 className="text-[14px] font-bold text-slate-900 mb-1">{title} (Starter & Pro Feature)</h4>
+            <p className="text-[12px] text-slate-600 leading-relaxed">
+              {content.replace('🔒 ', '')}
+            </p>
+          </div>
+          <button
+            onClick={() => window.location.href = '/billing'}
+            className="mt-1 px-4 py-2 text-[12px] font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
+          >
+            Upgrade Plan to Unlock
+          </button>
+        </div>
+      );
+    }
     return (
       <div className={`p-5 rounded-xl border ${bgClass} ${borderClass} flex flex-col gap-4 group`}>
         <div className="flex items-center justify-between">
