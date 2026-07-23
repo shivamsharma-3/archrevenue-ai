@@ -38,12 +38,12 @@ function OtpDigit({
       onKeyDown={onKeyDown}
       onPaste={onPaste}
       className={cn(
-        'w-12 h-14 text-center text-xl font-bold rounded-xl border transition-all',
-        'bg-black/40 text-white placeholder-transparent',
-        'focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-[#6366f1]',
+        'w-12 h-14 text-center text-xl font-bold rounded-xl border transition-all font-mono',
+        'bg-zinc-900/90 text-white placeholder-transparent',
+        'focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-[#6366f1] focus:bg-black',
         value
-          ? 'border-[#6366f1]/60 shadow-[0_0_12px_rgba(99,102,241,0.25)]'
-          : 'border-white/[0.08]'
+          ? 'border-[#6366f1] bg-[#6366f1]/10 text-[#818cf8] shadow-[0_0_16px_rgba(99,102,241,0.35)]'
+          : 'border-white/20 hover:border-white/40'
       )}
     />
   );
