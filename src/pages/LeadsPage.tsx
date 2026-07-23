@@ -105,15 +105,6 @@ export default function LeadsPage() {
   return (
     <>
     <Page className="h-screen overflow-hidden">
-      {showHint && (
-        <div className="mx-8 mt-6 px-6 py-3.5 bg-indigo-50 border border-indigo-100 rounded-[var(--radius-card)] flex items-center justify-between">
-          <div className="flex items-center">
-            <Lightbulb className="w-4 h-4 text-indigo-500 mr-2.5" />
-            <p className="text-[13px] text-indigo-700 font-medium">Click any lead to view AI analysis, research, outreach, and activity history.</p>
-          </div>
-          <button onClick={() => { setShowHint(false); localStorage.setItem('hideLeadDiscoveryHint', 'true'); }} className="text-indigo-400 hover:text-indigo-600"><X className="w-4 h-4"/></button>
-        </div>
-      )}
       
       <PageHeader title="Directory">
         <PageActions>
