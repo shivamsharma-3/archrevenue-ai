@@ -78,27 +78,21 @@ export interface AICallResult {
   modelName: string;
 }
 
-/**
- * Smart AI router:
- *   Free users  → Groq llama-3.3-70b  (free, rate-limited)
- *   Paid users  → Gemini 2.5 Flash    (paid, higher quality, no rate limits)
- */
 async function callAI(prompt: string, userId: string, temperature = 0.0): Promise<AICallResult> {
   const tier = await getUserPlanTier(userId);
-  if (tier === 'paid' && process.env.GEMINI_API_KEY) {
-    console.log('[AI] → Gemini 2.5 Flash (paid user)');
+  if (tier === 'paid') {
+    console.log('[AI] → Advanced AI Engine (paid user: Gemini)');
     try {
       const text = await callGemini(prompt, userId, temperature);
-      return { text, provider: 'gemini', modelName: 'Gemini 2.5 Flash' };
+      return { text, provider: 'gemini', modelName: 'Advanced AI Engine' };
     } catch (err) {
-      console.warn('[AI] Gemini failed, falling back to Groq:', err);
-      const text = await callGroq(prompt, userId, temperature);
-      return { text, provider: 'groq', modelName: 'Llama 3.3 70B (Groq)' };
+      console.error('[AI] Gemini engine error for paid user:', err);
+      throw err; // Starter/Pro only use Gemini engine
     }
   }
-  console.log('[AI] → Groq llama-3.3-70b (free user)');
+  console.log('[AI] → Standard AI Engine (free user: Groq)');
   const text = await callGroq(prompt, userId, temperature);
-  return { text, provider: 'groq', modelName: 'Llama 3.3 70B (Groq)' };
+  return { text, provider: 'groq', modelName: 'Standard AI Engine' };
 }
 
 // ─── Layer 1: Seller Context ─────────────────────────────────────────────────

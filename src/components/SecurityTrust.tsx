@@ -63,9 +63,9 @@ export default function SecurityTrust() {
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
                 <p>LLMs are powerful but require strict guardrails. To ensure maximum reliability and transparency in Lead Intelligence and Deal Coaching:</p>
                 <ul className="list-disc pl-5 space-y-2">
-                  <li>We enforce strict JSON schema validation and zero-temperature deterministic execution across both Groq (Llama 3.3) and Google Vertex AI (Gemini 2.5 Flash).</li>
+                  <li>We enforce strict JSON schema validation and zero-temperature deterministic execution across all AI processing pipelines.</li>
                   <li>We require the AI engine to provide verifiable evidence arrays explaining why specific scores or objection strategies were generated based on scraped company context.</li>
-                  <li>We maintain enterprise zero-data-retention agreements with our infrastructure providers (Groq & Google Cloud), ensuring your sales data is never stored or used to train public AI models.</li>
+                  <li>We maintain enterprise zero-data-retention agreements with our infrastructure providers, ensuring your sales data is never stored or used to train public AI models.</li>
                 </ul>
               </div>
             </section>

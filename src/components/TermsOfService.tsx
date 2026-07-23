@@ -51,17 +51,17 @@ export default function TermsOfService() {
                   <div className="border border-border-default p-5 bg-surface-card rounded-lg">
                     <h3 className="text-[14px] font-semibold text-text-primary mb-1">Free Tier ($0/mo)</h3>
                     <p className="text-[13px] text-indigo-600 font-bold mb-2">50,000 Tokens / mo</p>
-                    <p className="text-[12px] text-text-secondary">Llama 3.3 AI Engine (Groq). Executive lead scoring & cold email drafts. No credit card required.</p>
+                    <p className="text-[12px] text-text-secondary">Standard AI Engine. Executive lead scoring & cold email drafts. No credit card required.</p>
                   </div>
                   <div className="border border-border-default p-5 bg-surface-card rounded-lg">
                     <h3 className="text-[14px] font-semibold text-text-primary mb-1">Starter ($49/mo)</h3>
                     <p className="text-[13px] text-indigo-600 font-bold mb-2">100,000 Tokens / mo</p>
-                    <p className="text-[12px] text-text-secondary">Gemini 2.5 Flash Engine. Multi-channel outreach (Email, LinkedIn & Phone scripts).</p>
+                    <p className="text-[12px] text-text-secondary">Advanced AI Engine. Multi-channel outreach (Email, LinkedIn & Phone scripts).</p>
                   </div>
                   <div className="border border-border-default p-5 bg-surface-card rounded-lg">
                     <h3 className="text-[14px] font-semibold text-text-primary mb-1">Pro ($99/mo)</h3>
                     <p className="text-[13px] text-indigo-600 font-bold mb-2">250,000 Tokens / mo</p>
-                    <p className="text-[12px] text-text-secondary">Gemini 2.5 Flash. AI Deal Coach & Objections Engine, unlimited outreach regeneration.</p>
+                    <p className="text-[12px] text-text-secondary">Advanced AI Engine. AI Deal Coach & Objections Engine, unlimited outreach regeneration.</p>
                   </div>
                   <div className="border border-border-default p-5 bg-surface-card rounded-lg">
                     <h3 className="text-[14px] font-semibold text-text-primary mb-1">Enterprise (Custom)</h3>

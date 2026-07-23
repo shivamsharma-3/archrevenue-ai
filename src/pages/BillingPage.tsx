@@ -30,7 +30,7 @@ export default function BillingPage() {
       price: '$0',
       period: '/forever',
       tokens: '50k Tokens/mo',
-      model: '⚡ Llama 3.3 AI Engine',
+      model: '⚡ Standard AI Engine',
       features: [
         'No Credit Card Required',
         'Executive Lead Scoring',
@@ -47,9 +47,9 @@ export default function BillingPage() {
       price: billingCycle === 'annual' ? '$39' : '$49',
       period: '/mo',
       tokens: '100k Tokens/mo',
-      model: '✨ Gemini 2.5 Flash Engine',
+      model: '✨ Advanced AI Engine',
       features: [
-        '✨ Gemini 2.5 Flash AI Engine',
+        '✨ Advanced AI Engine',
         'Multi-Channel Outreach (Email + LinkedIn + Phone)',
         '100,000 AI Tokens / Month',
         'CSV Export & Bulk Imports',
@@ -63,10 +63,10 @@ export default function BillingPage() {
       price: billingCycle === 'annual' ? '$79' : '$99',
       period: '/mo',
       tokens: '250k Tokens/mo',
-      model: '✨ Gemini 2.5 Flash Engine',
+      model: '✨ Advanced AI Engine',
       popular: true,
       features: [
-        '✨ Gemini 2.5 Flash AI Engine',
+        '✨ Advanced AI Engine',
         'AI Deal Coach & Objections Engine',
         'Unlimited Outreach Regeneration',
         '250,000 AI Tokens / Month',
@@ -135,7 +135,7 @@ export default function BillingPage() {
                 <div className="flex items-center gap-2">
                   <h2 className="text-xl font-bold text-text-primary tracking-tight">AI Token Quota</h2>
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700">
-                    {isFree ? '⚡ Free Tier (Llama 3.3)' : '✨ Paid Tier (Gemini 2.5 Flash)'}
+                    {isFree ? '⚡ Free Tier' : '✨ Paid Tier'}
                   </span>
                 </div>
                 <p className="text-[13px] text-text-secondary mt-0.5">Your monthly AI intelligence allocation</p>
@@ -336,9 +336,9 @@ export default function BillingPage() {
               <tbody className="divide-y divide-border-default/60">
                 <tr>
                   <td className="py-3.5 font-semibold text-text-primary">AI Engine Model</td>
-                  <td className="py-3.5 text-text-secondary">⚡ Llama 3.3 (Groq)</td>
-                  <td className="py-3.5 text-indigo-600 font-medium">✨ Gemini 2.5 Flash</td>
-                  <td className="py-3.5 text-purple-600 font-bold">✨ Gemini 2.5 Flash</td>
+                  <td className="py-3.5 text-text-secondary">⚡ Standard AI Engine</td>
+                  <td className="py-3.5 text-indigo-600 font-medium">✨ Advanced AI Engine</td>
+                  <td className="py-3.5 text-purple-600 font-bold">✨ Advanced AI Engine</td>
                   <td className="py-3.5 text-text-primary font-semibold">Custom Fine-Tuned</td>
                 </tr>
                 <tr>

@@ -316,8 +316,8 @@ export default function LandingPage() {
             <h2 className="text-4xl lg:text-5xl font-display text-text-primary font-medium leading-[1.1] tracking-[-0.02em] max-w-[600px] mx-auto">
               Transparent plans for every stage of growth.
             </h2>
-            <p className="text-[15px] text-text-secondary mt-4 max-w-[500px] mx-auto font-light">
-              Start 100% free with no credit card required. Upgrade anytime to unlock Gemini 2.5 Flash precision intelligence.
+            <p className="text-[18px] font-body text-text-secondary leading-[1.8] font-light max-w-[600px] mx-auto">
+              Start 100% free with no credit card required. Upgrade anytime to unlock advanced high-precision revenue intelligence.
             </p>
           </div>
 
@@ -331,7 +331,7 @@ export default function LandingPage() {
                   <span className="text-4xl font-display text-text-primary font-bold">$0</span>
                   <span className="text-[13px] text-text-secondary font-light ml-1">/ forever</span>
                 </div>
-                <p className="text-[12px] font-semibold text-slate-500 mt-2">⚡ Llama 3.3 AI Engine</p>
+                <p className="text-[12px] font-semibold text-slate-500 mt-2">⚡ Standard AI Engine</p>
                 <p className="text-[12px] text-text-tertiary mt-0.5">50,000 AI Tokens / Month</p>
 
                 <ul className="mt-8 space-y-3 border-t border-border-default pt-6 text-[13px] text-text-secondary font-light">
@@ -358,11 +358,11 @@ export default function LandingPage() {
                   <span className="text-4xl font-display text-text-primary font-bold">$49</span>
                   <span className="text-[13px] text-text-secondary font-light ml-1">/ month</span>
                 </div>
-                <p className="text-[12px] font-semibold text-indigo-600 mt-2">✨ Gemini 2.5 Flash Engine</p>
+                <p className="text-[12px] font-semibold text-indigo-600 mt-2">✨ Advanced AI Engine</p>
                 <p className="text-[12px] text-text-tertiary mt-0.5">100,000 AI Tokens / Month</p>
 
                 <ul className="mt-8 space-y-3 border-t border-border-default pt-6 text-[13px] text-text-secondary font-light">
-                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> ✨ Gemini 2.5 Flash Intelligence</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> ✨ Advanced AI Intelligence</li>
                   <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Multi-Channel Outreach (Email + LinkedIn + Phone)</li>
                   <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> CSV Data Exports & Bulk Imports</li>
                   <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Standard Email Support</li>
@@ -390,11 +390,11 @@ export default function LandingPage() {
                   <span className="text-4xl font-display text-text-primary font-bold">$99</span>
                   <span className="text-[13px] text-text-secondary font-light ml-1">/ month</span>
                 </div>
-                <p className="text-[12px] font-semibold text-purple-600 mt-2">✨ Gemini 2.5 Flash Engine</p>
+                <p className="text-[12px] font-semibold text-purple-600 mt-2">✨ Advanced AI Engine</p>
                 <p className="text-[12px] text-text-tertiary mt-0.5">250,000 AI Tokens / Month</p>
 
                 <ul className="mt-8 space-y-3 border-t border-border-default pt-6 text-[13px] text-text-secondary font-light">
-                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> ✨ Gemini 2.5 Flash High Precision</li>
+                  <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> ✨ Advanced High-Precision AI</li>
                   <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> AI Deal Coach & Objections Engine</li>
                   <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> Unlimited Outreach Regeneration</li>
                   <li className="flex items-center gap-2"><span className="text-teal-500 font-bold">✓</span> 24/7 Priority Support</li>

@@ -47,13 +47,13 @@ export const ExecutiveBriefing = memo(({ lead, isPanel = false, onGenerate, isGe
           {aiProvider === 'gemini' ? (
             <div className="flex items-center gap-1.5 text-purple-700 bg-purple-50 border border-purple-200/80 px-2.5 py-1 rounded-full text-[11px] font-semibold shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-              <span>{aiModel || 'Gemini 2.5 Flash'}</span>
+              <span>Advanced AI Engine</span>
               <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-purple-600 text-white rounded-full ml-0.5">Paid</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-medium">
               <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span>{aiModel || 'Llama 3.3 (Groq)'}</span>
+              <span>Standard AI Engine</span>
               <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded-full ml-0.5">Free</span>
             </div>
           )}
