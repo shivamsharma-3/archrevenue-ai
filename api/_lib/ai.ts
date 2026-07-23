@@ -300,56 +300,7 @@ function buildScoringEvidence(lead: Lead, research: CompanyKnowledge | null, pro
   };
 }
 
-// ─── Deterministic Score Engine (100% stable scores on re-analysis) ──────────
 
-function computeDeterministicScore(
-  lead: Lead,
-  research: CompanyKnowledge | null,
-  profile: SellerProfile | null
-): { score: number; category: 'Hot' | 'Warm' | 'Cold' | 'Dead'; priority: 'Critical' | 'High' | 'Medium' | 'Low' } {
-  let score = 50; // Neutral baseline
-
-  const hasWebsite = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
-  const hasBudget = !!(lead.estimatedBudget && lead.estimatedBudget !== 'Not stated' && lead.estimatedBudget !== '$0');
-  const hasGrowth = (research?.growthSignals?.length ?? 0) > 0 || (research?.hiringSignals?.length ?? 0) > 0;
-  const isUrgent = lead.urgency === 'High' || lead.urgency === 'Critical';
-
-  // ICP Industry Match
-  const icpMatch = !!(
-    profile?.targetIndustry &&
-    lead.industry &&
-    lead.industry.toLowerCase().includes(profile.targetIndustry.toLowerCase())
-  );
-
-  if (hasWebsite) score += 10;
-  else score -= 15;
-
-  if (icpMatch) score += 15;
-  if (hasBudget) score += 10;
-  if (hasGrowth) score += 10;
-  if (isUrgent) score += 5;
-
-  // Maturity / Size adjustment
-  if (research?.businessMaturity === 'Growth') score += 5;
-  else if (research?.businessMaturity === 'Early-stage' && (research.services?.length ?? 0) > 0) score += 10;
-
-  // Clamp 20 - 90
-  score = Math.max(20, Math.min(90, score));
-
-  let category: 'Hot' | 'Warm' | 'Cold' | 'Dead' = 'Warm';
-  if (score >= 70) category = 'Hot';
-  else if (score >= 50) category = 'Warm';
-  else if (score >= 35) category = 'Cold';
-  else category = 'Dead';
-
-  let priority: 'Critical' | 'High' | 'Medium' | 'Low' = 'Medium';
-  if (score >= 75) priority = 'Critical';
-  else if (score >= 60) priority = 'High';
-  else if (score >= 40) priority = 'Medium';
-  else priority = 'Low';
-
-  return { score, category, priority };
-}
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
@@ -373,17 +324,7 @@ export async function scoreLead(lead: Lead, userId: string, profile?: SellerProf
 
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const evidence        = buildScoringEvidence(lead, research, profile ?? null);
-  const detScore        = computeDeterministicScore(lead, research, profile ?? null);
-  const userPlanTier    = await getUserPlanTier(userId);
-
-  // Build context layers
-  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
-  const leadCtx    = buildLeadContext(lead);
-  const researchCtx = research
-    ? buildResearchContext(research)
-    : 'WEBSITE INTELLIGENCE: Not available. No website provided or research failed.\nScoring must use form data only.';
-
-  // ── Step 2: Scoring prompt — pinned to deterministic score ───────────────
+  // ── Step 2: Scoring prompt — evidence-based AI evaluation at temp 0.0 ───────────────
   const scorePrompt = `
 ${sellerCtx}
 
@@ -391,29 +332,37 @@ ${leadCtx}
 
 ${researchCtx}
 
-SCORING DETERMINISM INSTRUCTION:
-The calculated deterministic baseline for this lead is ${detScore.score}/100 (Category: "${detScore.category}", Priority: "${detScore.priority}").
-You MUST return:
-- "score": ${detScore.score}
-- "category": "${detScore.category}"
-- "priority": "${detScore.priority}"
+EVALUATION TASK: Analyze the real lead and website evidence above. Dynamically calculate the score (0-100) using this evidence-based rubric:
 
-Your primary job is to generate the 2-3 sentence evidence-based "reason" and "recommendedAction" explaining this score.
+EVIDENCE SCORING RUBRIC (0-100):
+1. BASE: Start at 50 points.
+2. ICP FIT (+15 / -10): Add +15 if lead industry/offering matches seller target ICP (${profile?.targetIndustry || 'B2B/Services'}). Subtract -10 if misaligned.
+3. WEBSITE VERIFICATION (+10 / -15): Add +10 if live website intel with verified services was extracted. Subtract -15 if no website or research failed.
+4. BUDGET SIGNAL (+10 / +0): Add +10 if lead stated a specific budget.
+5. GROWTH & HIRING SIGNALS (+10 / +0): Add +10 if growth/hiring signals were detected.
+6. URGENCY SIGNAL (+5 / +0): Add +5 if urgency is High or Critical.
+7. ENTERPRISE/OVER-MATURE PENALTY (-15 / +0): Subtract -15 if lead is a massive enterprise (500+ employees) or overly established, where our offer is irrelevant.
+
+CATEGORIES & PRIORITIES:
+- Score 70-100: Category = "Hot", Priority = "Critical" (or "High")
+- Score 50-69:  Category = "Warm", Priority = "Medium"
+- Score 30-49:  Category = "Cold", Priority = "Low"
+- Score 0-29:   Category = "Dead", Priority = "Low"
 
 Return ONLY this JSON, no markdown:
 {
-  "score": ${detScore.score},
-  "category": "${detScore.category}",
-  "priority": "${detScore.priority}",
+  "score": <calculated integer 0-100 based on evidence rubric above>,
+  "category": "<Hot | Warm | Cold | Dead>",
+  "priority": "<Critical | High | Medium | Low>",
   "recommendedAction": "<specific, evidence-based next step>",
-  "reason": "<MANDATORY FORMAT: Start with '[Company name] scored ${detScore.score} because [what positive signals raised the score — cite specific evidence: growth signals, stated budget, urgency, ICP match, hiring signals, etc.]. However, [what reduced it — cite specific gaps: early stage, $0 revenue, no website data, no budget, low confidence, etc.]. [Final sentence: buying likelihood verdict and recommended sales posture.] RULES: Exactly 2-3 sentences. 40-80 words total. Always open with the company name and the numeric score. Never use generic openers. No invented data.>"
+  "reason": "<MANDATORY FORMAT: Start with '[Company name] scored [Score] because [what real positive evidence raised the score]. However, [what reduced it]. [Final sentence: sales posture verdict.] RULES: Exactly 2-3 sentences. 40-80 words total. Always open with company name and calculated numeric score. No fake stats.>"
 }
 `.trim();
 
   // ── Step 3: Outreach prompt — seller-aware, no generic language ───────────
   const outreachPrompt = getOutreachPrompt(leadCtx, researchCtx, sellerCtx, profile, lead.company || lead.fullName, research, hasRealResearch);
 
-  // ── Step 4: Fire Score call first ──────
+  // ── Step 4: Fire Score call first at temp 0.0 for 100% reproducible analysis ──
   const aiResult = await callAI(scorePrompt, userId, 0.0);
   const scoreResult = JSON.parse(aiResult.text);
 
@@ -470,7 +419,7 @@ Return ONLY this JSON, no markdown:
 
   if (lead.companyType === 'Internal/Test') {
     console.log('[AI] Internal/Test — skipping outreach generation.');
-  } else if (detScore.score < 30 || ['Dead'].includes(detScore.priority) || ['Dead'].includes(detScore.category)) {
+  } else if (normalizedScoreResult.score < 30 || ['Dead'].includes(normalizedScoreResult.priority) || ['Dead'].includes(normalizedScoreResult.category)) {
     console.log('[AI] Lead score is too low (<30). Skipping outreach generation.');
   } else {
     const outreachAiRes = await callAI(outreachPrompt, userId, 0.2);
@@ -539,11 +488,11 @@ Return ONLY this JSON, no markdown:
   else if (normalizedScoreResult.category === 'Cold') suggestedFollowUpDays = 7;
 
   return {
-    score:             detScore.score,
-    category:          detScore.category,
-    priority:          detScore.priority,
+    score:             normalizedScoreResult.score,
+    category:          normalizedScoreResult.category,
+    priority:          normalizedScoreResult.priority,
     recommendedAction: normalizedScoreResult.recommendedAction || 'Schedule a 15-minute discovery call.',
-    reason:            normalizedScoreResult.reason || `${lead.fullName} scored ${detScore.score}.`,
+    reason:            normalizedScoreResult.reason || `${lead.fullName} scored ${normalizedScoreResult.score}.`,
     followUp,
     evidence,
     suggestedFollowUpDays,
