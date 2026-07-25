@@ -81,7 +81,7 @@ export const PAYMENT_ITEMS: Record<string, PaymentItem> = {
 export const DEFAULT_PAYMENT_CONFIG = {
   upiVpa: 'archrevenues@axl',
   upiName: 'ArchRevenue Intelligence',
-  razorpayKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_ArchRevenue',
+  razorpayKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_THpIyS8dpFsdeO',
   paypalClientId: import.meta.env.VITE_PAYPAL_CLIENT_ID || 'AQOapkwWqGH70d8oBY-vGz9ohNuuQPdkRA--ZSjG-rSjv7Rq2l1qtvHu4OiCGR92-PGmlO4gdaXD5YNw',
 };
 

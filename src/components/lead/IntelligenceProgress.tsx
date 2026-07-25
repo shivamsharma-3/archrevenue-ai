@@ -121,11 +121,13 @@ export const IntelligenceProgress: React.FC<IntelligenceProgressProps> = ({ work
                       {job.name}
                     </h4>
                     {isFailed && job.error && (
-                      <p className="text-[12px] text-red-700 font-medium mt-1 leading-relaxed whitespace-normal break-normal">
-                        {job.error.includes('429') || job.error.includes('quota') || job.error.includes('RESOURCE_EXHAUSTED') || job.error.startsWith('{')
-                          ? '⚡ AI Rate Limit reached on free key. Click Retry to run fallback.'
-                          : job.error.length > 140 ? job.error.slice(0, 140) + '...' : job.error}
-                      </p>
+                      <div className="mt-1 p-2 bg-red-100/60 border border-red-200 rounded-lg">
+                        <p className="text-[12px] text-red-700 font-medium leading-normal break-words">
+                          {job.error.includes('429') || job.error.includes('quota') || job.error.includes('RESOURCE_EXHAUSTED') || job.error.includes('generativelanguage') || job.error.startsWith('{')
+                            ? '⚡ AI Rate Limit / Quota Exceeded on Google Gemini API. Click Retry to re-run with fallback engine.'
+                            : job.error.length > 160 ? job.error.slice(0, 160) + '...' : job.error}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
