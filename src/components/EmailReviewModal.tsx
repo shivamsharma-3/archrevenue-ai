@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Loader2 } from 'lucide-react';
 import { Lead } from '../lib/types';
+import toast from 'react-hot-toast';
 import { sendEmail } from '../lib/email';
 import { connectGmail } from '../lib/firebase';
 import { cn } from '../lib/utils';
@@ -104,6 +105,15 @@ export function EmailReviewModal({ isOpen, onClose, lead, onSendSuccess }: Email
       maxWidth="lg"
       footer={
         <>
+          <AppButton 
+            variant="secondary" 
+            onClick={() => {
+              navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
+              toast.success('Email copied to clipboard!');
+            }}
+          >
+            Copy Text
+          </AppButton>
           <AppButton variant="ghost" onClick={onClose} disabled={isSending}>
             Cancel
           </AppButton>

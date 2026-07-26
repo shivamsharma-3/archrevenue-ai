@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Lead } from '../lib/types';
+import { Lead, LeadStatus } from '../lib/types';
 import { Building, Sparkles, Loader2, Users, Plus } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { getFollowUpStatus } from '../lib/utils';
@@ -147,9 +147,30 @@ export default function PipelinePage() {
                     </div>
                     {lead.company && <div className="text-xs font-medium text-text-secondary flex items-center mb-2"><Building className="w-3.5 h-3.5 mr-1" />{lead.company}</div>}
                     <div className="text-[11px] text-text-secondary font-medium mt-3">{lead.createdAt?.toDate ? new Date(lead.createdAt.toDate()).toLocaleDateString() : 'Just now'}</div>
+                    {/* Stage Selector Dropdown */}
+                    <div className="mt-3 pt-2.5 border-t border-border-default flex items-center justify-between relative z-30" onClick={e => e.stopPropagation()}>
+                      <span className="text-[10px] font-semibold text-text-tertiary uppercase tracking-wider">Stage</span>
+                      <select
+                        value={lead.status}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleKanbanStatusChange(lead.id!, e.target.value as LeadStatus);
+                        }}
+                        className="text-[11px] font-medium bg-surface-secondary text-text-primary border border-border-default rounded px-2 py-0.5 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer relative z-30"
+                      >
+                        <option value="new">New Lead</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="meeting_booked">Meeting Booked</option>
+                        <option value="proposal">Proposal</option>
+                        <option value="won">Won</option>
+                        <option value="lost">Lost</option>
+                      </select>
+                    </div>
+
                     {/* AI score inline in pipeline card */}
                     {lead.aiAnalysis && (
-                      <div className="mt-3 pt-3 border-t border-border-default flex items-center justify-between">
+                      <div className="mt-2 flex items-center justify-between">
                         <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">Revenue Opportunity</span>
                         <span className={cn(
                           "text-[11px] font-bold px-2 py-0.5 rounded-md border",
@@ -164,7 +185,7 @@ export default function PipelinePage() {
                     <button
                       onClick={e => { e.stopPropagation(); handleScoreLead(lead); }}
                       disabled={aiScoringLoading[lead.id!]}
-                      className="absolute top-3 right-3 p-1.5 text-text-secondary hover:text-violet-400 hover:bg-violet-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                      className="absolute top-3 right-3 p-1.5 text-text-secondary hover:text-violet-400 hover:bg-violet-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 z-30"
                       title="Analyze Opportunity"
                     >
                       {aiScoringLoading[lead.id!]

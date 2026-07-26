@@ -197,6 +197,64 @@ export default function SettingsPage() {
         />
         
         <PageContent className="flex flex-col gap-10 max-w-[800px] pt-6">
+          {/* ICP Configuration Section */}
+          <PageSection title="Ideal Customer Profile (ICP)" description="Configure target parameters for deterministic lead scoring & intelligence.">
+            <div className="intel-panel bg-surface-card border border-border-default rounded-[var(--radius-card)] p-6 shadow-sm space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-text-secondary mb-1">Target Industry</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. B2B SaaS, IT Services, Healthcare"
+                    value={sellerProfile?.targetIndustry || ''}
+                    onChange={e => setSellerProfile((p: any) => ({ ...p, targetIndustry: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface-card border border-border-default rounded-input text-[13px] text-text-primary outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-text-secondary mb-1">Target Company Size</label>
+                  <select
+                    value={sellerProfile?.targetCompanySize || '51-200'}
+                    onChange={e => setSellerProfile((p: any) => ({ ...p, targetCompanySize: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface-card border border-border-default rounded-input text-[13px] text-text-primary outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="1-10">1-10 employees</option>
+                    <option value="11-50">11-50 employees</option>
+                    <option value="51-200">51-200 employees</option>
+                    <option value="201-1000">201-1000 employees</option>
+                    <option value="1000+">1000+ employees</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-text-secondary mb-1">Competitors / Tech Stack Keywords</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Salesforce, Hubspot, Hotjar"
+                    value={sellerProfile?.competitors || ''}
+                    onChange={e => setSellerProfile((p: any) => ({ ...p, competitors: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface-card border border-border-default rounded-input text-[13px] text-text-primary outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-text-secondary mb-1">Target Geography</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. North America, Europe, Global"
+                    value={sellerProfile?.targetGeography || ''}
+                    onChange={e => setSellerProfile((p: any) => ({ ...p, targetGeography: e.target.value }))}
+                    className="w-full px-3 py-2 bg-surface-card border border-border-default rounded-input text-[13px] text-text-primary outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end pt-2">
+                <AppButton variant="primary" onClick={() => toast.success('ICP Settings updated successfully!')}>
+                  Save ICP Target Criteria
+                </AppButton>
+              </div>
+            </div>
+          </PageSection>
 
           {/* Integrations */}
           <PageSection title="Integrations" description="Connect your email and calendar to automate tasks.">

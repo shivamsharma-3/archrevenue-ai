@@ -27,21 +27,32 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 
 // ─── CSV Export Helper ────────────────────────────────────────────────────────
 function exportLeadsToCSV(leads: Lead[]) {
-  const headers = ['Full Name', 'Email', 'Phone', 'Company', 'Website', 'Industry', 'Status', 'Revenue Opportunity', 'AI Category', 'Urgency', 'Estimated Budget', 'Lead Source', 'Created At'];
+  if (!leads || leads.length === 0) {
+    toast.error('No leads available to export.');
+    return;
+  }
+  const headers = [
+    'Full Name', 'Email', 'Phone', 'Company', 'Website', 'Industry', 
+    'Status', 'Revenue Opportunity Score', 'AI Category', 'Score Reasons', 
+    'Urgency', 'Estimated Budget', 'Lead Source', 'Tech Stack', 'Hiring Signals', 'Created At'
+  ];
   const rows = leads.map(l => [
     l.fullName || '',
     l.email || '',
     l.phone || '',
     l.company || '',
     l.website || '',
-    l.industry || '',
+    l.industry || l.research?.industry || '',
     l.status || '',
-    l.aiAnalysis?.score ?? '',
+    l.aiAnalysis?.score ?? l.research?.opportunityScore ?? '',
     l.aiAnalysis?.category ?? '',
+    l.aiAnalysis?.reason || l.research?.summary || '',
     l.urgency || '',
     l.estimatedBudget || '',
     l.leadSource || '',
-    l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString() : '',
+    l.research?.facts?.technologies?.map(t => t.value).join('; ') || '',
+    l.research?.hiringSignals?.join('; ') || '',
+    l.createdAt?.toDate ? l.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString(),
   ]);
   const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -53,6 +64,7 @@ function exportLeadsToCSV(leads: Lead[]) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  toast.success(`Exported ${leads.length} lead${leads.length > 1 ? 's' : ''} to CSV successfully!`);
 }
 
 import { Outlet, useLocation } from 'react-router-dom';

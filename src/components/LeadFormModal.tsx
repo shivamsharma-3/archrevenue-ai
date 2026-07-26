@@ -69,6 +69,73 @@ export default function LeadFormModal({ isOpen, onClose, onSubmit, initialData }
     }
   };
 
+  const [enriching, setEnriching] = useState(false);
+  const [enrichStep, setEnrichStep] = useState<string>('');
+
+  const handleAutoEnrich = async () => {
+    if (!formData.website) {
+      toast.error('Please enter a website URL first.');
+      return;
+    }
+    setEnriching(true);
+    setEnrichStep('Scraping website content...');
+    try {
+      let targetUrl = formData.website.trim();
+      if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
+
+      const token = await (window as any).firebaseAuth?.currentUser?.getIdToken?.() || '';
+      
+      setEnrichStep('Extracting company intelligence & tech stack...');
+      const res = await fetch('/api/researchCompany', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ url: targetUrl })
+      });
+
+      if (!res.ok) {
+        throw new Error('Web enrichment failed or timed out.');
+      }
+
+      const data = await res.json();
+      setEnrichStep('Calculating fit score & pre-filling card...');
+
+      // Derive lead name & company from domain/scraped title if missing
+      const urlHost = new URL(targetUrl).hostname.replace('www.', '');
+      const derivedCompany = data.companyName || urlHost.split('.')[0].toUpperCase();
+
+      setFormData(prev => ({
+        ...prev,
+        website: targetUrl,
+        company: prev.company || derivedCompany,
+        fullName: prev.fullName || `${derivedCompany} Contact`,
+        industry: data.industry !== 'Unknown' ? data.industry : prev.industry,
+        companySize: (data.businessMaturity === 'Enterprise' ? '1000+' : data.businessMaturity === 'Mature' ? '201-1000' : '51-200') as any,
+        painPoint: data.painPoints?.[0] || prev.painPoint,
+        research: data,
+        status: prev.status || 'new',
+        aiAnalysis: data.opportunityScore ? {
+          score: data.opportunityScore,
+          category: data.opportunityScore >= 75 ? 'Hot' : data.opportunityScore >= 50 ? 'Warm' : 'Cold',
+          priority: data.opportunityScore >= 75 ? 'Critical' : 'High',
+          reason: data.summary || `Extracted intelligence from ${targetUrl}`,
+          recommendedAction: data.recommendedPitch || 'Initiate multi-channel outreach',
+          analyzedAt: new Date()
+        } : prev.aiAnalysis
+      }));
+
+      toast.success(`Successfully enriched ${derivedCompany}!`);
+    } catch (err: any) {
+      console.error('Auto-enrichment error:', err);
+      toast.error(`Auto-enrichment note: ${err.message || 'Could not fetch live website. Please complete remaining fields.'}`);
+    } finally {
+      setEnriching(false);
+      setEnrichStep('');
+    }
+  };
+
   return (
     <AppModal
       isOpen={isOpen}
@@ -80,13 +147,51 @@ export default function LeadFormModal({ isOpen, onClose, onSubmit, initialData }
         <div className="px-6 py-5 border-b border-border-default flex justify-between items-center relative shrink-0 bg-surface-card">
           <div>
             <h2 className="text-[16px] font-semibold tracking-tight text-text-primary">
-              {initialData ? 'Edit Lead Profile' : 'New Lead Intelligence'}
+              {initialData ? 'Edit Lead Profile' : 'New Lead Intelligence (URL-First)'}
             </h2>
-            <p className="text-[13px] text-text-secondary mt-0.5">Collect data to power revenue intelligence.</p>
+            <p className="text-[13px] text-text-secondary mt-0.5">Enter a website URL to automatically discover intelligence or edit manually.</p>
           </div>
           <button onClick={onClose} className="p-1.5 text-text-tertiary hover:text-text-primary rounded-button transition-colors hover:bg-surface-hover">
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* URL-First Discovery Bar */}
+        <div className="bg-gradient-to-r from-blue-900/20 via-indigo-900/20 to-purple-900/20 p-4 border-b border-border-default shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="url"
+                placeholder="Enter company website URL (e.g. acme.com or fosterandpartners.com)..."
+                value={formData.website || ''}
+                onChange={e => setFormData({ ...formData, website: e.target.value })}
+                className="w-full pl-3 pr-3 py-2.5 bg-surface-card border border-border-default rounded-input text-[13px] text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleAutoEnrich}
+              disabled={enriching || !formData.website}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-button font-medium text-[13px] transition-all flex items-center gap-2 disabled:opacity-50 shrink-0"
+            >
+              {enriching ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Enriching...</span>
+                </>
+              ) : (
+                <>
+                  <span>Auto-Enrich</span>
+                </>
+              )}
+            </button>
+          </div>
+          {enriching && enrichStep && (
+            <div className="mt-2 text-[11px] font-medium text-blue-400 animate-pulse flex items-center gap-1.5">
+              <span>⚡</span>
+              <span>{enrichStep}</span>
+            </div>
+          )}
         </div>
 
         <div className="flex border-b border-border-default shrink-0 bg-surface-secondary">
