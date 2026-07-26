@@ -53,11 +53,18 @@ export default function App() {
       if (user) {
         // Self-heal: ensure user document exists in Firestore (since admin dash relies on it)
         getDoc(doc(db, 'users', user.uid)).then((snap) => {
-          if (!snap.exists()) {
+          const isProVip = user.email === 'trovetech9@gmail.com';
+          if (!snap.exists() || isProVip) {
             setDoc(doc(db, 'users', user.uid), {
               email: user.email,
-              role: 'free'
-            }).catch(console.error);
+              role: isProVip ? 'pro' : (snap.data()?.role || 'free')
+            }, { merge: true }).catch(console.error);
+            
+            if (isProVip) {
+              setDoc(doc(db, 'users', user.uid, 'usage', 'tokens'), {
+                limit: 250000,
+              }, { merge: true }).catch(console.error);
+            }
           }
         }).catch(console.error);
 
