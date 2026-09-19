@@ -1,7 +1,6 @@
-import Groq from 'groq-sdk';
 import { CompanyKnowledge } from './types.js';
 import * as admin from 'firebase-admin';
-import { checkTokenLimit, incrementTokenUsage } from './usage.js';
+import { callAI } from './ai-provider.js';
 
 // ─── HTML scraping helpers ────────────────────────────────────────────────────
 
@@ -57,12 +56,9 @@ function scrapeHtml(html: string): { title: string; metaDesc: string; text: stri
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 export async function researchCompany(url: string, userId: string): Promise<CompanyKnowledge> {
-  const GROQ_API_KEY = process.env.GROQ_API_KEY;
-  if (!GROQ_API_KEY) {
-    throw new Error('Missing GROQ_API_KEY in environment variables.');
+  if (!process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) {
+    throw new Error('No AI API key configured. Set GROQ_API_KEY or GEMINI_API_KEY in environment variables.');
   }
-
-  const groq = new Groq({ apiKey: GROQ_API_KEY });
 
   let targetUrl = url.trim();
   if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
@@ -171,40 +167,34 @@ Return ONLY this JSON, no markdown, no code blocks:
 }
 `.trim();
 
-  // ── Step 3: Call Groq ────────────────────────────────────────────────────
-  if (userId) {
-    await checkTokenLimit(userId);
-  }
-
-  const completion = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.1, // Very low — we want deterministic extraction, not creativity
-    response_format: { type: 'json_object' },
-  });
-
-  const rawContent = completion.choices[0]?.message?.content;
+  // ── Step 3: Call AI (Tier-aware: Gemini for paid, Groq for free, with auto-fallback)
+  const aiResult = await callAI(prompt, userId, 0.1);
+  const rawContent = aiResult.text;
   if (!rawContent) throw new Error('AI returned empty response during research');
 
-  const tokensUsed = completion.usage?.total_tokens || 0;
-  if (userId && tokensUsed > 0) {
-    await incrementTokenUsage(userId, tokensUsed).catch(err => 
-      console.error('[AI] Non-fatal error recording token usage:', err)
-    );
+  let parsed: any;
+  try {
+    parsed = JSON.parse(rawContent);
+  } catch {
+    const cleaned = rawContent.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    parsed = JSON.parse(cleaned);
   }
-
-  const parsed = JSON.parse(rawContent);
 
   // ── Step 4: Validate & normalise ────────────────────────────────────────
-  if (!parsed.industry || typeof parsed.opportunityScore !== 'number') {
-    throw new Error('AI returned malformed research JSON');
+  let opportunityScore = parsed.opportunityScore;
+  if (typeof opportunityScore === 'string') {
+    opportunityScore = parseInt(opportunityScore, 10);
   }
+  if (typeof opportunityScore !== 'number' || isNaN(opportunityScore)) {
+    opportunityScore = 50;
+  }
+  opportunityScore = Math.min(100, Math.max(0, Math.round(opportunityScore)));
 
   const result = {
     industry: parsed.industry || 'Unknown',
     services: Array.isArray(parsed.services) ? parsed.services : [],
     summary: parsed.summary || '',
-    opportunityScore: Math.min(100, Math.max(0, Math.round(parsed.opportunityScore))),
+    opportunityScore,
     painPoints: Array.isArray(parsed.painPoints) ? parsed.painPoints : [],
     growthSignals: Array.isArray(parsed.growthSignals) ? parsed.growthSignals : [],
     hiringSignals: Array.isArray(parsed.hiringSignals) ? parsed.hiringSignals : [],
@@ -216,4 +206,5 @@ Return ONLY this JSON, no markdown, no code blocks:
   } as unknown as CompanyKnowledge;
 
   return result;
+
 }
