@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mail, Lock, ArrowRight, Sparkles, BarChart3, Users, ShieldCheck, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Sparkles, BarChart3, Users, ShieldCheck, RefreshCw, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { loginWithGoogle, auth, registerWithEmail, loginWithEmail } from '../lib/firebase';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -11,6 +11,61 @@ interface LoginProps {
 }
 
 import BrandLogo from './BrandLogo';
+
+/** Translates raw Firebase/API auth errors into clear, friendly messages */
+function formatAuthError(err: any): string {
+  if (!err) return 'An unexpected error occurred. Please try again.';
+  const code = err?.code || '';
+  const msg = err?.message || String(err);
+
+  if (
+    code === 'auth/email-already-in-use' ||
+    msg.includes('auth/email-already-in-use') ||
+    msg.includes('email-already-in-use')
+  ) {
+    return 'An account with this email already exists. Please sign in instead.';
+  }
+  if (code === 'auth/invalid-email' || msg.includes('auth/invalid-email')) {
+    return 'Please enter a valid email address.';
+  }
+  if (code === 'auth/user-not-found' || msg.includes('auth/user-not-found')) {
+    return 'No account found with this email. Please check your email or sign up.';
+  }
+  if (code === 'auth/wrong-password' || msg.includes('auth/wrong-password')) {
+    return 'Incorrect password. Please try again or reset your password.';
+  }
+  if (code === 'auth/invalid-credential' || msg.includes('auth/invalid-credential')) {
+    return 'Incorrect email or password. Please verify your details and try again.';
+  }
+  if (code === 'auth/user-disabled' || msg.includes('auth/user-disabled')) {
+    return 'This account has been disabled. Please contact support.';
+  }
+  if (code === 'auth/too-many-requests' || msg.includes('auth/too-many-requests')) {
+    return 'Too many failed attempts. Please wait a few minutes before trying again.';
+  }
+  if (code === 'auth/weak-password' || msg.includes('auth/weak-password')) {
+    return 'Password is too weak. Please use at least 8 characters.';
+  }
+  if (code === 'auth/network-request-failed' || msg.includes('auth/network-request-failed')) {
+    return 'Network error. Please check your internet connection and try again.';
+  }
+  if (code === 'auth/popup-closed-by-user' || msg.includes('auth/popup-closed-by-user')) {
+    return 'Sign-in was cancelled before finishing. Please try again.';
+  }
+  if (code === 'auth/popup-blocked' || msg.includes('auth/popup-blocked')) {
+    return 'Sign-in pop-up was blocked by your browser. Please allow pop-ups for this site.';
+  }
+  if (code === 'auth/unauthorized-domain' || msg.includes('auth/unauthorized-domain')) {
+    return 'This domain is not authorised in Firebase Console.';
+  }
+
+  // Clean raw Firebase message prefixes like "Firebase: Error (auth/...)."
+  const cleaned = msg
+    .replace(/^Firebase:\s*Error\s*\([^)]+\):?\s*/i, '')
+    .replace(/^Firebase:\s*/i, '')
+    .trim();
+  return cleaned || 'Authentication failed. Please try again.';
+}
 
 // OTP input digit component
 function OtpDigit({
@@ -125,7 +180,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
       }
       return true;
     } catch (err: any) {
-      setError(err.message || 'Could not send OTP. Please try again.');
+      setError(formatAuthError(err));
       return false;
     }
   };
@@ -154,7 +209,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
       // OTP correct — create account
       await registerWithEmail(email, password);
     } catch (err: any) {
-      setError(err.message || 'Verification failed.');
+      setError(formatAuthError(err));
       setIsLoading(false);
     }
   };
@@ -192,7 +247,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
       try {
         await loginWithEmail(email, password);
       } catch (err: any) {
-        setError(err.message || 'Authentication failed.');
+        setError(formatAuthError(err));
         setIsLoading(false);
       }
     }
@@ -204,19 +259,11 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
     try {
       await loginWithGoogle();
     } catch (err: any) {
-      const code = err?.code || '';
-      if (code === 'auth/popup-closed-by-user') {
-        setError('Sign-in was cancelled. Please try again.');
-      } else if (code === 'auth/unauthorized-domain') {
-        setError(
-          'This domain is not authorised in Firebase. Add localhost to authorised domains in Firebase Console.'
-        );
-      } else {
-        setError(err.message || 'Error authenticating with Google.');
-      }
+      setError(formatAuthError(err));
       setIsLoading(false);
     }
   };
+
 
   // ─── OTP digit handlers ───────────────────────────────────────────────────────
   const handleOtpChange = (index: number, val: string) => {
@@ -356,10 +403,26 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
 
               <form onSubmit={handleEmailAuth} className="space-y-4">
                 {error && (
-                  <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center mb-2">
-                    {error}
+                  <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex flex-col gap-1.5 mb-2">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                      <span>{error}</span>
+                    </div>
+                    {error.includes('already exists') && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setError(null);
+                          navigate('/login');
+                        }}
+                        className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline text-left ml-6 transition-colors"
+                      >
+                        Click here to sign in with this email &rarr;
+                      </button>
+                    )}
                   </div>
                 )}
+
 
                 {/* Email */}
                 <div>
@@ -547,10 +610,27 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
               </div>
 
               {error && (
-                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center mb-6">
-                  {error}
+                <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex flex-col gap-1.5 mb-6">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                    <span>{error}</span>
+                  </div>
+                  {error.includes('already exists') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setError(null);
+                        setStep('credentials');
+                        navigate('/login');
+                      }}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline text-left ml-6 transition-colors"
+                    >
+                      Sign in with this email &rarr;
+                    </button>
+                  )}
                 </div>
               )}
+
 
               {/* OTP digits */}
               <div className="flex gap-3 justify-center mb-8">

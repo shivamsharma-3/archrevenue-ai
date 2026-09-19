@@ -8,6 +8,7 @@ import posthog from 'posthog-js';
 import { AppModal } from './ui/AppModal';
 import { AppButton } from './ui/AppButton';
 import { AppInput } from './ui/AppInput';
+import { researchCompany } from '../lib/research';
 
 interface Props {
   isOpen: boolean;
@@ -83,24 +84,10 @@ export default function LeadFormModal({ isOpen, onClose, onSubmit, initialData }
       let targetUrl = formData.website.trim();
       if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
 
-      const token = await (window as any).firebaseAuth?.currentUser?.getIdToken?.() || '';
-      
       setEnrichStep('Extracting company intelligence & tech stack...');
-      const res = await fetch('/api/researchCompany', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ url: targetUrl })
-      });
-
-      if (!res.ok) {
-        throw new Error('Web enrichment failed or timed out.');
-      }
-
-      const data = await res.json();
+      const data = await researchCompany(targetUrl);
       setEnrichStep('Calculating fit score & pre-filling card...');
+
 
       // Derive lead name & company from domain/scraped title if missing
       const urlHost = new URL(targetUrl).hostname.replace('www.', '');

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Resend } from 'resend';
+import { auth, initError } from './_lib/firebase-admin.js';
 
 // In-memory OTP store: email -> { otp, expires }
 // NOTE: This works per-serverless-instance. For production, use Redis/Firestore.
@@ -35,11 +36,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Email is required.' });
       }
 
+      const normalizedEmail = email.toLowerCase().trim();
+
+      // Proactively check if email already exists in Firebase Auth
+      if (!initError && auth && typeof auth.getUserByEmail === 'function') {
+        try {
+          const existingUser = await auth.getUserByEmail(normalizedEmail);
+          if (existingUser) {
+            return res.status(409).json({
+              error: 'An account with this email already exists. Please sign in instead.',
+              code: 'auth/email-already-in-use',
+            });
+          }
+        } catch (authErr: any) {
+          // If code is 'auth/user-not-found', email is available to register!
+          if (authErr?.code !== 'auth/user-not-found') {
+            console.warn('[OTP] Check user error:', authErr?.message || authErr);
+          }
+        }
+      }
+
       const otp = generateOtp();
       const expires = Date.now() + 10 * 60 * 1000; // 10 minutes
-      otpStore.set(email.toLowerCase(), { otp, expires });
+      otpStore.set(normalizedEmail, { otp, expires });
 
-      console.log(`[OTP] ${email} → ${otp}`);
+      console.log(`[OTP] ${normalizedEmail} → ${otp}`);
 
       if (resend) {
         // Send real email via Resend
