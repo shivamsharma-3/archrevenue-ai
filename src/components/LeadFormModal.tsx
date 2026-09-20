@@ -89,20 +89,75 @@ export default function LeadFormModal({ isOpen, onClose, onSubmit, initialData }
       setEnrichStep('Calculating fit score & pre-filling card...');
 
 
-      // Derive lead name & company from domain/scraped title if missing
-      const urlHost = new URL(targetUrl).hostname.replace('www.', '');
-      const derivedCompany = data.companyName || urlHost.split('.')[0].toUpperCase();
+      // Derive clean company & contact details
+      const urlHost = new URL(targetUrl).hostname.replace(/^www\./, '');
+      const rawDomainName = urlHost.split('.')[0] || 'Company';
+      const cleanFallbackName = rawDomainName.charAt(0).toUpperCase() + rawDomainName.slice(1);
+      const derivedCompany = data.companyName || cleanFallbackName;
+
+      // Map industry directly to allowed dropdown options
+      const validIndustries = ["Technology", "Healthcare", "Finance", "Retail", "Manufacturing", "Real Estate", "Education", "Other"];
+      let mappedIndustry = data.categoryIndustry || data.industry || 'Technology';
+      if (!validIndustries.includes(mappedIndustry)) {
+        const lower = `${data.industry || ''} ${data.summary || ''}`.toLowerCase();
+        if (lower.includes('health') || lower.includes('pharma') || lower.includes('med')) mappedIndustry = 'Healthcare';
+        else if (lower.includes('fin') || lower.includes('bank') || lower.includes('invest') || lower.includes('crypto')) mappedIndustry = 'Finance';
+        else if (lower.includes('retail') || lower.includes('store') || lower.includes('shop') || lower.includes('ecommerce')) mappedIndustry = 'Retail';
+        else if (lower.includes('manufact') || lower.includes('industr')) mappedIndustry = 'Manufacturing';
+        else if (lower.includes('estate') || lower.includes('realt') || lower.includes('propert')) mappedIndustry = 'Real Estate';
+        else if (lower.includes('educat') || lower.includes('learn') || lower.includes('school')) mappedIndustry = 'Education';
+        else mappedIndustry = 'Technology';
+      }
+
+      // Map company size directly to allowed dropdown options
+      const validSizes = ['1-10', '11-50', '51-200', '201-1000', '1000+'];
+      let mappedCompanySize = data.companySize;
+      if (!validSizes.includes(mappedCompanySize as string)) {
+        if (data.businessMaturity === 'Enterprise') mappedCompanySize = '1000+';
+        else if (data.businessMaturity === 'Mature') mappedCompanySize = '201-1000';
+        else if (data.businessMaturity === 'Growth') mappedCompanySize = '11-50';
+        else mappedCompanySize = '1-10';
+      }
+
+      // Map urgency level directly to allowed dropdown options
+      const validUrgencies = ['Low', 'Medium', 'High', 'Critical'];
+      let mappedUrgency = data.urgency;
+      if (!validUrgencies.includes(mappedUrgency as string)) {
+        mappedUrgency = (data.opportunityScore && data.opportunityScore >= 75 ? 'High' : 'Medium') as any;
+      }
+
+      const derivedFullName = data.fullName && !data.fullName.includes('Contact')
+        ? data.fullName
+        : `${derivedCompany} Leadership`;
+
+      const derivedEmail = data.email || `contact@${urlHost}`;
+      const derivedPhone = data.phone || '';
 
       setFormData(prev => ({
         ...prev,
+        // Core Info
         website: targetUrl,
-        company: prev.company || derivedCompany,
-        fullName: prev.fullName || `${derivedCompany} Contact`,
-        industry: data.industry !== 'Unknown' ? data.industry : prev.industry,
-        companySize: (data.businessMaturity === 'Enterprise' ? '1000+' : data.businessMaturity === 'Mature' ? '201-1000' : '51-200') as any,
-        painPoint: data.painPoints?.[0] || prev.painPoint,
-        research: data,
+        company: derivedCompany,
+        fullName: derivedFullName,
+        email: derivedEmail,
+        phone: derivedPhone,
+
+        // Business Intel
+        companyType: prev.companyType || 'Prospect',
+        industry: mappedIndustry,
+        companySize: mappedCompanySize as any,
+        monthlyRevenue: data.monthlyRevenue || '$25k - $75k',
+        estimatedBudget: data.estimatedBudget || '$3,000 - $5,000',
+        leadSource: data.leadSource || 'Website Discovery',
+
+        // Qualification
+        painPoint: data.painPoint || data.painPoints?.[0] || 'Accelerating pipeline expansion and removing manual prospecting bottlenecks',
+        currentSolution: data.currentSolution || 'In-house custom stack / manual processes',
+        urgency: mappedUrgency as any,
+        interestedService: data.interestedService || 'Outbound Pipeline Engine',
         status: prev.status || 'new',
+
+        research: data,
         aiAnalysis: data.opportunityScore ? {
           score: data.opportunityScore,
           category: data.opportunityScore >= 75 ? 'Hot' : data.opportunityScore >= 50 ? 'Warm' : 'Cold',
@@ -112,6 +167,7 @@ export default function LeadFormModal({ isOpen, onClose, onSubmit, initialData }
           analyzedAt: new Date()
         } : prev.aiAnalysis
       }));
+
 
       toast.success(`Successfully enriched ${derivedCompany}!`);
     } catch (err: any) {

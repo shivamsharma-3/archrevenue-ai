@@ -288,11 +288,26 @@ export interface CompanyIntelligenceRecord {
   timeline?: { date: string; event: string; type: string }[];
   market?: { competitors: string[]; products: string[]; targetSegments: string[] };
   
+  // Enrichment & Profile fields
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  categoryIndustry?: string;
+  companySize?: string;
+  monthlyRevenue?: string;
+  estimatedBudget?: string;
+  leadSource?: string;
+  painPoint?: string;
+  currentSolution?: string;
+  urgency?: 'Low' | 'Medium' | 'High' | 'Critical';
+  interestedService?: string;
+
   // Evals debug info
   rawOutput?: any;
 }
 
 export type CompanyKnowledge = CompanyIntelligenceRecord;
+
 
 // ─── AOM: Revenue Opportunity (volatile computation) ───────────────────────────
 export interface BuyingWindow {

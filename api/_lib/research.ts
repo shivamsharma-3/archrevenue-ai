@@ -94,7 +94,24 @@ export async function researchCompany(url: string, userId: string): Promise<Comp
       
       const title = result.title || '';
       const text = result.content;
-      scrapedContext = `Page Title: ${title}\nPage Content:\n${text.substring(0, 8000)}`;
+
+      // Extract direct contact candidates using regex
+      const emailMatches = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+      const filteredEmails = Array.from(new Set(emailMatches.filter((e: string) => 
+        !/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i.test(e) &&
+        !e.includes('sentry') && !e.includes('webpack') && !e.includes('example.com')
+      )));
+
+      const phoneMatches = text.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/g) || [];
+      const filteredPhones = Array.from(new Set(phoneMatches.filter((p: string) => {
+        const digits = p.replace(/\D/g, '');
+        return digits.length >= 7 && digits.length <= 15;
+      })));
+
+      scrapedContext = `Page Title: ${title}\n` +
+        (filteredEmails.length > 0 ? `Detected Email Candidates on Page: ${filteredEmails.join(', ')}\n` : '') +
+        (filteredPhones.length > 0 ? `Detected Phone Candidates on Page: ${filteredPhones.join(', ')}\n` : '') +
+        `Page Content:\n${text.substring(0, 8000)}`;
       fetchSucceeded = true;
       
     } catch (jinaError: any) {
@@ -116,7 +133,15 @@ export async function researchCompany(url: string, userId: string): Promise<Comp
           const html = await fallbackResponse.text();
           if (html && html.length > 200) {
             const { title, metaDesc, text } = scrapeHtml(html);
-            scrapedContext = `Page Title: ${title}\nMeta Description: ${metaDesc}\nPage Content:\n${text}`;
+            const emailMatches = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+            const filteredEmails = Array.from(new Set(emailMatches.filter((e: string) => 
+              !/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i.test(e) &&
+              !e.includes('sentry') && !e.includes('webpack') && !e.includes('example.com')
+            )));
+
+            scrapedContext = `Page Title: ${title}\nMeta Description: ${metaDesc}\n` +
+              (filteredEmails.length > 0 ? `Detected Email Candidates on Page: ${filteredEmails.join(', ')}\n` : '') +
+              `Page Content:\n${text}`;
             fetchSucceeded = true;
           }
         }
@@ -130,39 +155,68 @@ export async function researchCompany(url: string, userId: string): Promise<Comp
 
   // ── Step 2: Build analysis prompt ───────────────────────────────────────
   const confidenceNote = fetchSucceeded
-    ? 'You have live website content. Base your analysis primarily on this.'
+    ? 'You have live website content. Base your analysis and contact extraction primarily on this.'
     : 'Website fetch failed. You only have the URL. Infer cautiously based on the domain name alone. Set confidenceLevel to "Low" and researchSource to "form-only".';
 
   const prompt = `
-You are a senior B2B revenue intelligence analyst. Your job is to extract STRUCTURED, EVIDENCE-BASED intelligence from real company data — not to generate optimistic guesses.
+You are a senior B2B revenue intelligence analyst. Your job is to extract comprehensive, STRUCTURED, EVIDENCE-BASED intelligence and lead enrichment fields from real company data.
 
 ${confidenceNote}
 
-${fetchSucceeded ? `Website content for ${targetUrl}:\n"""\n${scrapedContext}\n"""` : `Company URL: ${targetUrl}`}
+${fetchSucceeded ? `Website data for ${targetUrl}:\n"""\n${scrapedContext}\n"""` : `Company URL: ${targetUrl}`}
 
-RULES:
-- HONESTY FIRST (NO HALLUCINATIONS): If the website content is missing, thin, or you do not have enough specific data to determine what the company does, DO NOT invent an industry, target segment, or summary. You must output "Unknown" for industry and "Insufficient data to classify" for the summary. Do not guess based merely on the company name.
-- opportunityScore must reflect ACTUAL evidence: real growth signals, buying intent indicators, company maturity. Do NOT score high on hope.
-- hiringSignals: look for career pages, "We're hiring", job titles mentioned, team growth language. Empty array [] if none found.
-- businessMaturity: judge from language, team size, product sophistication, funding language, customer references.
-- confidenceLevel: "High" only if you extracted rich content. "Medium" if partial. "Low" if barely anything.
-- Be specific. Do NOT use generic phrases like "they may need help with X" without evidence.
-- painPoints must be inferred from what their business actually does and common friction in that niche. CRITICAL: Testimonials, portfolios, and case studies are proof of past success for their clients. NEVER invert these into pain points.
-- growthSignals: A portfolio or list of past clients is PROOF OF CAPABILITY, NOT a growth signal. Growth signals must be evidence of company expansion (e.g. 'We just opened a new office', 'We are hiring', funding rounds). Do not list testimonials or portfolios as growth signals.
+RULES FOR ENRICHMENT:
+- companyName: Clean formal company/brand name (e.g. "Neurowhale", "Arch Revenues", not all-caps).
+- fullName: Contact person, founder, CEO, director, or executive mentioned on site. If no individual name is found, output a professional role title like "Founder & CEO" or "Executive Leadership".
+- email: Primary contact or support email found on site. If detected email candidates exist above, prioritize them. If none on site, infer 'contact@<domain>'.
+- phone: Real contact phone number if found on site, or empty string "" if none.
+- categoryIndustry: MUST BE EXACTLY ONE OF: "Technology" | "Healthcare" | "Finance" | "Retail" | "Manufacturing" | "Real Estate" | "Education" | "Other".
+- industry: Specific vertical description (e.g. "Artificial Intelligence & Enterprise Autonomous Systems").
+- companySize: MUST BE EXACTLY ONE OF: "1-10" | "11-50" | "51-200" | "201-1000" | "1000+".
+- monthlyRevenue: Realistic estimated monthly revenue bracket (e.g. "$10k - $50k", "$50k - $150k", "$150k - $500k", "$500k+").
+- estimatedBudget: Estimated monthly budget for external services/software (e.g. "$2,500 - $5,000", "$5,000 - $15,000").
+- leadSource: "Website Discovery".
+- painPoint: Concise, punchy 1-2 sentence core business challenge or scaling bottleneck.
+- currentSolution: What they currently use to solve this (e.g. "In-house custom stack / manual processes", "Fragmented SaaS tools").
+- urgency: MUST BE EXACTLY ONE OF: "Low" | "Medium" | "High" | "Critical".
+- interestedService: Target service/solution offering of highest relevance (e.g. "Outbound Pipeline Engine", "B2B Client Acquisition", "AI Pipeline Integration").
+- services: Array of core services/products offered.
+- summary: 2-3 sentence factual overview.
+- opportunityScore: Integer 0-100 reflecting commercial viability and readiness.
+- painPoints: Array of 1-3 specific pain points with evidence.
+- growthSignals: Expansion/hiring/deployment proof.
+- hiringSignals: Career/team growth signals or [].
+- customerSegment: Target ICP of this company.
+- businessMaturity: 'Early-stage' | 'Growth' | 'Mature' | 'Enterprise' | 'Unknown'.
+- recommendedPitch: 1-2 sentence pitch angle grounded in what you actually found on the site.
+- confidenceLevel: 'High' | 'Medium' | 'Low'.
 
 Return ONLY this JSON, no markdown, no code blocks:
 {
-  "industry": "<specific industry vertical, e.g. 'B2B SaaS - Revenue Operations'>",
-  "services": ["<service 1>", "<service 2>", "<service 3>"],
-  "summary": "<2-3 sentence factual summary of what the company does, who their customers are, and how they make money>",
-  "opportunityScore": <integer 0-100, evidence-gated>,
-  "painPoints": ["<specific pain point 1 with evidence>", "<pain point 2>"],
-  "growthSignals": ["<specific growth signal with source>", "<signal 2>"],
-  "hiringSignals": ["<e.g. 'Hiring Senior AE – suggests sales expansion'>", "<or empty array>"],
-  "customerSegment": "<e.g. 'Mid-market SaaS companies, 50-500 employees, North America'>",
-  "businessMaturity": "<'Early-stage' | 'Growth' | 'Mature' | 'Enterprise' | 'Unknown'>",
-  "recommendedPitch": "<1-2 sentence pitch angle grounded in what you actually found on the site>",
-  "confidenceLevel": "<'High' | 'Medium' | 'Low'>",
+  "companyName": "<clean formal company name>",
+  "fullName": "<contact person name or professional role title>",
+  "email": "<primary email address>",
+  "phone": "<phone number or empty string>",
+  "categoryIndustry": "<Technology|Healthcare|Finance|Retail|Manufacturing|Real Estate|Education|Other>",
+  "industry": "<specific descriptive industry>",
+  "companySize": "<1-10|11-50|51-200|201-1000|1000+>",
+  "monthlyRevenue": "<e.g. $50k - $150k>",
+  "estimatedBudget": "<e.g. $5,000 - $15,000>",
+  "leadSource": "Website Discovery",
+  "painPoint": "<concise 1-2 sentence core challenge>",
+  "currentSolution": "<current tools or in-house setup>",
+  "urgency": "<Low|Medium|High|Critical>",
+  "interestedService": "<primary matching service offering>",
+  "services": ["<service 1>", "<service 2>"],
+  "summary": "<2-3 sentence factual summary>",
+  "opportunityScore": 75,
+  "painPoints": ["<pain point 1>"],
+  "growthSignals": ["<growth signal 1>"],
+  "hiringSignals": [],
+  "customerSegment": "<e.g. Mid-market SaaS and Enterprise AI adopters>",
+  "businessMaturity": "<Early-stage|Growth|Mature|Enterprise|Unknown>",
+  "recommendedPitch": "<pitch angle grounded in actual site content>",
+  "confidenceLevel": "<High|Medium|Low>",
   "researchSource": "${fetchSucceeded ? 'website' : 'form-only'}"
 }
 `.trim();
@@ -190,8 +244,67 @@ Return ONLY this JSON, no markdown, no code blocks:
   }
   opportunityScore = Math.min(100, Math.max(0, Math.round(opportunityScore)));
 
+  // Extract clean domain part for fallback
+  const urlHost = new URL(targetUrl).hostname.replace(/^www\./, '');
+  const domainParts = urlHost.split('.');
+  const rawName = domainParts[0] || 'Company';
+  const cleanFallbackName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+  const finalCompanyName = parsed.companyName && parsed.companyName !== 'Unknown'
+    ? parsed.companyName
+    : cleanFallbackName;
+
+  const finalFullName = parsed.fullName && parsed.fullName !== 'Unknown' && !parsed.fullName.includes('Contact')
+    ? parsed.fullName
+    : `${finalCompanyName} Leadership`;
+
+  const finalEmail = parsed.email || `contact@${urlHost}`;
+  const finalPhone = parsed.phone || '';
+
+  const validIndustries = ['Technology', 'Healthcare', 'Finance', 'Retail', 'Manufacturing', 'Real Estate', 'Education', 'Other'];
+  let finalCategory = parsed.categoryIndustry || 'Technology';
+  if (!validIndustries.includes(finalCategory)) {
+    const raw = `${parsed.industry || ''} ${parsed.summary || ''}`.toLowerCase();
+    if (raw.includes('health') || raw.includes('pharma') || raw.includes('med')) finalCategory = 'Healthcare';
+    else if (raw.includes('fin') || raw.includes('bank') || raw.includes('invest') || raw.includes('crypto')) finalCategory = 'Finance';
+    else if (raw.includes('retail') || raw.includes('store') || raw.includes('shop') || raw.includes('ecommerce')) finalCategory = 'Retail';
+    else if (raw.includes('manufact') || raw.includes('industr')) finalCategory = 'Manufacturing';
+    else if (raw.includes('estate') || raw.includes('realt') || raw.includes('propert')) finalCategory = 'Real Estate';
+    else if (raw.includes('educat') || raw.includes('learn') || raw.includes('school')) finalCategory = 'Education';
+    else finalCategory = 'Technology';
+  }
+
+  const validSizes = ['1-10', '11-50', '51-200', '201-1000', '1000+'];
+  let finalSize = parsed.companySize || '11-50';
+  if (!validSizes.includes(finalSize)) {
+    if (parsed.businessMaturity === 'Enterprise') finalSize = '1000+';
+    else if (parsed.businessMaturity === 'Mature') finalSize = '201-1000';
+    else if (parsed.businessMaturity === 'Growth') finalSize = '11-50';
+    else finalSize = '1-10';
+  }
+
+  const validUrgencies = ['Low', 'Medium', 'High', 'Critical'];
+  let finalUrgency = parsed.urgency || 'High';
+  if (!validUrgencies.includes(finalUrgency)) {
+    finalUrgency = opportunityScore >= 75 ? 'High' : 'Medium';
+  }
+
   const result = {
-    industry: parsed.industry || 'Unknown',
+    companyName: finalCompanyName,
+    fullName: finalFullName,
+    email: finalEmail,
+    phone: finalPhone,
+    categoryIndustry: finalCategory,
+    industry: finalCategory, // sets standard dropdown option
+    rawIndustry: parsed.industry || finalCategory,
+    companySize: finalSize,
+    monthlyRevenue: parsed.monthlyRevenue || '$25k - $75k',
+    estimatedBudget: parsed.estimatedBudget || '$3,000 - $5,000',
+    leadSource: parsed.leadSource || 'Website Discovery',
+    painPoint: parsed.painPoint || parsed.painPoints?.[0] || 'Accelerating qualified pipeline and eliminating manual outbound bottlenecks',
+    currentSolution: parsed.currentSolution || 'In-house custom stack / manual processes',
+    urgency: finalUrgency,
+    interestedService: parsed.interestedService || 'Outbound Pipeline Engine',
     services: Array.isArray(parsed.services) ? parsed.services : [],
     summary: parsed.summary || '',
     opportunityScore,
@@ -206,5 +319,5 @@ Return ONLY this JSON, no markdown, no code blocks:
   } as unknown as CompanyKnowledge;
 
   return result;
-
 }
+
