@@ -324,11 +324,8 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
 
         <div className="relative z-20 flex-col flex h-full justify-between">
           <div>
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-[#6366f1]/10 rounded-xl border border-[#6366f1]/20 flex items-center justify-center backdrop-blur-md">
-                <BrandLogo className="w-6 h-6 text-[#6366f1]" />
-              </div>
-              <span className="text-xl font-medium tracking-wide text-text-primary font-headline">RevScout</span>
+            <div className="flex items-center mb-6">
+              <BrandLogo variant="wordmark" className="h-9 w-auto" />
             </div>
 
             <div className="mb-8 mt-6">
@@ -366,11 +363,8 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
       {/* Right Column - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 relative bg-[#0a0a0b] z-20">
         {/* Mobile Header */}
-        <div className="absolute top-8 left-8 flex items-center space-x-3 lg:hidden">
-          <div className="w-8 h-8 bg-[#6366f1]/10 rounded-lg border border-[#6366f1]/20 flex items-center justify-center">
-            <BrandLogo className="w-5 h-5 text-[#6366f1]" />
-          </div>
-          <span className="text-lg font-medium tracking-wide text-white font-headline">RevScout</span>
+        <div className="absolute top-8 left-8 flex items-center lg:hidden">
+          <BrandLogo variant="wordmark" className="h-7 w-auto" />
         </div>
 
         <AnimatePresence mode="wait">
