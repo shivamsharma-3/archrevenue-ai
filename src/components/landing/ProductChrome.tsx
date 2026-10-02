@@ -18,10 +18,7 @@ export function ProductChrome({ variant = 'mission-briefing', className }: Produ
       <div className="p-5 md:p-6 bg-surface-card">
         {/* App Header Simulation */}
         <div className="flex justify-between items-center border-b border-border-default pb-4 mb-6">
-          <div className="flex items-center space-x-3">
-            <BrandLogo className="w-5 h-5" />
-            <span className="font-semibold text-[15px] tracking-wide">RevScout</span>
-          </div>
+          <BrandLogo variant="wordmark" size="sm" />
           <div className="text-[11px] uppercase tracking-widest text-text-tertiary font-mono">
             Monday, June 23
           </div>

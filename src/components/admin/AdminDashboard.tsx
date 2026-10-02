@@ -508,8 +508,8 @@ export default function AdminDashboard() {
       {/* Top nav bar */}
       <header className="h-12 bg-surface-card border-b border-border-default flex items-center px-6 shrink-0 z-20 sticky top-0">
         <div className="flex items-center gap-2 mr-8">
-          <BrandLogo className="w-5 h-5 text-text-primary" />
-          <span className="text-[13px] font-semibold text-text-primary tracking-tight">ArchAdmin</span>
+          <BrandLogo className="w-5 h-5" />
+          <span className="text-[13px] font-semibold text-text-primary tracking-tight">RevScout Admin</span>
           <span className="text-[10px] font-semibold px-1.5 py-0.5 bg-red-50 text-red-600 border border-red-200 rounded uppercase tracking-wider ml-1">Internal</span>
         </div>
 

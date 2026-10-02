@@ -64,7 +64,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
         <aside className="flex-1 w-full rounded-[var(--radius-card)] border border-border-default bg-surface-sidebar shadow-sm flex flex-col overflow-y-auto relative">
           
           <div className="h-[72px] flex items-center px-5 cursor-pointer border-b border-border-default" onClick={() => navigate('/dashboard')}>
-            <BrandLogo variant="wordmark" className="h-8 w-auto" />
+            <BrandLogo variant="wordmark" size="md" />
           </div>
           <div className="px-3 flex-1 pt-4">
             <p className="text-[10px] font-bold text-text-tertiary tracking-widest px-3 mb-2">MENU</p>

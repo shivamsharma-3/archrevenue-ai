@@ -102,10 +102,9 @@ export default function LandingPage() {
         )}
       >
         <div className="flex items-center justify-between px-6 md:px-12 py-5 max-w-[1200px] mx-auto">
-          <div className="flex items-center space-x-4">
-            <BrandLogo className="w-5 h-5 text-text-primary" />
-            <span className="text-[15px] font-display font-medium tracking-[0.2em] uppercase text-text-primary">RevScout</span>
-          </div>
+          <Link to="/" className="flex items-center hover:opacity-90 transition-opacity">
+            <BrandLogo variant="wordmark" size="md" />
+          </Link>
           
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center space-x-12 text-[12px] uppercase tracking-widest font-medium text-text-secondary">

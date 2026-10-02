@@ -325,7 +325,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
         <div className="relative z-20 flex-col flex h-full justify-between">
           <div>
             <div className="flex items-center mb-6">
-              <BrandLogo variant="wordmark" className="h-9 w-auto" />
+              <BrandLogo variant="wordmark" theme="dark" size="lg" />
             </div>
 
             <div className="mb-8 mt-6">
@@ -364,7 +364,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-24 relative bg-[#0a0a0b] z-20">
         {/* Mobile Header */}
         <div className="absolute top-8 left-8 flex items-center lg:hidden">
-          <BrandLogo variant="wordmark" className="h-7 w-auto" />
+          <BrandLogo variant="wordmark" theme="dark" size="md" />
         </div>
 
         <AnimatePresence mode="wait">

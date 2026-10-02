@@ -21,6 +21,7 @@
 @theme {
   --font-sans: "Inter", "Inter-fallback", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", "Outfit-fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-brand: "Syne", "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
   /* Surface Colors */
