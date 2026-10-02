@@ -49,7 +49,7 @@ export default function HelpCenterPage() {
     <Page>
       <PageHeader 
         title="Help Center" 
-        description="Search our knowledge base or browse categories to master ArchRevenue." 
+        description="Search our knowledge base or browse categories to master RevScout." 
       >
         <PageActions>
           <div className="relative w-[300px] group hidden md:block">
@@ -109,7 +109,7 @@ export default function HelpCenterPage() {
               Video Tutorials
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <VideoCard title="ArchRevenue Platform Tour in 5 Mins" duration="5:24" imgColor="from-indigo-100 to-indigo-50" />
+              <VideoCard title="RevScout Platform Tour in 5 Mins" duration="5:24" imgColor="from-indigo-100 to-indigo-50" />
               <VideoCard title="How to Master AI Cold Outreach" duration="8:12" imgColor="from-violet-100 to-violet-50" />
             </div>
           </section>
@@ -157,11 +157,11 @@ export default function HelpCenterPage() {
               </div>
               <h3 className="text-[17px] font-semibold mb-2 text-white">Still need help?</h3>
               <p className="text-[13px] text-slate-300 mb-5 leading-relaxed">
-                Our support team is available 24/7 to help you get the most out of ArchRevenue.
+                Our support team is available 24/7 to help you get the most out of RevScout.
               </p>
               <div className="space-y-3">
                 <a
-                  href="mailto:support@archrevenue.com"
+                  href="mailto:support@RevScout.com"
                   className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white py-3 px-4 rounded-[var(--radius-card)] text-[13px] font-semibold transition-colors"
                 >
                   <Mail className="w-4 h-4" /> Email Support

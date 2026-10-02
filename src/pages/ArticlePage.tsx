@@ -182,7 +182,7 @@ export default function ArticlePage() {
                 Our support team is available 24/7.
               </p>
               <a
-                href="mailto:support@archrevenue.com"
+                href="mailto:support@RevScout.com"
                 className="w-full flex items-center justify-center gap-2 bg-indigo-500 hover:bg-indigo-400 text-white py-2.5 px-4 rounded-[var(--radius-card)] text-[13px] font-semibold transition-colors"
               >
                 <Mail className="w-4 h-4" /> Email Support

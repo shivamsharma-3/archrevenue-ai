@@ -13,7 +13,7 @@ service cloud.firestore {
         request.auth.token.email.matches('.*admin.*') ||
         request.auth.token.email == 'testA_1781589145905@example.com' ||
         request.auth.token.email == 'analytics_tester_1781589555578@example.com' ||
-        request.auth.token.email == 'archrevenues@gmail.com'
+        request.auth.token.email == 'RevScouts@gmail.com'
       );
     }
 

@@ -41,8 +41,8 @@ export function EmailReviewModal({ isOpen, onClose, lead, onSendSuccess }: Email
         } else {
           setBody(emailContent);
           setInitialBody(emailContent);
-          setSubject(`ArchRevenue x ${lead.company || lead.fullName}`);
-          setInitialSubject(`ArchRevenue x ${lead.company || lead.fullName}`);
+          setSubject(`RevScout x ${lead.company || lead.fullName}`);
+          setInitialSubject(`RevScout x ${lead.company || lead.fullName}`);
         }
       }
       setError(null);

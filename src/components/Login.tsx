@@ -328,7 +328,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
               <div className="w-10 h-10 bg-[#6366f1]/10 rounded-xl border border-[#6366f1]/20 flex items-center justify-center backdrop-blur-md">
                 <BrandLogo className="w-6 h-6 text-[#6366f1]" />
               </div>
-              <span className="text-xl font-medium tracking-wide text-text-primary font-headline">ArchRevenue</span>
+              <span className="text-xl font-medium tracking-wide text-text-primary font-headline">RevScout</span>
             </div>
 
             <div className="mb-8 mt-6">
@@ -370,7 +370,7 @@ export default function Login({ initialIsRegistering = false }: LoginProps) {
           <div className="w-8 h-8 bg-[#6366f1]/10 rounded-lg border border-[#6366f1]/20 flex items-center justify-center">
             <BrandLogo className="w-5 h-5 text-[#6366f1]" />
           </div>
-          <span className="text-lg font-medium tracking-wide text-white font-headline">ArchRevenue</span>
+          <span className="text-lg font-medium tracking-wide text-white font-headline">RevScout</span>
         </div>
 
         <AnimatePresence mode="wait">

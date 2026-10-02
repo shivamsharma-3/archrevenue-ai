@@ -5,7 +5,7 @@ import '../styles/landing.css';
 
 export default function PrivacyPolicy() {
   useEffect(() => {
-    document.title = "Privacy Policy | ArchRevenue";
+    document.title = "Privacy Policy | RevScout";
   }, []);
 
   return (
@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">Data Ownership</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>When you use ArchRevenue, you retain complete ownership of all data you input into the platform. This includes your CRM records, lead data, seller profile, and generated outreach materials.</p>
+                <p>When you use RevScout, you retain complete ownership of all data you input into the platform. This includes your CRM records, lead data, seller profile, and generated outreach materials.</p>
                 <div className="border border-border-default bg-surface-card p-6">
                   <p className="text-text-primary font-medium">We will never sell your data to third parties, and your proprietary lead data is strictly isolated and never shared across different customer workspaces.</p>
                 </div>
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">AI Processing Boundaries</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>ArchRevenue operates an enterprise dual-tier AI architecture: a high-speed Standard AI Engine powering our Free Tier, and an Enterprise Advanced AI Engine powering our Paid Tiers for real-time lead intelligence, scoring, and Revenue Strategy insights.</p>
+                <p>RevScout operates an enterprise dual-tier AI architecture: a high-speed Standard AI Engine powering our Free Tier, and an Enterprise Advanced AI Engine powering our Paid Tiers for real-time lead intelligence, scoring, and Revenue Strategy insights.</p>
                 <div className="border-l-2 border-text-primary pl-6 py-2">
                   <h4 className="text-[15px] font-medium text-text-primary mb-2 flex items-center gap-2"><Lock className="w-4 h-4" strokeWidth={1.5} /> Zero-Training Policy</h4>
                   <p className="text-[14px]">The data sent to our AI processing endpoints via Enterprise APIs is used strictly for immediate inference. Your proprietary lead data and sales context are explicitly opted out and are never stored or used to train public AI models.</p>

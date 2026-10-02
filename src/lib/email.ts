@@ -12,7 +12,7 @@ function encodeBase64Url(str: string) {
 export async function sendEmail(to: string, subject: string, body: string, accessToken: string, threadId?: string, previousMessageId?: string) {
   const encodedSubject = btoa(unescape(encodeURIComponent(subject)));
   
-  const messageId = `<${crypto.randomUUID()}@archrevenue.local>`;
+  const messageId = `<${crypto.randomUUID()}@revscout.local>`;
   
   const emailLines = [
     `To: ${to}`,

@@ -21,7 +21,7 @@ type PaymentTab = 'razorpay' | 'upi' | 'paypal';
 
 export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalProps) {
   const [activeTab, setActiveTab] = useState<PaymentTab>('razorpay');
-  const [config, setConfig] = useState({ upiVpa: 'archrevenue@upi', upiName: 'ArchRevenue', razorpayKeyId: 'rzp_test_ArchRevenue', paypalClientId: 'sb' });
+  const [config, setConfig] = useState({ upiVpa: 'RevScout@upi', upiName: 'RevScout', razorpayKeyId: 'rzp_test_RevScout', paypalClientId: 'sb' });
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [utrNumber, setUtrNumber] = useState('');
   const [isSubmittingUpi, setIsSubmittingUpi] = useState(false);
@@ -50,7 +50,7 @@ export function PaymentModal({ isOpen, onClose, item, onSuccess }: PaymentModalP
         key: config.razorpayKeyId,
         amount: Math.round(item.priceInr * 100), // In paise
         currency: 'INR',
-        name: 'ArchRevenue Intelligence',
+        name: 'RevScout Intelligence',
         description: item.name,
         prefill: {
           email: user?.email || '',

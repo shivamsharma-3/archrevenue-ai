@@ -1,6 +1,7 @@
 import React from 'react';
-import { Target, Zap, Activity } from 'lucide-react';
+import { Zap, Activity } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import BrandLogo from '../BrandLogo';
 
 export type ChromeVariant = 'mission-briefing' | 'buying-signals';
 
@@ -18,8 +19,8 @@ export function ProductChrome({ variant = 'mission-briefing', className }: Produ
         {/* App Header Simulation */}
         <div className="flex justify-between items-center border-b border-border-default pb-4 mb-6">
           <div className="flex items-center space-x-3">
-            <Target className="w-5 h-5 text-text-primary" strokeWidth={1.5} />
-            <span className="font-semibold text-[15px] tracking-wide">ArchRevenue</span>
+            <BrandLogo className="w-5 h-5" />
+            <span className="font-semibold text-[15px] tracking-wide">RevScout</span>
           </div>
           <div className="text-[11px] uppercase tracking-widest text-text-tertiary font-mono">
             Monday, June 23

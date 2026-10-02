@@ -10,7 +10,7 @@ export async function bookMeeting(lead: Lead, accessToken: string) {
   end.setHours(10, 30, 0, 0);
 
   const event = {
-    summary: `Discovery Call: ArchRevenue x ${lead.company || lead.fullName}`,
+    summary: `Discovery Call: RevScout x ${lead.company || lead.fullName}`,
     description: `Automated booking via AI Meeting Assistant.\nLead: ${lead.fullName}\nEmail: ${lead.email || 'N/A'}\nPhone: ${lead.phone || 'N/A'}\nPain Point: ${lead.painPoint || 'N/A'}\n\nRecommended Action: ${lead.aiAnalysis?.recommendedAction || ''}`,
     start: {
       dateTime: tomorrow.toISOString(),

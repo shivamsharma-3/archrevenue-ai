@@ -19,7 +19,7 @@ export default function DesignSystemPage() {
     <Page>
       <PageHeader 
         title="Design System" 
-        description="The source of truth for ArchRevenue's premium UI components. All pages should be assembled using these foundational blocks."
+        description="The source of truth for RevScout's premium UI components. All pages should be assembled using these foundational blocks."
         breadcrumbs={<AppBadge variant="primary">Internal Tooling</AppBadge>}
       >
         <PageActions>

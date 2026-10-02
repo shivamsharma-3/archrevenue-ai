@@ -5,7 +5,7 @@ import '../styles/landing.css';
 
 export default function SecurityTrust() {
   useEffect(() => {
-    document.title = "Security & Trust | ArchRevenue";
+    document.title = "Security & Trust | RevScout";
   }, []);
 
   return (
@@ -40,7 +40,7 @@ export default function SecurityTrust() {
                   <p>&#125;</p>
                 </div>
 
-                <p>It is structurally impossible for another ArchRevenue user to query or access your leads, profile, or token usage data.</p>
+                <p>It is structurally impossible for another RevScout user to query or access your leads, profile, or token usage data.</p>
               </div>
             </section>
 
@@ -50,7 +50,7 @@ export default function SecurityTrust() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">Cloud Infrastructure & Encryption</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>ArchRevenue is built on Google Cloud Platform (GCP). All data is encrypted both in transit (via modern TLS 1.3) and at rest (using AES-256 encryption).</p>
+                <p>RevScout is built on Google Cloud Platform (GCP). All data is encrypted both in transit (via modern TLS 1.3) and at rest (using AES-256 encryption).</p>
                 <p>We do not manage our own physical servers. By leveraging GCP's global infrastructure, we inherit their world-class physical security, compliance certifications (SOC 2, ISO 27001), and DDoS protection.</p>
               </div>
             </section>
@@ -76,7 +76,7 @@ export default function SecurityTrust() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">Authentication</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>We utilize Google Workspace SSO (Single Sign-On) alongside Firebase Authentication. ArchRevenue never stores, hashes, or handles your passwords. Your login security inherits the 2FA and security policies you have configured on your Google account.</p>
+                <p>We utilize Google Workspace SSO (Single Sign-On) alongside Firebase Authentication. RevScout never stores, hashes, or handles your passwords. Your login security inherits the 2FA and security policies you have configured on your Google account.</p>
               </div>
             </section>
 
@@ -86,7 +86,7 @@ export default function SecurityTrust() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">Right to Erasure</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>You have full control over your data lifecycle. The ArchRevenue platform includes a one-click <strong>Account Deletion</strong> mechanism that cryptographically severs your authentication ties and triggers a cascade deletion of all tenant data across our Firestore databases.</p>
+                <p>You have full control over your data lifecycle. The RevScout Platform includes a one-click <strong>Account Deletion</strong> mechanism that cryptographically severs your authentication ties and triggers a cascade deletion of all tenant data across our Firestore databases.</p>
                 <p>Once triggered, your CRM records, profile configurations, and identity are immediately and irreversibly purged from our active systems.</p>
               </div>
             </section>

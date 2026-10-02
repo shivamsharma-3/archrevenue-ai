@@ -67,7 +67,7 @@ export default function Shell({ children, hideSidebar = false, onMenuChange, pro
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mr-3 shadow-md">
               <BrandLogo className="w-5 h-5 text-white" />
             </div>
-            <span className="text-text-primary font-semibold tracking-wide font-display text-[16px]">ArchRevenue</span>
+            <span className="text-text-primary font-semibold tracking-wide font-display text-[16px]">RevScout</span>
           </div>
           <div className="px-3 flex-1 pt-4">
             <p className="text-[10px] font-bold text-text-tertiary tracking-widest px-3 mb-2">MENU</p>

@@ -11,10 +11,10 @@ import BrandLogo from '../components/BrandLogo';
 const FAQS = [
   {
     question: "Is this a CRM replacement?",
-    answer: "No. ArchRevenue monitors your leads for commercial signals and tells you when and why to act. It works alongside your existing CRM, not instead of it."
+    answer: "No. RevScout monitors your leads for commercial signals and tells you when and why to act. It works alongside your existing CRM, not instead of it."
   },
   {
-    question: "How does ArchRevenue find buying signals?",
+    question: "How does RevScout find buying signals?",
     answer: "The engine continuously monitors publicly available information — hiring pages, press releases, funding announcements, and technology data — and compares current state against historical baselines to detect meaningful changes."
   },
   {
@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     question: "How is this different from LinkedIn Sales Navigator or Apollo?",
-    answer: "Those tools help you find leads. ArchRevenue tells you which leads in your existing list are worth contacting today and exactly what to say. The input is your list. The output is a daily decision."
+    answer: "Those tools help you find leads. RevScout tells you which leads in your existing list are worth contacting today and exactly what to say. The input is your list. The output is a daily decision."
   }
 ];
 
@@ -36,18 +36,18 @@ export default function LandingPage() {
   // SEO Injection & Scroll Listener
   useEffect(() => {
     // 1. Ultra-Advanced SEO Metadata Injection
-    document.title = "ArchRevenue | The Executive Revenue Intelligence Standard";
+    document.title = "RevScout | The Executive Revenue Intelligence Standard";
     
     const metaDescription = document.querySelector('meta[name="description"]') as HTMLMetaElement;
     if (metaDescription) {
-      metaDescription.content = "ArchRevenue is the premium AI intelligence layer for high-performance sales teams. Detect buying signals, forecast with precision, and control the flow of revenue.";
+      metaDescription.content = "RevScout is the premium AI intelligence layer for high-performance sales teams. Detect buying signals, forecast with precision, and control the flow of revenue.";
     }
 
     // 2. Structured Data (JSON-LD) for Rich Snippets
     const schemaOrgJSONLD = {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "ArchRevenue",
+      "name": "RevScout",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "offers": {
@@ -55,7 +55,7 @@ export default function LandingPage() {
         "price": PRICING_CONFIG.STARTER_PRICE,
         "priceCurrency": "USD"
       },
-      "description": "ArchRevenue is an AI-powered revenue intelligence platform that detects buying signals and prioritizes sales outreach."
+      "description": "RevScout is an AI-powered revenue intelligence platform that detects buying signals and prioritizes sales outreach."
     };
 
     let script = document.querySelector('#seo-schema') as HTMLScriptElement;
@@ -104,7 +104,7 @@ export default function LandingPage() {
         <div className="flex items-center justify-between px-6 md:px-12 py-5 max-w-[1200px] mx-auto">
           <div className="flex items-center space-x-4">
             <BrandLogo className="w-5 h-5 text-text-primary" />
-            <span className="text-[15px] font-display font-medium tracking-[0.2em] uppercase text-text-primary">ArchRevenue</span>
+            <span className="text-[15px] font-display font-medium tracking-[0.2em] uppercase text-text-primary">RevScout</span>
           </div>
           
           {/* Desktop Nav */}
@@ -157,7 +157,7 @@ export default function LandingPage() {
                 <span className="text-text-secondary">And exactly why.</span>
               </h1>
               <p className="text-[17px] font-body text-text-secondary max-w-[500px] mb-12 leading-[1.8] font-light">
-                ArchRevenue continuously monitors your pipeline for buying signals. It acts as an autonomous intelligence layer, surfacing the exact accounts ready to close before your competition even knows they exist.
+                RevScout continuously monitors your pipeline for buying signals. It acts as an autonomous intelligence layer, surfacing the exact accounts ready to close before your competition even knows they exist.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 mb-8">
                 <Link
@@ -202,7 +202,7 @@ export default function LandingPage() {
             They do not dictate strategy.
           </h2>
           <p className="text-[18px] text-text-secondary leading-[1.8] font-light max-w-[600px] mx-auto">
-            You possess a list and a CRM. Yet every morning begins identically: reviewing stagnant data, guessing who is warm, and hoping you haven't missed a critical window. ArchRevenue changes the paradigm by monitoring reality, not just records.
+            You possess a list and a CRM. Yet every morning begins identically: reviewing stagnant data, guessing who is warm, and hoping you haven't missed a critical window. RevScout changes the paradigm by monitoring reality, not just records.
           </p>
         </section>
 
@@ -214,7 +214,7 @@ export default function LandingPage() {
                 {
                   num: "01",
                   title: "Establish the Baseline",
-                  body: "Integrate your existing CRM or upload target accounts. ArchRevenue instantly catalogs current leadership, technology, and hiring baselines."
+                  body: "Integrate your existing CRM or upload target accounts. RevScout instantly catalogs current leadership, technology, and hiring baselines."
                 },
                 {
                   num: "02",
@@ -466,14 +466,14 @@ export default function LandingPage() {
           <div className="flex items-center space-x-3">
             <BrandLogo className="w-5 h-5 text-text-primary" />
             <span className="text-[11px] uppercase tracking-[0.2em] text-text-secondary font-medium">
-              © {new Date().getFullYear()} Arch Technologies
+              © {new Date().getFullYear()} RevScout Technologies
             </span>
           </div>
           <div className="flex items-center space-x-8 text-[11px] uppercase tracking-widest text-text-secondary font-medium">
             <Link to="/privacy" className="hover:text-text-primary transition-colors">Privacy</Link>
             <Link to="/terms" className="hover:text-text-primary transition-colors">Terms</Link>
             <Link to="/security" className="hover:text-text-primary transition-colors">Security</Link>
-            <a href="mailto:contact@archrevenue.com" className="hover:text-text-primary transition-colors">Contact</a>
+            <a href="mailto:contact@RevScout.com" className="hover:text-text-primary transition-colors">Contact</a>
           </div>
         </div>
       </footer>

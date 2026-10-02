@@ -85,10 +85,10 @@ export default function CommunityForumPage() {
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-indigo-500/20 blur-3xl rounded-full pointer-events-none" />
         <div className="relative z-10 max-w-2xl">
           <h1 className="text-[32px] md:text-[40px] font-bold text-text-primary tracking-tight font-display mb-4">
-            ArchRevenue Community
+            RevScout Community
           </h1>
           <p className="text-[16px] text-text-secondary leading-relaxed mb-8">
-            Connect with other sales professionals, share outreach strategies, and get help from the ArchRevenue team.
+            Connect with other sales professionals, share outreach strategies, and get help from the RevScout team.
           </p>
           <div className="relative w-full sm:w-[400px] group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

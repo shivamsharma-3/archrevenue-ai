@@ -1,6 +1,6 @@
-# ArchRevenue
+# RevScout
 
-ArchRevenue is a modern, AI-powered B2B revenue intelligence platform designed to secure, score, and manage leads autonomously through secure backend processing.
+RevScout is a modern, AI-powered B2B revenue intelligence platform designed to secure, score, and manage leads autonomously through secure backend processing.
 
 ---
 
@@ -110,4 +110,4 @@ npm run build
 
 ## License
 
-All rights reserved. ArchRevenue.
+All rights reserved. RevScout.

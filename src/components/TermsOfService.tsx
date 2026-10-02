@@ -5,7 +5,7 @@ import '../styles/landing.css';
 
 export default function TermsOfService() {
   useEffect(() => {
-    document.title = "Terms of Service | ArchRevenue";
+    document.title = "Terms of Service | RevScout";
   }, []);
 
   return (
@@ -19,7 +19,7 @@ export default function TermsOfService() {
               Terms of Service
             </h1>
             <p className="text-[18px] font-body text-text-secondary leading-[1.8] font-light max-w-[600px]">
-              Rules of engagement for using the ArchRevenue platform.
+              Rules of engagement for using the RevScout Platform.
             </p>
           </div>
 
@@ -31,7 +31,7 @@ export default function TermsOfService() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">1. Early Access & Availability</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>ArchRevenue is currently in an Early Access phase. By participating in this phase, you acknowledge that the platform is actively evolving and receiving rapid updates.</p>
+                <p>RevScout is currently in an Early Access phase. By participating in this phase, you acknowledge that the platform is actively evolving and receiving rapid updates.</p>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Features may be modified, upgraded, or optimized based on user feedback.</li>
                   <li>While we strive for 99.9% uptime, occasional maintenance windows or service upgrades may occur to enhance the AI engine.</li>
@@ -45,7 +45,7 @@ export default function TermsOfService() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">2. Subscription & API Tokens</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>The core ArchRevenue CRM is provided on a subscription basis. Our advanced AI features (Lead Intelligence, Deal Coach, Outreach Generation) consume compute resources and are subject to hard API token limits based on your tier.</p>
+                <p>The core RevScout CRM is provided on a subscription basis. Our advanced AI features (Lead Intelligence, Deal Coach, Outreach Generation) consume compute resources and are subject to hard API token limits based on your tier.</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="border border-border-default p-5 bg-surface-card rounded-lg">
@@ -83,7 +83,7 @@ export default function TermsOfService() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">3. Acceptable Use Policy</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>You agree not to use ArchRevenue to:</p>
+                <p>You agree not to use RevScout to:</p>
                 <ul className="list-disc pl-5 space-y-2">
                   <li>Generate or distribute malicious, illegal, or highly regulated content.</li>
                   <li>Attempt to reverse engineer the AI scoring models or web-scraping infrastructure.</li>
@@ -102,8 +102,8 @@ export default function TermsOfService() {
                 <h2 className="text-[22px] font-display font-medium text-text-primary">4. Warranty & Liability</h2>
               </div>
               <div className="text-[15px] font-light text-text-secondary leading-[1.8] space-y-6">
-                <p>ArchRevenue provides an AI-assisted intelligence layer. The platform does not guarantee any specific financial or revenue outcomes. You are solely responsible for reviewing any AI-generated communication before it is sent to a prospect.</p>
-                <p>In no event shall ArchRevenue be liable for any indirect, incidental, or consequential damages arising out of your use or inability to use the platform.</p>
+                <p>RevScout provides an AI-assisted intelligence layer. The platform does not guarantee any specific financial or revenue outcomes. You are solely responsible for reviewing any AI-generated communication before it is sent to a prospect.</p>
+                <p>In no event shall RevScout be liable for any indirect, incidental, or consequential damages arising out of your use or inability to use the platform.</p>
               </div>
             </section>
 

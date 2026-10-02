@@ -10,7 +10,7 @@ const db = getFirestore(app);
 async function deleteAllNonAdmins() {
   try {
     console.log('Logging in as admin...');
-    await signInWithEmailAndPassword(auth, 'archrevenues@gmail.com', 'Shiv@321');
+    await signInWithEmailAndPassword(auth, 'RevScouts@gmail.com', 'Shiv@321');
     console.log('Logged in successfully!');
     
     console.log('Fetching users...');

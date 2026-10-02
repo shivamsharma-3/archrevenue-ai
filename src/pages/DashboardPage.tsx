@@ -122,7 +122,7 @@ export default function DashboardPage() {
         <PageHeader title="Command Center" />
         <PageContent className="items-center justify-center min-h-[60vh]">
           <EmptyState
-            title="Welcome to ArchRevenue"
+            title="Welcome to RevScout"
             description="Your pipeline is currently empty. Get started by importing your existing leads or creating your first manual lead."
             action={
               <div className="flex items-center gap-3 mt-4">

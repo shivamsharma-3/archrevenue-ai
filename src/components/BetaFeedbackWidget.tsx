@@ -74,7 +74,7 @@ export function BetaFeedbackWidget() {
             "bg-surface-card border border-border-default text-text-secondary hover:border-blue-300 hover:text-blue-600",
             "hover:shadow-xl hover:shadow-blue-100"
           )}
-          title="Help us improve ArchRevenue"
+          title="Help us improve RevScout"
         >
           {/* Pulse ring */}
           {isPulsing && (
@@ -92,7 +92,7 @@ export function BetaFeedbackWidget() {
         {/* Hover tooltip */}
         <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
           <div className="bg-surface-inverse text-surface-card text-xs font-medium px-3 py-1.5 rounded-[var(--radius-button)] whitespace-nowrap shadow-lg">
-            Help us improve ArchRevenue
+            Help us improve RevScout
           </div>
           <div className="w-2 h-2 bg-surface-inverse rotate-45 ml-auto mr-4 -mt-1" />
         </div>
@@ -103,7 +103,7 @@ export function BetaFeedbackWidget() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-lg font-bold text-text-primary">Share Feedback</h3>
-              <p className="text-xs text-text-secondary mt-0.5">Help us improve ArchRevenue</p>
+              <p className="text-xs text-text-secondary mt-0.5">Help us improve RevScout</p>
             </div>
           </div>
           

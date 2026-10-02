@@ -199,7 +199,7 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                     label="Company Name *"
                     value={profile.companyName || ''}
                     onChange={e => update('companyName', e.target.value)}
-                    placeholder="Arch Revenues"
+                    placeholder="RevScout"
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <AppInput
@@ -207,7 +207,7 @@ export default function CompanyProfileWizard({ isOpen, onComplete, onSkip, initi
                       type="url"
                       value={profile.website || ''}
                       onChange={e => update('website', e.target.value)}
-                      placeholder="https://archrevenues.com"
+                      placeholder="https://RevScouts.com"
                     />
                     <AppInput
                       label="Your Industry"

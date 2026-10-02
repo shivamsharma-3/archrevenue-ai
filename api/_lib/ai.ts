@@ -12,7 +12,7 @@ export { callAI, callGroq, callGemini, getUserPlanTier };
 
 function buildSellerContext(profile: SellerProfile): string {
   const lines: string[] = [
-    `SELLER PROFILE (the company sending this outreach — Arch Revenues):`,
+    `SELLER PROFILE (the company sending this outreach — RevScout):`,
     `- Company: ${profile.companyName}`,
     `- Primary Offer: ${profile.primaryOffer}`,
   ];
@@ -67,10 +67,10 @@ ${leadCtx}
 
 ${researchCtx}
 
-OUTREACH TASK: Act like a top-performing SDR. Write three pieces of outreach from ${profile?.companyName ?? 'Arch Revenues'} to ${leadName || 'the prospect'} that sound like a real human.
+OUTREACH TASK: Act like a top-performing SDR. Write three pieces of outreach from ${profile?.companyName ?? 'RevScout'} to ${leadName || 'the prospect'} that sound like a real human.
 
 MANDATORY RULES:
-1. WE are ${profile?.companyName ?? 'Arch Revenues'}. THEY are the prospect. Never pitch their own services back to them.
+1. WE are ${profile?.companyName ?? 'RevScout'}. THEY are the prospect. Never pitch their own services back to them.
 2. NO HALLUCINATIONS AND NO HEDGING: If website data is thin or "Unknown", DO NOT invent their company type, business model, or mission. DO NOT use hedging language ("seems", "likely", "might be", "appears to"). If you lack specific data, use confident but broader problem statements instead of guessing incorrectly.
 3. ADAPT TO THEIR BUSINESS MODEL: Condition your pitch on the LEAD'S actual company type (e.g., SaaS, IT Services, Agency). If our Offer Description uses static examples like "agencies", DO NOT blindly copy-paste that if the prospect is a different business type. Adapt the language so it makes sense for THIS specific prospect.
 4. FORBIDDEN phrases (instantly fails): ${forbiddenPhrases}. No corporate jargon. No AI buzzwords. No generic sales language.
@@ -231,7 +231,7 @@ export async function scoreLead(lead: Lead, userId: string, profile?: SellerProf
   const hasRealResearch = research?.researchSource === 'website' && research?.confidenceLevel !== 'Low';
   const evidence        = buildScoringEvidence(lead, research, profile ?? null);
 
-  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
+  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as RevScout, a B2B revenue intelligence platform.';
   const leadCtx    = buildLeadContext(lead);
   const researchCtx = research
     ? buildResearchContext(research)
@@ -435,7 +435,7 @@ export async function regenerateOutreach(lead: Lead, userId: string, profile?: S
   }
 
   const research = lead.research ?? null;
-  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
+  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as RevScout, a B2B revenue intelligence platform.';
   const leadCtx    = buildLeadContext(lead);
   const researchCtx = research
     ? buildResearchContext(research)
@@ -570,7 +570,7 @@ LATEST NOTES:
 ${notesContext}
 
 SELLER CONTEXT:
-${sellerProfile ? buildSellerContext(sellerProfile) : '- Seller: Arch Revenues\\n- Offer: B2B Revenue Platform'}
+${sellerProfile ? buildSellerContext(sellerProfile) : '- Seller: RevScout\\n- Offer: B2B Revenue Platform'}
 
 RULES:
 1. Tasks must be SHORT, specific, and immediately actionable (start with a verb)
@@ -634,7 +634,7 @@ export async function generateDealCoach(lead: Lead, userId: string, sellerProfil
   const analysis = lead.aiAnalysis ?? null;
   const notes = (lead.notes ?? []).slice(-5).map(n => `- [${n.type || 'Note'}] ${n.content}`).join('\n');
 
-  const sellerCtx = sellerProfile ? buildSellerContext(sellerProfile) : 'SELLER: Arch Revenues — B2B Revenue Intelligence Platform';
+  const sellerCtx = sellerProfile ? buildSellerContext(sellerProfile) : 'SELLER: RevScout — B2B Revenue Intelligence Platform';
   const leadCtx = buildLeadContext(lead);
   const researchCtx = research ? buildResearchContext(research) : 'No website research available.';
 
@@ -705,7 +705,7 @@ export async function generateSingleOutreach(
   }
 
   const research = lead.research ?? null;
-  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as Arch Revenues, a B2B revenue intelligence platform.';
+  const sellerCtx  = profile ? buildSellerContext(profile) : 'SELLER PROFILE: Not configured. Treat as RevScout, a B2B revenue intelligence platform.';
   const leadCtx    = buildLeadContext(lead);
   const researchCtx = research
     ? buildResearchContext(research)
@@ -716,7 +716,7 @@ export async function generateSingleOutreach(
   let typePrompt = '';
   if (type === 'email') {
     typePrompt = `
-OUTREACH TASK: Write a casual, human-sounding sales outreach email from ${profile?.companyName ?? 'Arch Revenues'} to ${lead.fullName || 'the prospect'}.
+OUTREACH TASK: Write a casual, human-sounding sales outreach email from ${profile?.companyName ?? 'RevScout'} to ${lead.fullName || 'the prospect'}.
 RULES:
 1. Max 80 words. No buzzwords or corporate jargon.
 2. Strictly follow this template:
@@ -738,7 +738,7 @@ RULES:
     `.trim();
   } else if (type === 'linkedin') {
     typePrompt = `
-OUTREACH TASK: Write a short, highly personalized LinkedIn connection request message from ${profile?.companyName ?? 'Arch Revenues'} to ${lead.fullName || 'the prospect'}.
+OUTREACH TASK: Write a short, highly personalized LinkedIn connection request message from ${profile?.companyName ?? 'RevScout'} to ${lead.fullName || 'the prospect'}.
 RULES:
 1. Under 220 characters total. Direct, casual, and human.
 2. Reference one growth, hiring, or business signal.
@@ -746,7 +746,7 @@ RULES:
     `.trim();
   } else {
     typePrompt = `
-OUTREACH TASK: Write a cold call script for calling ${lead.fullName || 'the prospect'} on behalf of ${profile?.companyName ?? 'Arch Revenues'}.
+OUTREACH TASK: Write a cold call script for calling ${lead.fullName || 'the prospect'} on behalf of ${profile?.companyName ?? 'RevScout'}.
 RULES:
 1. Include Opener, Value Prop (ties their pain to our offer), and a low-friction CTA.
 2. NO HALLUCINATIONS: Do not invent their business model, do not hedge, do not copy-paste 'agencies' if they aren't one.

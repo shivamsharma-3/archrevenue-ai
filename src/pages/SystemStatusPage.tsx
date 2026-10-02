@@ -65,7 +65,7 @@ export default function SystemStatusPage() {
     <Page>
       <PageHeader 
         title="System Status" 
-        description="Live operational status of ArchRevenue services."
+        description="Live operational status of RevScout services."
         breadcrumbs={
           <button
             onClick={() => navigate('/help')}
@@ -87,7 +87,7 @@ export default function SystemStatusPage() {
           {isAllGood ? 'All Systems Operational' : (overall === 'degraded' ? 'Degraded Performance' : 'System Offline')}
         </h1>
         <p className="text-[15px] text-text-secondary font-medium">
-          {isAllGood ? 'ArchRevenue is operating normally. Metrics are updating in real-time.' : 'We are currently experiencing connection issues.'}
+          {isAllGood ? 'RevScout is operating normally. Metrics are updating in real-time.' : 'We are currently experiencing connection issues.'}
         </p>
       </div>
 

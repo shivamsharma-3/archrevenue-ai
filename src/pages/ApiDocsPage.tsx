@@ -54,7 +54,7 @@ export default function ApiDocsPage() {
     <Page>
       <PageHeader 
         title="API Documentation" 
-        description="Build custom integrations and automate your pipeline with the ArchRevenue REST API."
+        description="Build custom integrations and automate your pipeline with the RevScout REST API."
         breadcrumbs={
           <button
             onClick={() => navigate('/help')}
@@ -96,7 +96,7 @@ export default function ApiDocsPage() {
               API Documentation
             </h1>
             <p className="text-[16px] text-text-tertiary leading-relaxed mb-8">
-              Build custom integrations and automate your pipeline with the ArchRevenue REST API. Our API is predictable, resource-oriented, and returns JSON-encoded responses.
+              Build custom integrations and automate your pipeline with the RevScout REST API. Our API is predictable, resource-oriented, and returns JSON-encoded responses.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
@@ -125,7 +125,7 @@ export default function ApiDocsPage() {
             </p>
             <div className="bg-[#0f172a] rounded-[var(--radius-card)] p-5 mb-4 overflow-x-auto">
               <pre className="text-[13px] text-slate-300 font-mono">
-<span className="text-pink-400">curl</span> https://api.archrevenue.com/v1/leads \<br/>
+<span className="text-pink-400">curl</span> https://api.RevScout.com/v1/leads \<br/>
   -H <span className="text-emerald-300">"Authorization: Bearer sk_live_your_api_key_here"</span>
               </pre>
             </div>
@@ -185,7 +185,7 @@ export default function ApiDocsPage() {
 
             <div className="bg-[#0f172a] rounded-[var(--radius-card)] p-5 overflow-x-auto mb-6">
               <pre className="text-[13px] text-slate-300 font-mono">
-<span className="text-pink-400">curl</span> -X POST https://api.archrevenue.com/v1/leads \<br/>
+<span className="text-pink-400">curl</span> -X POST https://api.RevScout.com/v1/leads \<br/>
   -H <span className="text-emerald-300">"Authorization: Bearer sk_live_***"</span> \<br/>
   -H <span className="text-emerald-300">"Content-Type: application/json"</span> \<br/>
   -d <span className="text-amber-300">'{'{'}"fullName":"Sarah Jenkins","email":"sarah@techcorp.io","company":"TechCorp Solutions","website":"techcorp.io"{'}'}'</span>
@@ -226,7 +226,7 @@ export default function ApiDocsPage() {
 
             <div className="bg-[#0f172a] rounded-[var(--radius-card)] p-5 overflow-x-auto mb-4">
               <pre className="text-[13px] text-slate-300 font-mono">
-<span className="text-pink-400">curl</span> -X POST https://api.archrevenue.com/v1/leads/ld_12345/score \<br/>
+<span className="text-pink-400">curl</span> -X POST https://api.RevScout.com/v1/leads/ld_12345/score \<br/>
   -H <span className="text-emerald-300">"Authorization: Bearer sk_live_***"</span>
               </pre>
             </div>
@@ -235,7 +235,7 @@ export default function ApiDocsPage() {
           <section id="webhooks" className="mb-8 scroll-mt-48">
             <h2 className="text-[20px] font-bold text-text-primary mb-4 pb-2 border-b border-border-default">Webhooks</h2>
             <p className="text-[14px] text-text-secondary leading-relaxed mb-4">
-              Listen for events on your ArchRevenue account so your integration can automatically trigger reactions.
+              Listen for events on your RevScout account so your integration can automatically trigger reactions.
             </p>
             
             <div className="bg-surface-secondary border border-border-default rounded-[var(--radius-card)] overflow-hidden mb-4 p-4">

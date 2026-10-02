@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://archrevenue.ai/</loc>
+    <loc>https://RevScout.ai/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://archrevenue.ai/privacy</loc>
+    <loc>https://RevScout.ai/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://archrevenue.ai/terms</loc>
+    <loc>https://RevScout.ai/terms</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://archrevenue.ai/security</loc>
+    <loc>https://RevScout.ai/security</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://archrevenue.ai/login</loc>
+    <loc>https://RevScout.ai/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://archrevenue.ai/signup</loc>
+    <loc>https://RevScout.ai/signup</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

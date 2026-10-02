@@ -36,7 +36,7 @@ export default function AdminLogin() {
       let isAdmin = userDoc.exists() && userDoc.data()?.role === 'admin';
       
       // Auto-upgrade the owner's email to admin if it isn't already
-      if (user.email === 'archrevenues@gmail.com' && !isAdmin) {
+      if (user.email === 'RevScouts@gmail.com' && !isAdmin) {
         await setDoc(doc(db, 'users', user.uid), { role: 'admin' }, { merge: true });
         isAdmin = true;
       }
@@ -92,7 +92,7 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="block w-full px-4 py-3.5 bg-surface-background border border-border-default rounded-none text-[14px] text-text-primary placeholder-text-tertiary focus:outline-none focus:border-text-primary transition-colors font-mono"
-              placeholder="admin@archrevenue.com"
+              placeholder="admin@RevScout.com"
               required
             />
           </div>

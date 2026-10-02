@@ -128,7 +128,7 @@ export default function ProfilePage() {
               <p className="text-[13px] text-text-secondary mt-1 leading-relaxed pr-4">
                 {allDone
                   ? 'You\'ve completed all setup steps. Your AI-driven pipeline is fully activated.'
-                  : 'Complete these steps to unlock the full power of ArchRevenue\'s AI sales engine.'}
+                  : 'Complete these steps to unlock the full power of RevScout\'s AI sales engine.'}
               </p>
             </div>
           </div>

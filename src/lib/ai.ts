@@ -72,7 +72,7 @@ export async function regenerateOutreach(lead: Lead, profile?: SellerProfile | n
     return {
       objective: 'Schedule intro call',
       messagingAngle: 'Data-driven pipeline growth',
-      email: `Subject: ${profile?.companyName || 'ArchRevenue'} x ${lead.company || lead.fullName}\n\nHi ${lead.fullName.split(' ')[0]},\n\nI reached out recently regarding your operations at ${lead.company || 'your organization'}. We help companies in ${lead.industry || 'your industry'} increase sales conversion with AI revenue intelligence.\n\nWorth a brief conversation next Tuesday?\n\nBest,`,
+      email: `Subject: ${profile?.companyName || 'RevScout'} x ${lead.company || lead.fullName}\n\nHi ${lead.fullName.split(' ')[0]},\n\nI reached out recently regarding your operations at ${lead.company || 'your organization'}. We help companies in ${lead.industry || 'your industry'} increase sales conversion with AI revenue intelligence.\n\nWorth a brief conversation next Tuesday?\n\nBest,`,
       linkedin: `Hi ${lead.fullName.split(' ')[0]}, following up on my previous note. Would love to share a quick overview tailored for ${lead.company || 'your team'}.`,
       callScript: `OPENER: Hi ${lead.fullName.split(' ')[0]}, following up on my email regarding revenue intelligence.\n\nVALUE PROP: Our clients see 3x faster qualification speeds.\n\nCTA: Should I send over a 2-minute overview video?`
     };
@@ -150,7 +150,7 @@ export async function generateSingleOutreach(
     } else if (type === 'linkedin') {
       return `Hi ${lead.fullName.split(' ')[0]}, enjoyed following ${lead.company || 'your team'}'s growth in ${lead.industry || 'the market'}. Would love to connect and share quick insights.`;
     } else {
-      return `OPENER: Hi ${lead.fullName.split(' ')[0]}, reaching out from ${profile?.companyName || 'ArchRevenue'}.\n\nVALUE PROP: We streamline lead discovery and revenue prioritization.\n\nCTA: Do you have a moment to discuss?`;
+      return `OPENER: Hi ${lead.fullName.split(' ')[0]}, reaching out from ${profile?.companyName || 'RevScout'}.\n\nVALUE PROP: We streamline lead discovery and revenue prioritization.\n\nCTA: Do you have a moment to discuss?`;
     }
   }
 }

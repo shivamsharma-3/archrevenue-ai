@@ -166,7 +166,7 @@ ${confidenceNote}
 ${fetchSucceeded ? `Website data for ${targetUrl}:\n"""\n${scrapedContext}\n"""` : `Company URL: ${targetUrl}`}
 
 RULES FOR ENRICHMENT:
-- companyName: Clean formal company/brand name (e.g. "Neurowhale", "Arch Revenues", not all-caps).
+- companyName: Clean formal company/brand name (e.g. "Neurowhale", "RevScout", not all-caps).
 - fullName: Contact person, founder, CEO, director, or executive mentioned on site. If no individual name is found, output a professional role title like "Founder & CEO" or "Executive Leadership".
 - email: Primary contact or support email found on site. If detected email candidates exist above, prioritize them. If none on site, infer 'contact@<domain>'.
 - phone: Real contact phone number if found on site, or empty string "" if none.
