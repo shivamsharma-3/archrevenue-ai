@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 
 interface BrandLogoProps {
   className?: string;
@@ -67,13 +68,17 @@ export function BrandMark({
   );
 }
 
+const REV_LETTERS = ['R', 'e', 'v'];
+const SCOUT_LETTERS = ['S', 'c', 'o', 'u', 't'];
+
 /**
  * BrandWordmark — Billion-Dollar Typographic Logotype
- * Pure typography, no distracting icons.
  * When animated={true} (header only), activates:
- *  - Ethereal liquid metallic shimmer through "Rev"
- *  - High-tech radar opportunity signal ping on the brand accent dot
- *  - Micro-spring hover lift with kinetic sheen
+ *  1. Interactive kinetic letter-by-letter spring physics wave
+ *  2. Specular chromatic liquid shimmer through "Rev"
+ *  3. Dual-harmonic quantum radar beacon pulse on the accent dot
+ *  4. Precision intelligence scanner laser baseline
+ *  5. Volumetric ambient depth aura & 3D micro-tilt parallax
  */
 export function BrandWordmark({
   className = '',
@@ -88,151 +93,351 @@ export function BrandWordmark({
 }) {
   // Size-specific typography scaling
   const fontSize = size === 'sm' ? '20px' : size === 'lg' ? '32px' : '25px';
-  const dotSize = size === 'sm' ? '5px' : size === 'lg' ? '7px' : '6px';
+  const dotSize = size === 'sm' ? 5 : size === 'lg' ? 7 : 6;
   const primaryColor = theme === 'dark' ? '#F8FAFC' : '#090D16';
 
-  return (
-    <div
-      className={`inline-flex items-center select-none group/brand ${animated ? 'rev-header-logo-animated' : ''} ${className}`}
-      style={{
-        lineHeight: 1,
-        fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
-        transition: animated ? 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)' : undefined,
-      }}
-    >
-      {animated && (
-        <style>{`
-          @keyframes revShimmerFlow {
-            0% {
-              background-position: 0% 50%;
-            }
-            32% {
-              background-position: 100% 50%;
-            }
-            100% {
-              background-position: 100% 50%;
-            }
-          }
-          @keyframes revRadarPulse {
-            0% {
-              transform: scale(0.95);
-              opacity: 0.9;
-            }
-            50% {
-              transform: scale(2.8);
-              opacity: 0;
-            }
-            100% {
-              transform: scale(2.8);
-              opacity: 0;
-            }
-          }
-          @keyframes revDotBreathe {
-            0%, 100% {
-              transform: scale(1);
-              box-shadow: 0 0 8px rgba(99, 102, 241, 0.7);
-            }
-            50% {
-              transform: scale(1.16);
-              box-shadow: 0 0 16px rgba(99, 102, 241, 0.95), 0 0 24px rgba(129, 140, 248, 0.5);
-            }
-          }
-          .rev-header-logo-animated:hover {
-            transform: translateY(-1.5px);
-          }
-          .rev-header-logo-animated:hover .rev-gradient-text {
-            animation-duration: 2.2s !important;
-          }
-        `}</style>
-      )}
+  const [isHovered, setIsHovered] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-      <span
+  // 3D Magnetic Micro-Tilt Physics
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 350 };
+  const rotateX = useSpring(useTransform(mouseY, [-20, 20], [5, -5]), springConfig);
+  const rotateY = useSpring(useTransform(mouseX, [-60, 60], [-7, 7]), springConfig);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!animated || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - (rect.left + rect.width / 2);
+    const y = e.clientY - (rect.top + rect.height / 2);
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  if (!animated) {
+    return (
+      <div
+        className={`inline-flex items-center select-none ${className}`}
         style={{
-          fontSize,
-          fontWeight: 800,
-          letterSpacing: '-0.04em',
-          display: 'inline-flex',
-          alignItems: 'baseline',
-          color: primaryColor,
+          lineHeight: 1,
+          fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
         }}
       >
-        {/* "Rev" in signature Electric Indigo gradient (with animated liquid shimmer in header) */}
         <span
-          className={animated ? 'rev-gradient-text' : ''}
           style={{
-            background: animated
-              ? 'linear-gradient(115deg, #4338CA 0%, #6366F1 25%, #A5B4FC 48%, #FFFFFF 52%, #A5B4FC 56%, #6366F1 75%, #4338CA 100%)'
-              : 'linear-gradient(135deg, #4F46E5 0%, #6366F1 60%, #818CF8 100%)',
-            backgroundSize: animated ? '260% 100%' : undefined,
-            animation: animated ? 'revShimmerFlow 6.5s ease-in-out infinite' : undefined,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            fontSize,
             fontWeight: 800,
-            transition: 'background-position 0.4s ease',
-          }}
-        >
-          Rev
-        </span>
-
-        {/* "Scout" in commanding executive slate */}
-        <span
-          style={{
-            fontWeight: 800,
-            color: primaryColor,
-            marginLeft: '-0.02em',
-          }}
-        >
-          Scout
-        </span>
-
-        {/* Luminous brand anchor dot (with radar opportunity ping in header) */}
-        <span
-          style={{
-            position: 'relative',
+            letterSpacing: '-0.04em',
             display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: dotSize,
-            height: dotSize,
-            marginLeft: '3px',
-            marginBottom: '1px',
-            flexShrink: 0,
+            alignItems: 'baseline',
+            color: primaryColor,
           }}
         >
-          {/* High-tech radar signal wave ring */}
-          {animated && (
-            <span
-              style={{
-                position: 'absolute',
-                width: dotSize,
-                height: dotSize,
-                borderRadius: '50%',
-                background: 'rgba(99, 102, 241, 0.75)',
-                animation: 'revRadarPulse 2.8s cubic-bezier(0, 0, 0.2, 1) infinite',
-                pointerEvents: 'none',
-              }}
-            />
-          )}
-
-          {/* Core anchor dot */}
+          <span
+            style={{
+              background: 'linear-gradient(135deg, #4F46E5 0%, #6366F1 60%, #818CF8 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontWeight: 800,
+            }}
+          >
+            Rev
+          </span>
+          <span style={{ fontWeight: 800, color: primaryColor, marginLeft: '-0.02em' }}>
+            Scout
+          </span>
           <span
             style={{
               display: 'inline-block',
-              width: dotSize,
-              height: dotSize,
+              width: `${dotSize}px`,
+              height: `${dotSize}px`,
               borderRadius: '50%',
               background: 'linear-gradient(135deg, #6366F1, #818CF8)',
-              boxShadow: animated
-                ? '0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(129, 140, 248, 0.4)'
-                : '0 0 8px rgba(99, 102, 241, 0.6)',
-              animation: animated ? 'revDotBreathe 2.8s ease-in-out infinite' : undefined,
+              boxShadow: '0 0 8px rgba(99, 102, 241, 0.6)',
+              marginLeft: '3px',
+              marginBottom: '1px',
               flexShrink: 0,
             }}
           />
         </span>
-      </span>
-    </div>
+      </div>
+    );
+  }
+
+  // Top-Level Animated Header Wordmark
+  return (
+    <motion.div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: 'preserve-3d',
+        perspective: 800,
+      }}
+      className={`relative inline-flex items-center select-none cursor-pointer py-1 px-1.5 rounded-lg ${className}`}
+    >
+      {/* 1. Volumetric Ambient Aurora Halo */}
+      <motion.div
+        aria-hidden="true"
+        animate={{
+          opacity: isHovered ? 0.65 : 0.22,
+          scale: isHovered ? 1.25 : 1,
+        }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        style={{
+          position: 'absolute',
+          inset: '-6px -12px',
+          background: 'radial-gradient(ellipse at 35% 50%, rgba(99, 102, 241, 0.45) 0%, rgba(139, 92, 246, 0.25) 45%, transparent 75%)',
+          filter: 'blur(16px)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* 2. Main Wordmark Typography Container */}
+      <motion.div
+        animate={{
+          y: isHovered ? -1.5 : 0,
+        }}
+        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          lineHeight: 1,
+          fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif",
+        }}
+      >
+        <span
+          style={{
+            fontSize,
+            fontWeight: 800,
+            letterSpacing: '-0.04em',
+            display: 'inline-flex',
+            alignItems: 'baseline',
+            color: primaryColor,
+          }}
+        >
+          {/* "Rev" — Staggered Elastic Kinetic Wave with Liquid Chromatic Shimmer */}
+          <span className="inline-flex items-baseline overflow-visible">
+            {REV_LETTERS.map((char, index) => (
+              <motion.span
+                key={`rev-${index}`}
+                animate={
+                  isHovered
+                    ? {
+                        y: [0, -3.5, 0],
+                        scale: [1, 1.06, 1],
+                      }
+                    : { y: 0, scale: 1 }
+                }
+                transition={{
+                  duration: 0.42,
+                  delay: index * 0.035,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="inline-block rev-shimmer-letter"
+                style={{
+                  background: 'linear-gradient(115deg, #4338CA 0%, #6366F1 25%, #A5B4FC 48%, #FFFFFF 52%, #A5B4FC 56%, #6366F1 75%, #4338CA 100%)',
+                  backgroundSize: '240% 100%',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 800,
+                  transformOrigin: 'bottom center',
+                  animation: `revLetterShimmer 6s ease-in-out infinite`,
+                  animationDelay: `${index * 0.12}s`,
+                }}
+              >
+                {char}
+              </motion.span>
+            ))}
+          </span>
+
+          {/* "Scout" — Staggered Kinetic Wave in Executive Slate */}
+          <span className="inline-flex items-baseline overflow-visible" style={{ marginLeft: '-0.02em' }}>
+            {SCOUT_LETTERS.map((char, index) => (
+              <motion.span
+                key={`scout-${index}`}
+                animate={
+                  isHovered
+                    ? {
+                        y: [0, -3.5, 0],
+                        scale: [1, 1.05, 1],
+                        color: theme === 'dark' ? '#FFFFFF' : '#020617',
+                      }
+                    : { y: 0, scale: 1, color: primaryColor }
+                }
+                transition={{
+                  duration: 0.42,
+                  delay: (REV_LETTERS.length + index) * 0.035,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="inline-block"
+                style={{
+                  fontWeight: 800,
+                  transformOrigin: 'bottom center',
+                }}
+              >
+                {char}
+              </motion.span>
+            ))}
+          </span>
+
+          {/* 3. Living Quantum Radar Beacon (The Brand Accent Dot) */}
+          <span
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: `${dotSize}px`,
+              height: `${dotSize}px`,
+              marginLeft: '3.5px',
+              marginBottom: '1px',
+              flexShrink: 0,
+            }}
+          >
+            {/* Harmonic Sonar Wave 1 (Tight & Fast) */}
+            <motion.span
+              animate={{
+                scale: [1, 2.6],
+                opacity: [0.9, 0],
+              }}
+              transition={{
+                duration: 2.2,
+                repeat: Infinity,
+                ease: 'easeOut',
+              }}
+              style={{
+                position: 'absolute',
+                width: `${dotSize}px`,
+                height: `${dotSize}px`,
+                borderRadius: '50%',
+                background: 'rgba(99, 102, 241, 0.8)',
+                pointerEvents: 'none',
+              }}
+            />
+
+            {/* Harmonic Sonar Wave 2 (Expansive & Soft) */}
+            <motion.span
+              animate={{
+                scale: [1, 3.8],
+                opacity: [0.55, 0],
+              }}
+              transition={{
+                duration: 2.2,
+                repeat: Infinity,
+                delay: 0.75,
+                ease: 'easeOut',
+              }}
+              style={{
+                position: 'absolute',
+                width: `${dotSize}px`,
+                height: `${dotSize}px`,
+                borderRadius: '50%',
+                background: 'rgba(129, 140, 248, 0.65)',
+                pointerEvents: 'none',
+              }}
+            />
+
+            {/* Quantum Core */}
+            <motion.span
+              animate={{
+                scale: isHovered ? 1.35 : [1, 1.15, 1],
+                boxShadow: isHovered
+                  ? '0 0 16px rgba(99, 102, 241, 1), 0 0 28px rgba(129, 140, 248, 0.8)'
+                  : '0 0 8px rgba(99, 102, 241, 0.75), 0 0 16px rgba(129, 140, 248, 0.4)',
+              }}
+              transition={{
+                scale: isHovered ? { duration: 0.25 } : { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
+                boxShadow: isHovered ? { duration: 0.25 } : { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
+              }}
+              style={{
+                display: 'inline-block',
+                width: `${dotSize}px`,
+                height: `${dotSize}px`,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #6366F1 0%, #818CF8 50%, #C7D2FE 100%)',
+                flexShrink: 0,
+                zIndex: 2,
+              }}
+            />
+          </span>
+        </span>
+
+        {/* 4. Autonomous Intelligence Scanner Laser Line */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            bottom: '-4px',
+            left: '0px',
+            right: '0px',
+            height: '1.5px',
+            overflow: 'hidden',
+            pointerEvents: 'none',
+            opacity: isHovered ? 0.9 : 0.4,
+            transition: 'opacity 0.3s ease',
+          }}
+        >
+          {/* Subtle baseline track */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(90deg, transparent 0%, rgba(99, 102, 241, 0.15) 20%, rgba(99, 102, 241, 0.15) 80%, transparent 100%)',
+            }}
+          />
+          {/* Travelling scanning beam */}
+          <motion.div
+            animate={{
+              x: ['-100%', '200%'],
+            }}
+            transition={{
+              duration: isHovered ? 1.6 : 3.8,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              repeatDelay: 0.6,
+            }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              width: '45%',
+              background: 'linear-gradient(90deg, transparent 0%, #6366F1 40%, #818CF8 80%, #FFFFFF 100%)',
+              boxShadow: '0 0 6px #6366F1, 0 0 12px #818CF8',
+            }}
+          />
+        </div>
+      </motion.div>
+
+      {/* Scoped CSS Keyframes for Metallic Liquid Shimmer */}
+      <style>{`
+        @keyframes revLetterShimmer {
+          0% {
+            background-position: 0% 50%;
+          }
+          30% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 100% 50%;
+          }
+        }
+      `}</style>
+    </motion.div>
   );
 }
 
