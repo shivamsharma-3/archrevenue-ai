@@ -2,108 +2,59 @@ import React from 'react';
 
 interface BrandLogoProps {
   className?: string;
-  /**
-   * 'mark' = standalone stylish icon mark (default)
-   * 'wordmark' = icon + "RevScout" typography
-   * 'mark-bg' = icon on dark rounded tile
-   * 'monochrome' = currentColor single-tone
-   */
   variant?: 'mark' | 'wordmark' | 'mark-bg' | 'monochrome';
-  /** 'dark' for dark backgrounds, 'light' (default) for light */
-  theme?: 'light' | 'dark' | 'auto';
-  /** Size preset for wordmark: 'sm' | 'md' | 'lg' */
+  theme?: 'light' | 'dark';
   size?: 'sm' | 'md' | 'lg';
 }
 
-// Stable counter for unique IDs (avoids colon issues from React.useId)
-let _idCounter = 0;
-function nextId() {
-  return `rs${++_idCounter}`;
-}
-
 /**
- * RevScout Stylish Aerodynamic Delta Icon Mark
+ * RevScout Precision Radar Mark
+ * Clean concentric rings + sweep vector — instantly recognizable as "scouting intelligence"
+ * Uses solid fills (no SVG gradient defs) = 100% reliable rendering in all contexts
  */
 export function BrandMark({ className, monochrome = false }: { className?: string; monochrome?: boolean }) {
-  // Generate stable IDs without colons
-  const [id] = React.useState(() => nextId());
+  const base = monochrome ? 'currentColor' : undefined;
 
   if (monochrome) {
     return (
       <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M 48.5 11 L 16 83 L 21 88 L 35 88 L 48.5 51 Z" fill="currentColor" />
-        <path d="M 51.5 11 L 51.5 51 L 65 88 L 79 88 L 84 83 Z" fill="currentColor" />
-        <polygon points="50,38 55,47 50,56 45,47" fill="currentColor" opacity="0.7" />
+        <circle cx="50" cy="54" r="33" stroke="currentColor" strokeWidth="3.5" opacity="0.3" />
+        <circle cx="50" cy="54" r="21" stroke="currentColor" strokeWidth="3.5" opacity="0.6" />
+        <circle cx="50" cy="54" r="9"  stroke="currentColor" strokeWidth="3.5" opacity="0.9" />
+        <circle cx="50" cy="54" r="3"  fill="currentColor" />
+        <line x1="50" y1="54" x2="75" y2="24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <polygon points="75,24 65,30 72,38" fill="currentColor" />
       </svg>
     );
   }
 
-  const lGrad = `lg-${id}`;
-  const rGrad = `rg-${id}`;
-  const cGrad = `cg-${id}`;
-  const rimL = `rl-${id}`;
-  const rimR = `rr-${id}`;
-
   return (
     <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        {/* Left Wing: Deep Cobalt → Indigo */}
-        <linearGradient id={lGrad} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#3B82F6" />
-          <stop offset="45%" stopColor="#4F46E5" />
-          <stop offset="100%" stopColor="#6366F1" />
-        </linearGradient>
-
-        {/* Right Wing: Indigo → Violet → Purple */}
-        <linearGradient id={rGrad} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#6366F1" />
-          <stop offset="55%" stopColor="#8B5CF6" />
-          <stop offset="100%" stopColor="#A855F7" />
-        </linearGradient>
-
-        {/* Inner Core: Soft Lavender */}
-        <linearGradient id={cGrad} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#E0E7FF" />
-          <stop offset="100%" stopColor="#A5B4FC" />
-        </linearGradient>
-
-        {/* Specular Left Rim */}
-        <linearGradient id={rimL} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
-          <stop offset="45%" stopColor="#93C5FD" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#4F46E5" stopOpacity="0" />
-        </linearGradient>
-
-        {/* Specular Right Rim */}
-        <linearGradient id={rimR} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.85" />
-          <stop offset="45%" stopColor="#D8B4FE" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      {/* Left Wing (chamfered aerodynamic base) */}
-      <path d="M 48.5 11 L 16 83 L 21 88 L 35 88 L 48.5 51 Z" fill={`url(#${lGrad})`} />
-
-      {/* Right Wing (chamfered aerodynamic base) */}
-      <path d="M 51.5 11 L 51.5 51 L 65 88 L 79 88 L 84 83 Z" fill={`url(#${rGrad})`} />
-
-      {/* Specular edge highlights */}
-      <line x1="48.5" y1="11" x2="16" y2="83"
-        stroke={`url(#${rimL})`} strokeWidth="1.8" strokeLinecap="round" />
-      <line x1="51.5" y1="11" x2="84" y2="83"
-        stroke={`url(#${rimR})`} strokeWidth="1.8" strokeLinecap="round" />
-
-      {/* Inner Scout Intelligence Core (diamond aperture) */}
-      <polygon points="50,38 55,47 50,56 45,47" fill={`url(#${cGrad})`} opacity="0.95" />
-      {/* Central Spark */}
-      <circle cx="50" cy="47" r="1.5" fill="#FFFFFF" />
+      {/* Outer ring */}
+      <circle cx="50" cy="54" r="33" stroke="#6366F1" strokeWidth="3" opacity="0.25" />
+      {/* Middle ring */}
+      <circle cx="50" cy="54" r="21" stroke="#7C3AED" strokeWidth="3" opacity="0.55" />
+      {/* Inner ring */}
+      <circle cx="50" cy="54" r="9"  stroke="#6366F1" strokeWidth="3" opacity="0.9" />
+      {/* Center dot */}
+      <circle cx="50" cy="54" r="3.5" fill="#6366F1" />
+      {/* Sweep vector line */}
+      <line x1="50" y1="54" x2="75" y2="24" stroke="#4F46E5" strokeWidth="3" strokeLinecap="round" />
+      {/* Arrow head */}
+      <polygon points="75,24 65,30 72,38" fill="#6366F1" />
+      {/* Axis ticks for premium feel */}
+      <line x1="50" y1="42" x2="50" y2="46" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+      <line x1="50" y1="62" x2="50" y2="66" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+      <line x1="38" y1="54" x2="42" y2="54" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+      <line x1="58" y1="54" x2="62" y2="54" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
     </svg>
   );
 }
 
 /**
- * BrandWordmark: Icon + Syne Custom Typography
+ * BrandWordmark — Billion-dollar typographic contrast
+ * "Rev" in Playfair Display italic (high-fashion editorial serif)
+ * "Scout" in Syne ExtraBold (precision geometric sans)
  */
 export function BrandWordmark({
   className = '',
@@ -111,56 +62,65 @@ export function BrandWordmark({
   size = 'md',
 }: {
   className?: string;
-  theme?: 'light' | 'dark' | 'auto';
+  theme?: 'light' | 'dark';
   size?: 'sm' | 'md' | 'lg';
 }) {
-  const iconClass =
-    size === 'sm' ? 'w-5 h-5' : size === 'lg' ? 'w-9 h-9' : 'w-7 h-7';
-
-  const textClass =
-    size === 'sm' ? 'text-[15px]' : size === 'lg' ? 'text-[22px]' : 'text-[19px]';
-
-  const scoutColor =
-    theme === 'dark' ? 'text-white' : 'text-slate-900';
-
-  const dotClass =
-    size === 'lg' ? 'w-2 h-2 ml-1.5' : 'w-1.5 h-1.5 ml-1';
+  const iconClass = size === 'sm' ? 'w-5 h-5' : size === 'lg' ? 'w-10 h-10' : 'w-7 h-7';
+  const revSize  = size === 'sm' ? '16px' : size === 'lg' ? '26px' : '21px';
+  const sctSize  = size === 'sm' ? '14px' : size === 'lg' ? '22px' : '18px';
+  const dotSize  = size === 'sm' ? '5px'  : size === 'lg' ? '8px'  : '6px';
+  const scoutColor = theme === 'dark' ? '#FFFFFF' : '#0F172A';
 
   return (
-    <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
+    <div className={`inline-flex items-center select-none`} style={{ gap: '10px' }}>
       <BrandMark className={iconClass} />
-      <span
-        className={`flex items-center leading-none`}
-        style={{ fontFamily: "'Syne', 'Outfit', sans-serif" }}
-      >
-        {/* "Rev" — Cormorant Garamond italic: ultra-luxury serif contrast */}
+
+      <span className="inline-flex items-baseline leading-none" style={{ gap: '0px' }}>
+        {/* "Rev" — Playfair Display Italic: ultra-luxury editorial serif */}
         <span
-          className={`font-bold italic ${textClass} tracking-[-0.01em]`}
           style={{
-            fontFamily: "'Cormorant Garamond', 'Georgia', serif",
+            fontFamily: "'Playfair Display', 'Georgia', serif",
             fontWeight: 700,
             fontStyle: 'italic',
-            background: 'linear-gradient(135deg, #818CF8 0%, #6366F1 40%, #4F46E5 100%)',
+            fontSize: revSize,
+            letterSpacing: '-0.01em',
+            background: 'linear-gradient(135deg, #818CF8 0%, #6366F1 45%, #4F46E5 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
+            lineHeight: 1,
           }}
         >
           Rev
         </span>
-        {/* "Scout" — Syne bold geometric sans */}
+
+        {/* "Scout" — Syne ExtraBold: sharp precision geometric sans */}
         <span
-          className={`font-extrabold tracking-[-0.045em] ${textClass} ${scoutColor}`}
-          style={{ fontFamily: "'Syne', 'Outfit', sans-serif", fontWeight: 800 }}
+          style={{
+            fontFamily: "'Syne', 'Outfit', sans-serif",
+            fontWeight: 800,
+            fontStyle: 'normal',
+            fontSize: sctSize,
+            letterSpacing: '-0.045em',
+            color: scoutColor,
+            lineHeight: 1,
+          }}
         >
           Scout
         </span>
-        {/* Brand accent dot */}
+
+        {/* Glowing brand accent dot */}
         <span
-          className={`inline-block ${dotClass} rounded-full mb-0.5 flex-shrink-0`}
           style={{
+            display: 'inline-block',
+            width: dotSize,
+            height: dotSize,
+            borderRadius: '50%',
             background: 'linear-gradient(135deg, #6366F1, #A855F7)',
-            boxShadow: '0 0 6px rgba(99,102,241,0.6)',
+            boxShadow: '0 0 6px rgba(99,102,241,0.65)',
+            marginLeft: '3px',
+            marginBottom: '2px',
+            flexShrink: 0,
           }}
         />
       </span>
@@ -177,29 +137,29 @@ export default function BrandLogo({
   theme = 'light',
   size = 'md',
 }: BrandLogoProps) {
-  if (variant === 'wordmark') {
-    return <BrandWordmark className={className} theme={theme} size={size} />;
-  }
+  if (variant === 'wordmark') return <BrandWordmark className={className} theme={theme} size={size} />;
 
   if (variant === 'mark-bg') {
     return (
       <div
-        className={`rounded-xl flex items-center justify-center shadow-lg ${className}`}
         style={{
           background: 'linear-gradient(160deg, #0F172A 0%, #06091A 100%)',
-          border: '1px solid rgba(99,102,241,0.35)',
-          boxShadow: '0 4px 20px rgba(99,102,241,0.2)',
-          padding: '8px',
+          border: '1px solid rgba(99,102,241,0.3)',
+          boxShadow: '0 4px 20px rgba(99,102,241,0.18)',
+          borderRadius: '22%',
+          padding: '18%',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
+        className={className}
       >
         <BrandMark className="w-full h-full" />
       </div>
     );
   }
 
-  if (variant === 'monochrome') {
-    return <BrandMark className={className} monochrome />;
-  }
+  if (variant === 'monochrome') return <BrandMark className={className} monochrome />;
 
   return <BrandMark className={className} />;
 }
