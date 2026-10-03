@@ -130,12 +130,17 @@ export function BrandWordmark({
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
       <BrandMark className={iconClass} />
       <span
-        className={`font-extrabold ${textClass} tracking-[-0.035em] flex items-center leading-none`}
+        className={`flex items-center leading-none`}
         style={{ fontFamily: "'Syne', 'Outfit', sans-serif" }}
       >
+        {/* "Rev" — Cormorant Garamond italic: ultra-luxury serif contrast */}
         <span
+          className={`font-bold italic ${textClass} tracking-[-0.01em]`}
           style={{
-            background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #7C3AED 100%)',
+            fontFamily: "'Cormorant Garamond', 'Georgia', serif",
+            fontWeight: 700,
+            fontStyle: 'italic',
+            background: 'linear-gradient(135deg, #818CF8 0%, #6366F1 40%, #4F46E5 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -143,11 +148,20 @@ export function BrandWordmark({
         >
           Rev
         </span>
-        <span className={`${scoutColor} font-bold tracking-tight`}>Scout</span>
+        {/* "Scout" — Syne bold geometric sans */}
+        <span
+          className={`font-extrabold tracking-[-0.045em] ${textClass} ${scoutColor}`}
+          style={{ fontFamily: "'Syne', 'Outfit', sans-serif", fontWeight: 800 }}
+        >
+          Scout
+        </span>
         {/* Brand accent dot */}
         <span
           className={`inline-block ${dotClass} rounded-full mb-0.5 flex-shrink-0`}
-          style={{ background: 'linear-gradient(135deg, #6366F1, #A855F7)', boxShadow: '0 0 6px rgba(99,102,241,0.5)' }}
+          style={{
+            background: 'linear-gradient(135deg, #6366F1, #A855F7)',
+            boxShadow: '0 0 6px rgba(99,102,241,0.6)',
+          }}
         />
       </span>
     </div>
