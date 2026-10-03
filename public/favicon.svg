@@ -1,81 +1,51 @@
 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Background Gradient -->
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#0F172A"/>
       <stop offset="100%" stop-color="#060913"/>
     </linearGradient>
-
-    <!-- Squircle Border Specular Rim -->
-    <linearGradient id="border" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.8"/>
-      <stop offset="50%" stop-color="#38BDF8" stop-opacity="0.3"/>
+    <linearGradient id="bdr" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.75"/>
       <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.2"/>
     </linearGradient>
-
-    <!-- Ambient Core Glow -->
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.45"/>
-      <stop offset="70%" stop-color="#8B5CF6" stop-opacity="0.15"/>
-      <stop offset="100%" stop-color="#060913" stop-opacity="0"/>
-    </radialGradient>
-
-    <!-- Left Wing Gradient -->
-    <linearGradient id="wing-l" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#38BDF8"/>
-      <stop offset="35%" stop-color="#4F46E5"/>
+    <linearGradient id="gl" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="45%" stop-color="#4F46E5"/>
       <stop offset="100%" stop-color="#6366F1"/>
     </linearGradient>
-
-    <!-- Right Wing Gradient -->
-    <linearGradient id="wing-r" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="gr" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#6366F1"/>
       <stop offset="55%" stop-color="#8B5CF6"/>
-      <stop offset="100%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#A855F7"/>
     </linearGradient>
-
-    <!-- Scout Core Gradient -->
-    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="gc" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#E0E7FF"/>
       <stop offset="100%" stop-color="#A5B4FC"/>
     </linearGradient>
-
-    <!-- Specular Left Edge -->
-    <linearGradient id="spec-l" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="rl" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
-      <stop offset="50%" stop-color="#93C5FD" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#93C5FD" stop-opacity="0.35"/>
       <stop offset="100%" stop-color="#4F46E5" stop-opacity="0"/>
     </linearGradient>
-
-    <!-- Specular Right Edge -->
-    <linearGradient id="spec-r" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="rr" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
-      <stop offset="50%" stop-color="#D8B4FE" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#D8B4FE" stop-opacity="0.35"/>
       <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
     </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="48%" r="45%">
+      <stop offset="0%" stop-color="#6366F1" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
   </defs>
 
-  <!-- Luxury Dark Squircle Canvas -->
   <rect width="100" height="100" rx="22" fill="url(#bg)"/>
-  <rect x="1" y="1" width="98" height="98" rx="21" stroke="url(#border)" stroke-width="1.8"/>
+  <rect x="1" y="1" width="98" height="98" rx="21" stroke="url(#bdr)" stroke-width="1.5" fill="none"/>
+  <circle cx="50" cy="50" r="40" fill="url(#glow)"/>
 
-  <!-- Radial Backglow -->
-  <circle cx="50" cy="50" r="38" fill="url(#glow)"/>
-
-  <!-- Scaled Delta Mark inside Favicon -->
-  <g transform="translate(0, 1)">
-    <!-- Left Wing (Aerodynamic Chamfered Base) -->
-    <path d="M 48.5 15 L 20 79 L 24 83 L 36 83 L 48.5 50 Z" fill="url(#wing-l)"/>
-
-    <!-- Right Wing (Aerodynamic Chamfered Base) -->
-    <path d="M 51.5 15 L 51.5 50 L 64 83 L 76 83 L 80 79 Z" fill="url(#wing-r)"/>
-
-    <!-- Specular Highlights on Leading Edges -->
-    <line x1="48.5" y1="15" x2="20" y2="79" stroke="url(#spec-l)" stroke-width="2" stroke-linecap="round"/>
-    <line x1="51.5" y1="15" x2="80" y2="79" stroke="url(#spec-r)" stroke-width="2" stroke-linecap="round"/>
-
-    <!-- Inner Scout Core -->
-    <polygon points="50,39 54.5,47 50,55 45.5,47" fill="url(#core)"/>
-    <circle cx="50" cy="47" r="1.5" fill="#FFFFFF"/>
-  </g>
+  <path d="M 48.5 15 L 20 79 L 24 83 L 36 83 L 48.5 50 Z" fill="url(#gl)"/>
+  <path d="M 51.5 15 L 51.5 50 L 64 83 L 76 83 L 80 79 Z" fill="url(#gr)"/>
+  <line x1="48.5" y1="15" x2="20" y2="79" stroke="url(#rl)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="51.5" y1="15" x2="80" y2="79" stroke="url(#rr)" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="50,39 54.5,47 50,55 45.5,47" fill="url(#gc)" opacity="0.95"/>
+  <circle cx="50" cy="47" r="1.5" fill="#FFFFFF"/>
 </svg>
