@@ -102,8 +102,8 @@ export default function LandingPage() {
         )}
       >
         <div className="flex items-center justify-between px-6 md:px-12 py-5 max-w-[1200px] mx-auto">
-          <Link to="/" className="flex items-center hover:opacity-90 transition-opacity">
-            <BrandLogo variant="wordmark" size="md" />
+          <Link to="/" className="flex items-center transition-transform">
+            <BrandLogo variant="wordmark" size="md" animated />
           </Link>
           
           {/* Desktop Nav */}
