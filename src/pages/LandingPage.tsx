@@ -463,7 +463,7 @@ export default function LandingPage() {
       <footer className="py-12 px-6 border-t border-border-default">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center space-x-3">
-            <BrandLogo className="w-5 h-5 text-text-primary" />
+            <BrandLogo variant="mark" className="w-5 h-5 shrink-0" />
             <span className="text-[11px] uppercase tracking-[0.2em] text-text-secondary font-medium">
               © {new Date().getFullYear()} RevScout Technologies
             </span>

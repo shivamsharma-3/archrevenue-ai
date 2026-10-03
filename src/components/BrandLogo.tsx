@@ -148,16 +148,20 @@ export function BrandWordmark({
 
 /**
  * BrandLogo — Default export
- * Defaults to pure wordmark (no icon) for a pristine, billion-dollar brand presence
+ * Intelligent variant resolution: square dimension classes (w-*, h-*) resolve to 'mark' (monogram),
+ * otherwise defaults to 'wordmark' for brand headers/titles.
  */
 export default function BrandLogo({
   className = '',
-  variant = 'wordmark',
+  variant,
   theme = 'light',
   size = 'md',
 }: BrandLogoProps) {
-  if (variant === 'mark' || variant === 'monochrome') {
-    return <BrandMark className={className || 'w-6 h-6'} monochrome={variant === 'monochrome'} />;
+  const isSquareBox = className && /\bw-\d+\b/.test(className);
+  const resolvedVariant = variant || (isSquareBox ? 'mark' : 'wordmark');
+
+  if (resolvedVariant === 'mark' || resolvedVariant === 'monochrome') {
+    return <BrandMark className={className || 'w-6 h-6'} monochrome={resolvedVariant === 'monochrome'} />;
   }
   return <BrandWordmark className={className} theme={theme} size={size} />;
 }
